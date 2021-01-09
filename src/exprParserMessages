@@ -1,0 +1,3059 @@
+phrase: BRA BRA WITH
+##
+## Ends in an error in state: 61.
+##
+## prim -> BRA . revexprlist KET [ STRING NUM LAM KET ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 COMMA BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA COMMA WITH
+##
+## Ends in an error in state: 75.
+##
+## revexprlist -> revexprlist COMMA . expr [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## revexprlist COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA IF STRING THEN STRING ELSE WITH
+##
+## Ends in an error in state: 393.
+##
+## expr -> IF expr THEN expr ELSE . expr [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## IF expr THEN expr ELSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA IF STRING THEN WITH
+##
+## Ends in an error in state: 263.
+##
+## expr -> IF expr THEN . expr ELSE expr [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## IF expr THEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA IF WITH
+##
+## Ends in an error in state: 48.
+##
+## expr -> IF . expr THEN expr ELSE expr [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## IF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LAM BRA ALT WITH
+##
+## Ends in an error in state: 45.
+##
+## prim -> LAM BRA option(ALT) . revcases KET [ STRING NUM LAM KET ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 COMMA BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LAM BRA ID TO ID ENDEXPR WITH
+##
+## Ends in an error in state: 46.
+##
+## prim -> LAM BRA option(ALT) revcases . KET [ STRING NUM LAM KET ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 COMMA BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+## revcases -> revcases . SEMI case [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT) revcases
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LAM BRA WITH
+##
+## Ends in an error in state: 44.
+##
+## prim -> LAM BRA . option(ALT) revcases KET [ STRING NUM LAM KET ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 COMMA BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LAM WITH
+##
+## Ends in an error in state: 43.
+##
+## prim -> LAM . BRA option(ALT) revcases KET [ STRING NUM LAM KET ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 COMMA BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LET ID EQ ID ENDEXPR IN WITH
+##
+## Ends in an error in state: 42.
+##
+## expr -> LET revdefs IN . expr [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET revdefs IN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LET ID EQ ID ENDEXPR SEMI WITH
+##
+## Ends in an error in state: 11.
+##
+## revdefs -> revdefs SEMI . def [ SEMI IN ]
+##
+## The known suffix of the stack is as follows:
+## revdefs SEMI
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LET ID EQ ID ENDEXPR WITH
+##
+## Ends in an error in state: 41.
+##
+## expr -> LET revdefs . IN expr [ KET COMMA ]
+## revdefs -> revdefs . SEMI def [ SEMI IN ]
+##
+## The known suffix of the stack is as follows:
+## LET revdefs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LET ID EQ WITH
+##
+## Ends in an error in state: 13.
+##
+## def -> id EQ . expr ENDEXPR [ SEMI IN ]
+##
+## The known suffix of the stack is as follows:
+## id EQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LET ID WITH
+##
+## Ends in an error in state: 12.
+##
+## def -> id . EQ expr ENDEXPR [ SEMI IN ]
+##
+## The known suffix of the stack is as follows:
+## id
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA LET WITH
+##
+## Ends in an error in state: 40.
+##
+## expr -> LET . revdefs IN expr [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL0 WITH
+##
+## Ends in an error in state: 167.
+##
+## expr -> term BINL0 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL1 WITH
+##
+## Ends in an error in state: 165.
+##
+## expr -> term BINL1 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL2 WITH
+##
+## Ends in an error in state: 163.
+##
+## expr -> term BINL2 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL3 WITH
+##
+## Ends in an error in state: 161.
+##
+## expr -> term BINL3 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL4 WITH
+##
+## Ends in an error in state: 159.
+##
+## expr -> term BINL4 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL5 WITH
+##
+## Ends in an error in state: 157.
+##
+## expr -> term BINL5 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL6 WITH
+##
+## Ends in an error in state: 155.
+##
+## expr -> term BINL6 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL7 WITH
+##
+## Ends in an error in state: 153.
+##
+## expr -> term BINL7 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL8 WITH
+##
+## Ends in an error in state: 151.
+##
+## expr -> term BINL8 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINL9 WITH
+##
+## Ends in an error in state: 149.
+##
+## expr -> term BINL9 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINL9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR0 WITH
+##
+## Ends in an error in state: 147.
+##
+## expr -> term BINR0 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR1 WITH
+##
+## Ends in an error in state: 145.
+##
+## expr -> term BINR1 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR2 WITH
+##
+## Ends in an error in state: 143.
+##
+## expr -> term BINR2 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR3 WITH
+##
+## Ends in an error in state: 141.
+##
+## expr -> term BINR3 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR4 WITH
+##
+## Ends in an error in state: 139.
+##
+## expr -> term BINR4 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR5 WITH
+##
+## Ends in an error in state: 137.
+##
+## expr -> term BINR5 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR6 WITH
+##
+## Ends in an error in state: 135.
+##
+## expr -> term BINR6 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR7 WITH
+##
+## Ends in an error in state: 133.
+##
+## expr -> term BINR7 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR8 WITH
+##
+## Ends in an error in state: 131.
+##
+## expr -> term BINR8 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING BINR9 WITH
+##
+## Ends in an error in state: 129.
+##
+## expr -> term BINR9 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term BINR9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL0 WITH
+##
+## Ends in an error in state: 127.
+##
+## expr -> term CONL0 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL1 WITH
+##
+## Ends in an error in state: 125.
+##
+## expr -> term CONL1 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL2 WITH
+##
+## Ends in an error in state: 123.
+##
+## expr -> term CONL2 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL3 WITH
+##
+## Ends in an error in state: 121.
+##
+## expr -> term CONL3 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL4 WITH
+##
+## Ends in an error in state: 119.
+##
+## expr -> term CONL4 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL5 WITH
+##
+## Ends in an error in state: 117.
+##
+## expr -> term CONL5 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL6 WITH
+##
+## Ends in an error in state: 115.
+##
+## expr -> term CONL6 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL7 WITH
+##
+## Ends in an error in state: 113.
+##
+## expr -> term CONL7 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL8 WITH
+##
+## Ends in an error in state: 111.
+##
+## expr -> term CONL8 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONL9 WITH
+##
+## Ends in an error in state: 109.
+##
+## expr -> term CONL9 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONL9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR0 WITH
+##
+## Ends in an error in state: 107.
+##
+## expr -> term CONR0 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR1 WITH
+##
+## Ends in an error in state: 105.
+##
+## expr -> term CONR1 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR2 WITH
+##
+## Ends in an error in state: 103.
+##
+## expr -> term CONR2 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR3 WITH
+##
+## Ends in an error in state: 101.
+##
+## expr -> term CONR3 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR4 WITH
+##
+## Ends in an error in state: 99.
+##
+## expr -> term CONR4 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR5 WITH
+##
+## Ends in an error in state: 97.
+##
+## expr -> term CONR5 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR6 WITH
+##
+## Ends in an error in state: 95.
+##
+## expr -> term CONR6 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR7 WITH
+##
+## Ends in an error in state: 93.
+##
+## expr -> term CONR7 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR8 WITH
+##
+## Ends in an error in state: 91.
+##
+## expr -> term CONR8 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONR9 WITH
+##
+## Ends in an error in state: 89.
+##
+## expr -> term CONR9 . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONR9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING CONS WITH
+##
+## Ends in an error in state: 87.
+##
+## expr -> term CONS . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term CONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING EQ BRA WITH
+##
+## Ends in an error in state: 72.
+##
+## prim -> BRA . revexprlist KET [ STRING NUM LAM KET ID COMMA BRA ]
+##
+## The known suffix of the stack is as follows:
+## BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING EQ LAM BRA ALT WITH
+##
+## Ends in an error in state: 68.
+##
+## prim -> LAM BRA option(ALT) . revcases KET [ STRING NUM LAM KET ID COMMA BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING EQ LAM BRA ID TO ID ENDEXPR WITH
+##
+## Ends in an error in state: 69.
+##
+## prim -> LAM BRA option(ALT) revcases . KET [ STRING NUM LAM KET ID COMMA BRA ]
+## revcases -> revcases . SEMI case [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT) revcases
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING EQ LAM BRA WITH
+##
+## Ends in an error in state: 67.
+##
+## prim -> LAM BRA . option(ALT) revcases KET [ STRING NUM LAM KET ID COMMA BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING EQ LAM WITH
+##
+## Ends in an error in state: 66.
+##
+## prim -> LAM . BRA option(ALT) revcases KET [ STRING NUM LAM KET ID COMMA BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING EQ STRING WITH
+##
+## Ends in an error in state: 85.
+##
+## app -> app . prim [ STRING NUM LAM KET ID COMMA BRA ]
+## term -> app . [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## app
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING EQ WITH
+##
+## Ends in an error in state: 63.
+##
+## expr -> term EQ . term [ KET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term EQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA STRING WITH
+##
+## Ends in an error in state: 79.
+##
+## app -> app . prim [ STRING NUM LAM KET ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 COMMA BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+## term -> app . [ KET EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 COMMA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## app
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: BRA WITH
+##
+## Ends in an error in state: 409.
+##
+## prim -> BRA . revexprlist KET [ STRING NUM LAM ID EQ ENDEXPR CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF BRA WITH
+##
+## Ends in an error in state: 37.
+##
+## prim -> BRA . revexprlist KET [ THEN STRING NUM LAM ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF IF STRING THEN STRING ELSE WITH
+##
+## Ends in an error in state: 401.
+##
+## expr -> IF expr THEN expr ELSE . expr [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## IF expr THEN expr ELSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF IF STRING THEN WITH
+##
+## Ends in an error in state: 399.
+##
+## expr -> IF expr THEN . expr ELSE expr [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## IF expr THEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF IF WITH
+##
+## Ends in an error in state: 35.
+##
+## expr -> IF . expr THEN expr ELSE expr [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## IF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF LAM BRA ALT WITH
+##
+## Ends in an error in state: 31.
+##
+## prim -> LAM BRA option(ALT) . revcases KET [ THEN STRING NUM LAM ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF LAM BRA ID TO ID ENDEXPR WITH
+##
+## Ends in an error in state: 32.
+##
+## prim -> LAM BRA option(ALT) revcases . KET [ THEN STRING NUM LAM ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+## revcases -> revcases . SEMI case [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT) revcases
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF LAM BRA WITH
+##
+## Ends in an error in state: 30.
+##
+## prim -> LAM BRA . option(ALT) revcases KET [ THEN STRING NUM LAM ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF LAM WITH
+##
+## Ends in an error in state: 29.
+##
+## prim -> LAM . BRA option(ALT) revcases KET [ THEN STRING NUM LAM ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF LET ID EQ ID ENDEXPR IN WITH
+##
+## Ends in an error in state: 28.
+##
+## expr -> LET revdefs IN . expr [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## LET revdefs IN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF LET ID EQ ID ENDEXPR WITH
+##
+## Ends in an error in state: 27.
+##
+## expr -> LET revdefs . IN expr [ THEN ]
+## revdefs -> revdefs . SEMI def [ SEMI IN ]
+##
+## The known suffix of the stack is as follows:
+## LET revdefs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF LET WITH
+##
+## Ends in an error in state: 26.
+##
+## expr -> LET . revdefs IN expr [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## LET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL0 WITH
+##
+## Ends in an error in state: 258.
+##
+## expr -> term BINL0 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL1 WITH
+##
+## Ends in an error in state: 256.
+##
+## expr -> term BINL1 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL2 WITH
+##
+## Ends in an error in state: 254.
+##
+## expr -> term BINL2 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL3 WITH
+##
+## Ends in an error in state: 252.
+##
+## expr -> term BINL3 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL4 WITH
+##
+## Ends in an error in state: 250.
+##
+## expr -> term BINL4 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL5 WITH
+##
+## Ends in an error in state: 248.
+##
+## expr -> term BINL5 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL6 WITH
+##
+## Ends in an error in state: 246.
+##
+## expr -> term BINL6 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL7 WITH
+##
+## Ends in an error in state: 244.
+##
+## expr -> term BINL7 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL8 WITH
+##
+## Ends in an error in state: 242.
+##
+## expr -> term BINL8 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINL9 WITH
+##
+## Ends in an error in state: 240.
+##
+## expr -> term BINL9 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINL9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR0 WITH
+##
+## Ends in an error in state: 238.
+##
+## expr -> term BINR0 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR1 WITH
+##
+## Ends in an error in state: 236.
+##
+## expr -> term BINR1 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR2 WITH
+##
+## Ends in an error in state: 234.
+##
+## expr -> term BINR2 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR3 WITH
+##
+## Ends in an error in state: 232.
+##
+## expr -> term BINR3 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR4 WITH
+##
+## Ends in an error in state: 230.
+##
+## expr -> term BINR4 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR5 WITH
+##
+## Ends in an error in state: 228.
+##
+## expr -> term BINR5 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR6 WITH
+##
+## Ends in an error in state: 226.
+##
+## expr -> term BINR6 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR7 WITH
+##
+## Ends in an error in state: 224.
+##
+## expr -> term BINR7 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR8 WITH
+##
+## Ends in an error in state: 222.
+##
+## expr -> term BINR8 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING BINR9 WITH
+##
+## Ends in an error in state: 220.
+##
+## expr -> term BINR9 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term BINR9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL0 WITH
+##
+## Ends in an error in state: 218.
+##
+## expr -> term CONL0 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL1 WITH
+##
+## Ends in an error in state: 216.
+##
+## expr -> term CONL1 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL2 WITH
+##
+## Ends in an error in state: 214.
+##
+## expr -> term CONL2 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL3 WITH
+##
+## Ends in an error in state: 212.
+##
+## expr -> term CONL3 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL4 WITH
+##
+## Ends in an error in state: 210.
+##
+## expr -> term CONL4 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL5 WITH
+##
+## Ends in an error in state: 208.
+##
+## expr -> term CONL5 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL6 WITH
+##
+## Ends in an error in state: 206.
+##
+## expr -> term CONL6 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL7 WITH
+##
+## Ends in an error in state: 204.
+##
+## expr -> term CONL7 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL8 WITH
+##
+## Ends in an error in state: 202.
+##
+## expr -> term CONL8 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONL9 WITH
+##
+## Ends in an error in state: 200.
+##
+## expr -> term CONL9 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONL9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR0 WITH
+##
+## Ends in an error in state: 198.
+##
+## expr -> term CONR0 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR1 WITH
+##
+## Ends in an error in state: 196.
+##
+## expr -> term CONR1 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR2 WITH
+##
+## Ends in an error in state: 194.
+##
+## expr -> term CONR2 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR3 WITH
+##
+## Ends in an error in state: 192.
+##
+## expr -> term CONR3 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR4 WITH
+##
+## Ends in an error in state: 190.
+##
+## expr -> term CONR4 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR5 WITH
+##
+## Ends in an error in state: 188.
+##
+## expr -> term CONR5 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR6 WITH
+##
+## Ends in an error in state: 186.
+##
+## expr -> term CONR6 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR7 WITH
+##
+## Ends in an error in state: 184.
+##
+## expr -> term CONR7 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR8 WITH
+##
+## Ends in an error in state: 182.
+##
+## expr -> term CONR8 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONR9 WITH
+##
+## Ends in an error in state: 180.
+##
+## expr -> term CONR9 . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONR9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING CONS WITH
+##
+## Ends in an error in state: 178.
+##
+## expr -> term CONS . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term CONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING EQ BRA WITH
+##
+## Ends in an error in state: 59.
+##
+## prim -> BRA . revexprlist KET [ THEN STRING NUM LAM ID BRA ]
+##
+## The known suffix of the stack is as follows:
+## BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING EQ LAM BRA ALT WITH
+##
+## Ends in an error in state: 55.
+##
+## prim -> LAM BRA option(ALT) . revcases KET [ THEN STRING NUM LAM ID BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING EQ LAM BRA ID TO ID ENDEXPR WITH
+##
+## Ends in an error in state: 56.
+##
+## prim -> LAM BRA option(ALT) revcases . KET [ THEN STRING NUM LAM ID BRA ]
+## revcases -> revcases . SEMI case [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT) revcases
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING EQ LAM BRA WITH
+##
+## Ends in an error in state: 54.
+##
+## prim -> LAM BRA . option(ALT) revcases KET [ THEN STRING NUM LAM ID BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING EQ LAM WITH
+##
+## Ends in an error in state: 53.
+##
+## prim -> LAM . BRA option(ALT) revcases KET [ THEN STRING NUM LAM ID BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING EQ STRING WITH
+##
+## Ends in an error in state: 176.
+##
+## app -> app . prim [ THEN STRING NUM LAM ID BRA ]
+## term -> app . [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## app
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING EQ WITH
+##
+## Ends in an error in state: 50.
+##
+## expr -> term EQ . term [ THEN ]
+##
+## The known suffix of the stack is as follows:
+## term EQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN BRA WITH
+##
+## Ends in an error in state: 278.
+##
+## prim -> BRA . revexprlist KET [ STRING NUM LAM ID EQ ELSE CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN IF STRING THEN STRING ELSE WITH
+##
+## Ends in an error in state: 384.
+##
+## expr -> IF expr THEN expr ELSE . expr [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## IF expr THEN expr ELSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN IF STRING THEN WITH
+##
+## Ends in an error in state: 276.
+##
+## expr -> IF expr THEN . expr ELSE expr [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## IF expr THEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN IF WITH
+##
+## Ends in an error in state: 274.
+##
+## expr -> IF . expr THEN expr ELSE expr [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## IF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN LAM BRA ALT WITH
+##
+## Ends in an error in state: 271.
+##
+## prim -> LAM BRA option(ALT) . revcases KET [ STRING NUM LAM ID EQ ELSE CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN LAM BRA ID TO ID ENDEXPR WITH
+##
+## Ends in an error in state: 272.
+##
+## prim -> LAM BRA option(ALT) revcases . KET [ STRING NUM LAM ID EQ ELSE CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+## revcases -> revcases . SEMI case [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT) revcases
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN LAM BRA WITH
+##
+## Ends in an error in state: 270.
+##
+## prim -> LAM BRA . option(ALT) revcases KET [ STRING NUM LAM ID EQ ELSE CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN LAM WITH
+##
+## Ends in an error in state: 269.
+##
+## prim -> LAM . BRA option(ALT) revcases KET [ STRING NUM LAM ID EQ ELSE CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN LET ID EQ ID ENDEXPR IN WITH
+##
+## Ends in an error in state: 268.
+##
+## expr -> LET revdefs IN . expr [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## LET revdefs IN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN LET ID EQ ID ENDEXPR WITH
+##
+## Ends in an error in state: 267.
+##
+## expr -> LET revdefs . IN expr [ ELSE ]
+## revdefs -> revdefs . SEMI def [ SEMI IN ]
+##
+## The known suffix of the stack is as follows:
+## LET revdefs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN LET WITH
+##
+## Ends in an error in state: 266.
+##
+## expr -> LET . revdefs IN expr [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## LET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL0 WITH
+##
+## Ends in an error in state: 379.
+##
+## expr -> term BINL0 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL1 WITH
+##
+## Ends in an error in state: 377.
+##
+## expr -> term BINL1 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL2 WITH
+##
+## Ends in an error in state: 375.
+##
+## expr -> term BINL2 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL3 WITH
+##
+## Ends in an error in state: 373.
+##
+## expr -> term BINL3 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL4 WITH
+##
+## Ends in an error in state: 371.
+##
+## expr -> term BINL4 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL5 WITH
+##
+## Ends in an error in state: 369.
+##
+## expr -> term BINL5 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL6 WITH
+##
+## Ends in an error in state: 367.
+##
+## expr -> term BINL6 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL7 WITH
+##
+## Ends in an error in state: 365.
+##
+## expr -> term BINL7 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL8 WITH
+##
+## Ends in an error in state: 363.
+##
+## expr -> term BINL8 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINL9 WITH
+##
+## Ends in an error in state: 361.
+##
+## expr -> term BINL9 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINL9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR0 WITH
+##
+## Ends in an error in state: 359.
+##
+## expr -> term BINR0 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR1 WITH
+##
+## Ends in an error in state: 357.
+##
+## expr -> term BINR1 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR2 WITH
+##
+## Ends in an error in state: 355.
+##
+## expr -> term BINR2 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR3 WITH
+##
+## Ends in an error in state: 353.
+##
+## expr -> term BINR3 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR4 WITH
+##
+## Ends in an error in state: 351.
+##
+## expr -> term BINR4 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR5 WITH
+##
+## Ends in an error in state: 349.
+##
+## expr -> term BINR5 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR6 WITH
+##
+## Ends in an error in state: 347.
+##
+## expr -> term BINR6 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR7 WITH
+##
+## Ends in an error in state: 345.
+##
+## expr -> term BINR7 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR8 WITH
+##
+## Ends in an error in state: 343.
+##
+## expr -> term BINR8 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING BINR9 WITH
+##
+## Ends in an error in state: 341.
+##
+## expr -> term BINR9 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term BINR9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL0 WITH
+##
+## Ends in an error in state: 339.
+##
+## expr -> term CONL0 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL1 WITH
+##
+## Ends in an error in state: 337.
+##
+## expr -> term CONL1 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL2 WITH
+##
+## Ends in an error in state: 335.
+##
+## expr -> term CONL2 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL3 WITH
+##
+## Ends in an error in state: 333.
+##
+## expr -> term CONL3 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL4 WITH
+##
+## Ends in an error in state: 331.
+##
+## expr -> term CONL4 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL5 WITH
+##
+## Ends in an error in state: 329.
+##
+## expr -> term CONL5 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL6 WITH
+##
+## Ends in an error in state: 327.
+##
+## expr -> term CONL6 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL7 WITH
+##
+## Ends in an error in state: 325.
+##
+## expr -> term CONL7 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL8 WITH
+##
+## Ends in an error in state: 323.
+##
+## expr -> term CONL8 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONL9 WITH
+##
+## Ends in an error in state: 321.
+##
+## expr -> term CONL9 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONL9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR0 WITH
+##
+## Ends in an error in state: 319.
+##
+## expr -> term CONR0 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR1 WITH
+##
+## Ends in an error in state: 317.
+##
+## expr -> term CONR1 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR2 WITH
+##
+## Ends in an error in state: 315.
+##
+## expr -> term CONR2 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR3 WITH
+##
+## Ends in an error in state: 313.
+##
+## expr -> term CONR3 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR4 WITH
+##
+## Ends in an error in state: 311.
+##
+## expr -> term CONR4 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR5 WITH
+##
+## Ends in an error in state: 309.
+##
+## expr -> term CONR5 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR6 WITH
+##
+## Ends in an error in state: 307.
+##
+## expr -> term CONR6 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR7 WITH
+##
+## Ends in an error in state: 305.
+##
+## expr -> term CONR7 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR8 WITH
+##
+## Ends in an error in state: 303.
+##
+## expr -> term CONR8 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONR9 WITH
+##
+## Ends in an error in state: 301.
+##
+## expr -> term CONR9 . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONR9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING CONS WITH
+##
+## Ends in an error in state: 299.
+##
+## expr -> term CONS . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term CONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING ELSE WITH
+##
+## Ends in an error in state: 407.
+##
+## expr -> IF expr THEN expr ELSE . expr [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## IF expr THEN expr ELSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING EQ BRA WITH
+##
+## Ends in an error in state: 291.
+##
+## prim -> BRA . revexprlist KET [ STRING NUM LAM ID ELSE BRA ]
+##
+## The known suffix of the stack is as follows:
+## BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING EQ LAM BRA ALT WITH
+##
+## Ends in an error in state: 287.
+##
+## prim -> LAM BRA option(ALT) . revcases KET [ STRING NUM LAM ID ELSE BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING EQ LAM BRA ID TO ID ENDEXPR WITH
+##
+## Ends in an error in state: 288.
+##
+## prim -> LAM BRA option(ALT) revcases . KET [ STRING NUM LAM ID ELSE BRA ]
+## revcases -> revcases . SEMI case [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT) revcases
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING EQ LAM BRA WITH
+##
+## Ends in an error in state: 286.
+##
+## prim -> LAM BRA . option(ALT) revcases KET [ STRING NUM LAM ID ELSE BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING EQ LAM WITH
+##
+## Ends in an error in state: 285.
+##
+## prim -> LAM . BRA option(ALT) revcases KET [ STRING NUM LAM ID ELSE BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING EQ STRING WITH
+##
+## Ends in an error in state: 297.
+##
+## app -> app . prim [ STRING NUM LAM ID ELSE BRA ]
+## term -> app . [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## app
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING EQ WITH
+##
+## Ends in an error in state: 282.
+##
+## expr -> term EQ . term [ ELSE ]
+##
+## The known suffix of the stack is as follows:
+## term EQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN STRING WITH
+##
+## Ends in an error in state: 386.
+##
+## app -> app . prim [ STRING NUM LAM ID EQ ELSE CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+## term -> app . [ EQ ELSE CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## app
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING THEN WITH
+##
+## Ends in an error in state: 405.
+##
+## expr -> IF expr THEN . expr ELSE expr [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## IF expr THEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF STRING WITH
+##
+## Ends in an error in state: 388.
+##
+## app -> app . prim [ THEN STRING NUM LAM ID EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+## term -> app . [ THEN EQ CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## app
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: IF WITH
+##
+## Ends in an error in state: 23.
+##
+## expr -> IF . expr THEN expr ELSE expr [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## IF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LAM BRA ALT WITH
+##
+## Ends in an error in state: 17.
+##
+## prim -> LAM BRA option(ALT) . revcases KET [ STRING NUM LAM ID EQ ENDEXPR CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LAM BRA ID TO ID ENDEXPR SEMI WITH
+##
+## Ends in an error in state: 20.
+##
+## revcases -> revcases SEMI . case [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## revcases SEMI
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LAM BRA ID TO ID ENDEXPR WITH
+##
+## Ends in an error in state: 19.
+##
+## prim -> LAM BRA option(ALT) revcases . KET [ STRING NUM LAM ID EQ ENDEXPR CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+## revcases -> revcases . SEMI case [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT) revcases
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LAM BRA ID TO WITH
+##
+## Ends in an error in state: 22.
+##
+## case -> id TO . expr ENDEXPR [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## id TO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LAM BRA ID WITH
+##
+## Ends in an error in state: 21.
+##
+## case -> id . TO expr ENDEXPR [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## id
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LAM BRA WITH
+##
+## Ends in an error in state: 15.
+##
+## prim -> LAM BRA . option(ALT) revcases KET [ STRING NUM LAM ID EQ ENDEXPR CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LAM WITH
+##
+## Ends in an error in state: 14.
+##
+## prim -> LAM . BRA option(ALT) revcases KET [ STRING NUM LAM ID EQ ENDEXPR CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## LAM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LET ID EQ ID ENDEXPR IN WITH
+##
+## Ends in an error in state: 524.
+##
+## expr -> LET revdefs IN . expr [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## LET revdefs IN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LET ID EQ ID ENDEXPR SEMI WITH
+##
+## Ends in an error in state: 6.
+##
+## revdefs -> revdefs SEMI . def [ SEMI IN END ]
+##
+## The known suffix of the stack is as follows:
+## revdefs SEMI
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LET ID EQ ID ENDEXPR WITH
+##
+## Ends in an error in state: 5.
+##
+## expr -> LET revdefs . IN expr [ ENDEXPR ]
+## phrase -> LET revdefs . END [ # ]
+## revdefs -> revdefs . SEMI def [ SEMI IN END ]
+##
+## The known suffix of the stack is as follows:
+## LET revdefs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LET ID EQ LET ID EQ ID ENDEXPR WITH
+##
+## Ends in an error in state: 10.
+##
+## expr -> LET revdefs . IN expr [ ENDEXPR ]
+## revdefs -> revdefs . SEMI def [ SEMI IN ]
+##
+## The known suffix of the stack is as follows:
+## LET revdefs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LET ID EQ LET WITH
+##
+## Ends in an error in state: 9.
+##
+## expr -> LET . revdefs IN expr [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## LET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LET ID EQ WITH
+##
+## Ends in an error in state: 8.
+##
+## def -> id EQ . expr ENDEXPR [ SEMI IN END ]
+##
+## The known suffix of the stack is as follows:
+## id EQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LET ID WITH
+##
+## Ends in an error in state: 7.
+##
+## def -> id . EQ expr ENDEXPR [ SEMI IN END ]
+##
+## The known suffix of the stack is as follows:
+## id
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: LET WITH
+##
+## Ends in an error in state: 3.
+##
+## expr -> LET . revdefs IN expr [ ENDEXPR ]
+## phrase -> LET . revdefs END [ # ]
+##
+## The known suffix of the stack is as follows:
+## LET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL0 WITH
+##
+## Ends in an error in state: 510.
+##
+## expr -> term BINL0 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL1 WITH
+##
+## Ends in an error in state: 508.
+##
+## expr -> term BINL1 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL2 WITH
+##
+## Ends in an error in state: 506.
+##
+## expr -> term BINL2 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL3 WITH
+##
+## Ends in an error in state: 504.
+##
+## expr -> term BINL3 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL4 WITH
+##
+## Ends in an error in state: 502.
+##
+## expr -> term BINL4 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL5 WITH
+##
+## Ends in an error in state: 500.
+##
+## expr -> term BINL5 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL6 WITH
+##
+## Ends in an error in state: 498.
+##
+## expr -> term BINL6 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL7 WITH
+##
+## Ends in an error in state: 496.
+##
+## expr -> term BINL7 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL8 WITH
+##
+## Ends in an error in state: 494.
+##
+## expr -> term BINL8 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINL9 WITH
+##
+## Ends in an error in state: 492.
+##
+## expr -> term BINL9 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINL9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR0 WITH
+##
+## Ends in an error in state: 490.
+##
+## expr -> term BINR0 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR1 WITH
+##
+## Ends in an error in state: 488.
+##
+## expr -> term BINR1 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR2 WITH
+##
+## Ends in an error in state: 486.
+##
+## expr -> term BINR2 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR3 WITH
+##
+## Ends in an error in state: 484.
+##
+## expr -> term BINR3 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR4 WITH
+##
+## Ends in an error in state: 482.
+##
+## expr -> term BINR4 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR5 WITH
+##
+## Ends in an error in state: 480.
+##
+## expr -> term BINR5 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR6 WITH
+##
+## Ends in an error in state: 478.
+##
+## expr -> term BINR6 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR7 WITH
+##
+## Ends in an error in state: 476.
+##
+## expr -> term BINR7 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR8 WITH
+##
+## Ends in an error in state: 474.
+##
+## expr -> term BINR8 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING BINR9 WITH
+##
+## Ends in an error in state: 472.
+##
+## expr -> term BINR9 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term BINR9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL0 WITH
+##
+## Ends in an error in state: 470.
+##
+## expr -> term CONL0 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL1 WITH
+##
+## Ends in an error in state: 468.
+##
+## expr -> term CONL1 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL2 WITH
+##
+## Ends in an error in state: 466.
+##
+## expr -> term CONL2 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL3 WITH
+##
+## Ends in an error in state: 464.
+##
+## expr -> term CONL3 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL4 WITH
+##
+## Ends in an error in state: 462.
+##
+## expr -> term CONL4 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL5 WITH
+##
+## Ends in an error in state: 460.
+##
+## expr -> term CONL5 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL6 WITH
+##
+## Ends in an error in state: 458.
+##
+## expr -> term CONL6 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL7 WITH
+##
+## Ends in an error in state: 456.
+##
+## expr -> term CONL7 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL8 WITH
+##
+## Ends in an error in state: 454.
+##
+## expr -> term CONL8 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONL9 WITH
+##
+## Ends in an error in state: 452.
+##
+## expr -> term CONL9 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONL9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR0 WITH
+##
+## Ends in an error in state: 450.
+##
+## expr -> term CONR0 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR0
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR1 WITH
+##
+## Ends in an error in state: 448.
+##
+## expr -> term CONR1 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR1
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR2 WITH
+##
+## Ends in an error in state: 446.
+##
+## expr -> term CONR2 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR2
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR3 WITH
+##
+## Ends in an error in state: 444.
+##
+## expr -> term CONR3 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR3
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR4 WITH
+##
+## Ends in an error in state: 442.
+##
+## expr -> term CONR4 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR4
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR5 WITH
+##
+## Ends in an error in state: 440.
+##
+## expr -> term CONR5 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR5
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR6 WITH
+##
+## Ends in an error in state: 438.
+##
+## expr -> term CONR6 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR6
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR7 WITH
+##
+## Ends in an error in state: 436.
+##
+## expr -> term CONR7 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR7
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR8 WITH
+##
+## Ends in an error in state: 434.
+##
+## expr -> term CONR8 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR8
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONR9 WITH
+##
+## Ends in an error in state: 432.
+##
+## expr -> term CONR9 . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONR9
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING CONS WITH
+##
+## Ends in an error in state: 430.
+##
+## expr -> term CONS . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term CONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING EQ BRA WITH
+##
+## Ends in an error in state: 422.
+##
+## prim -> BRA . revexprlist KET [ STRING NUM LAM ID ENDEXPR BRA ]
+##
+## The known suffix of the stack is as follows:
+## BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING EQ LAM BRA ALT WITH
+##
+## Ends in an error in state: 418.
+##
+## prim -> LAM BRA option(ALT) . revcases KET [ STRING NUM LAM ID ENDEXPR BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING EQ LAM BRA ID TO ID ENDEXPR WITH
+##
+## Ends in an error in state: 419.
+##
+## prim -> LAM BRA option(ALT) revcases . KET [ STRING NUM LAM ID ENDEXPR BRA ]
+## revcases -> revcases . SEMI case [ SEMI KET ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA option(ALT) revcases
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING EQ LAM BRA WITH
+##
+## Ends in an error in state: 417.
+##
+## prim -> LAM BRA . option(ALT) revcases KET [ STRING NUM LAM ID ENDEXPR BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM BRA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING EQ LAM WITH
+##
+## Ends in an error in state: 416.
+##
+## prim -> LAM . BRA option(ALT) revcases KET [ STRING NUM LAM ID ENDEXPR BRA ]
+##
+## The known suffix of the stack is as follows:
+## LAM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING EQ STRING WITH
+##
+## Ends in an error in state: 428.
+##
+## app -> app . prim [ STRING NUM LAM ID ENDEXPR BRA ]
+## term -> app . [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## app
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING EQ WITH
+##
+## Ends in an error in state: 413.
+##
+## expr -> term EQ . term [ ENDEXPR ]
+##
+## The known suffix of the stack is as follows:
+## term EQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: STRING WITH
+##
+## Ends in an error in state: 515.
+##
+## app -> app . prim [ STRING NUM LAM ID EQ ENDEXPR CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BRA BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+## term -> app . [ EQ ENDEXPR CONS CONR9 CONR8 CONR7 CONR6 CONR5 CONR4 CONR3 CONR2 CONR1 CONR0 CONL9 CONL8 CONL7 CONL6 CONL5 CONL4 CONL3 CONL2 CONL1 CONL0 BINR9 BINR8 BINR7 BINR6 BINR5 BINR4 BINR3 BINR2 BINR1 BINR0 BINL9 BINL8 BINL7 BINL6 BINL5 BINL4 BINL3 BINL2 BINL1 BINL0 ]
+##
+## The known suffix of the stack is as follows:
+## app
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+phrase: WITH
+##
+## Ends in an error in state: 0.
+##
+## phrase' -> . phrase [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+

@@ -8,6 +8,38 @@ function   []     -> ""
 let loop f = 
     let rec loop state = function [] -> state | x::xs -> loop (f state x) xs 
     in  loop
+    
+(* Positions and locations *)
+
+let pp_pos  out { Ppxlib.pos_lnum; pos_cnum; pos_bol; _} = 
+    Format.fprintf out "%d:%d"  pos_lnum (pos_cnum - pos_bol)
+
+let pp_fpos out { Ppxlib.pos_lnum; pos_cnum; pos_bol; pos_fname; _} = 
+    Format.fprintf out "%s %d:%d"  pos_fname pos_lnum (pos_cnum - pos_bol)
+
+type location = Ppxlib.position * Ppxlib.position
+
+let pp_location out loc =
+    Format.fprintf out "%a-%a" pp_fpos (fst loc) pp_pos (snd loc)
+    
+(* Numbers *)
+
+let digit_value c =
+  let open Stdlib in
+  match c with
+  | 'a' .. 'f' -> 10 + Char.code c - Char.code 'a'
+  | 'A' .. 'F' -> 10 + Char.code c - Char.code 'A'
+  | '0' .. '9' -> Char.code c - Char.code '0'
+  | _ -> assert false
+
+let num_value base first buf =
+  let c = ref 0 in
+      for i = first to String.length buf - 1 do
+        let v = digit_value buf.[i] in
+       assert (v < base);
+        c := (base * !c) + v
+      done;
+      !c
 
 (* Needs some hov refinement *)
 
@@ -24,4 +56,6 @@ let pp_punct_list punct pp_item  fmt items =
       end
   end;
   Format.pp_close_box fmt ()
+
+
 

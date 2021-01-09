@@ -1,4 +1,3 @@
-open Sexplib.Std
 open Format
 open Expr
 open Utils
@@ -12,31 +11,31 @@ type value  =
  | Prim    of (value -> value)  [@opaque]
  | Unbound of id                [@printer fun fmt id      -> fprintf fmt "Unbound %s" (show_id id)]
  | Fail    of string            [@printer fun fmt why     -> fprintf fmt "FAIL %s" why]
- [@@deriving show { with_path = false }, sexp]
+ [@@deriving show { with_path = false }]
 
 and 
   cont = value -> value        [@opaque]
-  [@@deriving show { with_path = false }, sexp]
+  [@@deriving show { with_path = false }]
 
 and 
   values = value list [@printer pp_punct_list "," pp_value]
-  [@@deriving show { with_path = false }, sexp]
+  [@@deriving show { with_path = false }]
 
 (* Environments *)
 
 and env = layer list [@printer pp_punct_list "⊕" pp_layer]
- [@@deriving show { with_path = false }, sexp]
+ [@@deriving show { with_path = false }]
 
 and layer = 
   | Bind     of bindings        [@printer pp_bindings]
   | Rec      of bindings ref    [@printer fun fmt bs -> fprintf fmt "REC %a" pp_bindings (!bs)]
-  [@@deriving show { with_path = false }, sexp]
+  [@@deriving show { with_path = false }]
 
 and bindings = binding list [@printer pp_punct_list "," pp_binding]
-    [@@deriving show { with_path = false }, sexp]
+    [@@deriving show { with_path = false }]
   
 and binding = (id * value) [@printer fun fmt (i, v) -> fprintf fmt "%a=%a" pp_id i pp_value v]
-    [@@deriving show { with_path = false }, sexp]
+    [@@deriving show { with_path = false }]
  
 let lookup: id -> cont -> env -> value = fun i k e ->
     let rec layers = function 
@@ -108,6 +107,7 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
 | Con c             -> k(Const c)
 | Label(name, body) -> eval (bind name (Prim k) env) k body
 | Tuple exs         -> evalTuple env (fun vs -> k(Tup vs)) [] exs
+| Bra ex            -> eval env k ex         
 | Fn defs           -> k(Fun(env, defs))        
 | If (g, e1, e2) ->
      let choose = function
@@ -127,7 +127,9 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
 |    Let (defs, body) -> 
          let env'         = recEnv env in  
          let evBody ext = eval (recFix ext env') k body in
-             evalDefs env' evBody [] defs              
+             evalDefs env' evBody [] defs 
+|    At(_, ex) ->    
+       eval env k ex         
               
 (* |    other -> failwith (show_expr other) *)
 
@@ -150,6 +152,8 @@ in evalFirst cases
 and evalCase: env -> cont -> value -> def -> value = fun e k v -> function (lhs, rhs) -> 
     let bindings = matchPat lhs v [] in eval (addBindings bindings e) k rhs 
     
+
+
 
 
 
