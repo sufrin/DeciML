@@ -39,9 +39,10 @@ let stateNumber env: int =
 
 (* Error message corresponding to the current (error) state *)
 let errorMessage env =
-    match Syntax.errorMessage (stateNumber env) with
-    | exception Not_found -> "Syntax error\n" (* for some unknown reason the auton generated messages all have \n at the end *)
-    | msg                 -> msg
+    let state = stateNumber env in
+    match Syntax.errorMessage state with
+    | exception Not_found -> Format.sprintf "[%d] Syntax error\n" state (* for some unknown reason the auton generated messages all have \n at the end *)
+    | msg                 -> Format.sprintf "[%d] %s" state msg
     
 exception EndFile
 

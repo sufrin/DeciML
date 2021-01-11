@@ -123,7 +123,9 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
             | other              ->  k(Fail (show_value other))
         in  
             eval env apply rator
-
+|    Apply (l, op, r) ->
+        eval env k (Ap(Ap(op, l), r)) 
+        (* Runtime desugaring: for convenience in diagnostics *)
 |    Let (defs, body) -> 
          let env'         = recEnv env in  
          let evBody ext = eval (recFix ext env') k body in

@@ -1,0 +1,31 @@
+--+ Tests of the deciML parser
+
+let x=3;
+    y=4 
+in 
+    x/z + y/z;
+
+let x=3;
+    y=4 
+in 
+    x/(z + y)/z;
+
+let x=3;
+    y=4 
+end
+
+let x=3; y=4 in let z = x+y in x+y+z;
+
+let x=3; y=4 in let z = x+y in (a,b,c,d,e,f,g,h,i,j,k l m,n,o,p,q,r,s,t,u,v);
+
+
+let d1 = λ ( x → x+y | Z → 0 );
+    d2 x y = x+y;
+    d3 y z = (y=z);
+    d4 a b c d  = d(a,b,c);
+    d5 = λ a->b;
+    d6 = λ (a,b) c d e -> f;;
+    
+
+
+
