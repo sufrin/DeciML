@@ -25,7 +25,9 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
           (***********************)
           | Fn    of cases        (* a multi-case function abstraction *)
                                   [@printer fun fmt cs -> fprintf fmt "(| %a |)" pp_cases cs]
-          | Label of id   * expr  (* id names the continuation, in scope e *)  
+          | LazyFn of case        (* a lazy function abstraction *)
+                                  [@printer fun fmt c -> fprintf fmt "\\\\ %a" pp_case c]
+          | Label of id * expr  (* id names the continuation, in scope e *)  
                                   [@printer fun fmt (l,b) -> fprintf fmt "%a: %a" pp_id l pp_expr b]      
           | Let   of defs * expr  [@printer fun fmt  (defs, body) -> fprintf fmt "@[let @[%a@]@ in @[%a@]" pp_defs defs pp_expr body]
           | At    of Utils.location * expr   [@printer fun fmt  (loc, body)  -> fprintf fmt "%a %a" pp_location loc pp_expr body]

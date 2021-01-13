@@ -4,10 +4,12 @@ open Utils
 
 
 type value  = 
- | Const   of con               [@printer fun fmt c       -> fprintf fmt "%s" (show_con c)]
- | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "(%s)" (showList ", " show_value vs)]
+ | Const   of con               [@printer pp_con]
+ | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "(%a)" (pp_punct_list "," pp_value) vs]
  | Cons    of tag * value       [@printer fun fmt (t, v)  -> fprintf fmt "%s(%s)" (show_tag t) (show_value v)]
- | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "{%s} %s" (show_env e) (show_cases cs)]
+ | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ %a (in %a)"  pp_cases cs pp_env e]
+ | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "\\\\ %a (in %a)"  pp_case c pp_env e]
+ | Thunk   of thunk             [@printer fun fmt r       -> fprintf fmt "@@%a" pp_thunk r]
  | Prim    of (value -> value)  [@opaque]
  | Unbound of id                [@printer fun fmt id      -> fprintf fmt "Unbound %s" (show_id id)]
  | Fail    of string            [@printer fun fmt why     -> fprintf fmt "FAIL %s" why]
@@ -15,6 +17,9 @@ type value  =
 
 and 
   cont = value -> value        [@opaque]
+  [@@deriving show { with_path = false }]
+  
+and thunk = env * expr * value option ref 
   [@@deriving show { with_path = false }]
 
 and 
@@ -36,7 +41,7 @@ and bindings = binding list [@printer pp_punct_list "," pp_binding]
   
 and binding = (id * value) [@printer fun fmt (i, v) -> fprintf fmt "%a=%a" pp_id i pp_value v]
     [@@deriving show { with_path = false }]
- 
+    
 let lookup: id -> cont -> env -> value = fun i k e ->
     let rec layers = function 
         | []    -> k(Fail i)
@@ -108,7 +113,8 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
 | Label(name, body) -> eval (bind name (Prim k) env) k body
 | Tuple exs         -> evalTuple env (fun vs -> k(Tup vs)) [] exs
 | Bra ex            -> eval env k ex         
-| Fn defs           -> k(Fun(env, defs))        
+| Fn defs           -> k(Fun(env, defs))
+| LazyFn case       -> k(LazyFun(env, case))
 | If (g, e1, e2) ->
      let choose = function
          |  (Const(Bool false)) ->  eval env k e2
@@ -120,6 +126,9 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
             | Const(Tag t)       ->  eval env (fun v -> k(Cons(t, v))) rand
             | Prim f             ->  eval env (f >> k) rand
             | Fun(defenv, cases) ->  eval env (fun v -> evalCases defenv k v cases) rand
+            | LazyFun(defenv, (Id i, body)) ->  
+               let env' = bind i (Thunk(defenv, rand, ref None)) env 
+               in  eval env' k body
             | other              ->  k(Fail (show_value other))
         in  
             eval env apply rator
@@ -127,7 +136,7 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
         eval env k (Ap(Ap(op, l), r)) 
         (* Runtime desugaring: for convenience in diagnostics *)
 |    Let (defs, body) -> 
-         let env'         = recEnv env in  
+         let env'       = recEnv env in  
          let evBody ext = eval (recFix ext env') k body in
              evalDefs env' evBody [] defs 
 |    At(_, ex) ->    
@@ -152,8 +161,16 @@ and evalCases: env -> cont -> value -> cases -> value = fun e k v cases ->
 in evalFirst cases
 
 and evalCase: env -> cont -> value -> def -> value = fun e k v -> function (lhs, rhs) -> 
-    let bindings = matchPat lhs v [] in eval (addBindings bindings e) k rhs 
+    let bindings = matchPat lhs v emptyBindings in eval (addBindings bindings e) k rhs 
     
+let force k = function
+|  Thunk(env, expr, vr) ->
+   (match !vr with
+   | None   -> eval env (fun v -> vr:=Some v; k v) expr 
+   | Some v -> k v
+   ) 
+|  v -> k v
+ 
 
 
 

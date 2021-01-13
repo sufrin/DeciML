@@ -22,6 +22,12 @@
             | [pat]     -> Expr.Fn[(pat, body)]
             | pat::pats -> Expr.Fn[(pat, mkLambda(pats, body))]
             | _         -> assert false
+        
+        let rec mkLazy(bvs, body) = 
+            match bvs with 
+            | [pat]     -> Expr.LazyFn(pat, body)
+            | pat::pats -> Expr.LazyFn(pat, mkLambda(pats, body))
+            | _         -> assert false
             
         let mkDef (id, bvs, body) = 
             match bvs with
@@ -51,7 +57,7 @@
 %token <string> STRING (* a string encoded in utf8 *)
                 
 
-%token FUN ALT NUF LAM BRA KET COMMA TO LET IN
+%token FUN ALT NUF LAM LAZY BRA KET COMMA TO LET IN
        END SEMI EOF IF THEN ELSE DOT
        NOTATION IMPORT
 
@@ -167,8 +173,9 @@ let case :=
 let topexpr :=
     | LET; ~=defs; IN; ~=topexpr;                  { Let(defs, topexpr) }
     | IF; g=expr; THEN; e1=expr; ELSE; e2=topexpr; { If(g, e1, e2)}
+    | LAZY; bvs=id+; TO; body=topexpr;             <mkLazy>
     | LAM; bvs=patterns; TO; body=topexpr;         <mkLambda>
-    | LAM; BRA; ~=cases; KET;                       <mkFun>
+    | LAM; BRA; ~=cases; KET;                      <mkFun>
     | ~=expr; <>
     
 let expr := 

@@ -132,9 +132,10 @@ open ExprParser
     
     let mkOP =
     function
-    |  "->" -> TO 
-    |  "\\" -> LAM    
-    |  s    ->  mkMath s
+    |  "->"   -> TO 
+    |  "\\"   -> LAM    
+    |  "\\\\" -> LAZY    
+    |  s      ->  mkMath s
 
 (******************************************************)       
 
