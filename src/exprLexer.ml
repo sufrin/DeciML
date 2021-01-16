@@ -155,7 +155,8 @@ let hex_ascii     = [%sedlex.regexp? "0x", Plus (('0' .. '9' | 'a' .. 'f' | 'A' 
 
 let alpha         = [%sedlex.regexp?  ('a' .. 'z' | 'A' .. 'Z' | '_') ] 
 let digit         = [%sedlex.regexp?  ('0' .. '9') ] 
-let ident         = [%sedlex.regexp?  alpha, Star(alpha|digit) ]
+let ident         = [%sedlex.regexp?  ('a' .. 'z'), Star(alpha|digit) ]
+let cident        = [%sedlex.regexp?  ('A' .. 'Z'), Star(alpha|digit) ]
 
 let stringChunk   = [%sedlex.regexp? Star (Compl ('"' | '\\' | '\n'))]
 
@@ -219,6 +220,7 @@ let rec token buf =
   | '('         -> incBra(); BRA
   | ')'         -> decBra(); KET
   | ident       -> mkID  (Utf8.lexeme buf)
+  | cident      -> mkCONID  (Utf8.lexeme buf)
   | mathop      -> mkMath(Utf8.lexeme buf)
   | binop, Star binop -> mkOP(Utf8.lexeme buf)
   | decimal_ascii -> NUM(10, 0, Utf8.lexeme buf) 

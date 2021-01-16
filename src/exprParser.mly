@@ -4,12 +4,15 @@
 *)
 
 %{
+        
+        open Expr
 
         let mkNum(base, first, buf) = Expr.Con(Expr.Num(Utils.num_value base first buf))
         
         let mkString s = Expr.Con(Expr.String s)
         
-        let mkId s = Expr.Id s
+        let mkId    s = Expr.Id s
+        let mkConId s = Con(Tag (0,s))
         
         let mkTuple = function
             | [x] -> Expr.Bra x
@@ -26,13 +29,27 @@
         let rec mkLazy(bvs, body) = 
             match bvs with 
             | [pat]     -> Expr.LazyFn(pat, body)
-            | pat::pats -> Expr.LazyFn(pat, mkLambda(pats, body))
+            | pat::pats -> Expr.LazyFn(pat, mkLazy(pats, body))
             | _         -> assert false
             
-        let mkDef (id, bvs, body) = 
-            match bvs with
-            | [] -> (id, body)
-            | _  -> (id, mkLambda(bvs, body))
+        let mkDef (pattern, body) = 
+            let rec abstractFrom expr pat = 
+            (* Format.eprintf "Abstractfrom (%a) %a\n%!" pp_expr expr pp_expr pat; *)
+            match pat with
+            | Bra p          -> abstractFrom expr p
+            | Id    _
+            | Con   _
+            | Tuple _ -> (pat, expr)
+            | Apply(el, op, er) -> abstractFrom expr (Ap(Ap(op, el), er))
+            | Ap(rator, ((Id _) as rand)) -> abstractFrom (Expr.Fn [(rand, expr)]) rator
+            | Ap(rator, rand) ->
+            ( match rand with
+              | Con   _
+              | Tuple _ -> abstractFrom (Expr.Fn [(rand, expr)]) rator
+              | _       -> (Format.eprintf "Erroneous pattern: %a in %a%!" pp_expr pat pp_expr pattern; failwith "Syntax")
+            )
+            | _        -> (Format.eprintf "Erroneous pattern: %a in %a%!" pp_expr pat pp_expr pattern; failwith "Syntax")
+         in abstractFrom body pattern
              
 
 %}
@@ -161,14 +178,14 @@ let eod == SEMI
 let eoc == ALT
     
 let def :=
-    | ~=id; bvs=simplex*; EQ; body=topexpr;     { mkDef(id, bvs, body) }
+    | lhs=expr; EQ; body=topexpr;     { mkDef(lhs, body) }
 
 let revcases := 
     | ~=case;                    {[case]}
     | ~=revcases; eoc; ~=case;  { case::revcases }
     
 let case :=
-    | ~=term; TO; ~=topexpr;      { (term, topexpr) }
+    | ~=expr; TO; ~=topexpr;      { (expr, topexpr) }
 
 let topexpr :=
     | LET; ~=defs; IN; ~=topexpr;                  { Let(defs, topexpr) }
@@ -215,4 +232,5 @@ let revexprlist :=
 
 id  : 
     |  name=ID                      { mkId name }
+    |  name=CONID                   { mkConId name }
 

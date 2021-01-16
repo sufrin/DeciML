@@ -1,0 +1,6 @@
+let x + y = prim_add x y;
+    (-) = prim_sub;
+    (*) = prim_mul;
+    (/) = prim_div;
+    (=) = prim_eq;;
+

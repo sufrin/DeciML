@@ -2,11 +2,10 @@ open Format
 open Expr
 open Utils
 
-
 type value  = 
  | Const   of con               [@printer pp_con]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "(%a)" (pp_punct_list "," pp_value) vs]
- | Cons    of tag * value       [@printer fun fmt (t, v)  -> fprintf fmt "%s(%s)" (show_tag t) (show_value v)]
+ | Cons    of tag * value       [@printer fun fmt (t, v)  -> fprintf fmt "%a %a" pp_tag t pp_value v]
  | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ %a (in %a)"  pp_cases cs pp_env e]
  | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "\\\\ %a (in %a)"  pp_case c pp_env e]
  | Thunk   of thunk             [@printer fun fmt r       -> fprintf fmt "@@%a" pp_thunk r]
@@ -20,6 +19,7 @@ and
   [@@deriving show { with_path = false }]
   
 and thunk = env * expr * value option ref 
+            [@printer fun fmt (env, expr, _)  -> fprintf fmt "%a ~> %a" pp_env env pp_expr expr]
   [@@deriving show { with_path = false }]
 
 and 
@@ -33,14 +33,21 @@ and env = layer list [@printer pp_punct_list "⊕" pp_layer]
 
 and layer = 
   | Bind     of bindings        [@printer pp_bindings]
-  | Rec      of bindings ref    [@printer fun fmt bs -> fprintf fmt "REC %a" pp_bindings (!bs)]
+  | Rec      of bindings ref    [@printer (fun fmt bs -> 
+                                           let nrbs = !bs in
+                                               bs := [];
+                                               fprintf fmt "@[REC %a@]" pp_bindings nrbs;
+                                               bs := nrbs
+                                          )
+                                ]
   [@@deriving show { with_path = false }]
 
 and bindings = binding list [@printer pp_punct_list "," pp_binding]
     [@@deriving show { with_path = false }]
   
-and binding = (id * value) [@printer fun fmt (i, v) -> fprintf fmt "%a=%a" pp_id i pp_value v]
+and binding = (id * value) [@printer fun fmt (i, v) -> fprintf fmt "@[%a=%a@]" pp_id i pp_value v]
     [@@deriving show { with_path = false }]
+    
     
 let lookup: id -> cont -> env -> value = fun i k e ->
     let rec layers = function 
@@ -111,7 +118,7 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
 | Id i              -> lookup i k env
 | Con c             -> k(Const c)
 | Label(name, body) -> eval (bind name (Prim k) env) k body
-| Tuple exs         -> evalTuple env (fun vs -> k(Tup vs)) [] exs
+| Tuple exs         -> evalTuple env (fun vs -> k(Tup (List.rev vs))) [] exs 
 | Bra ex            -> eval env k ex         
 | Fn defs           -> k(Fun(env, defs))
 | LazyFn case       -> k(LazyFun(env, case))
@@ -144,6 +151,20 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
               
 (* |    other -> failwith (show_expr other) *)
 
+and elabRecDefs env defs =
+    let env' = recEnv env in
+        elabDefs env' (fun ext -> recFix ext env') [] defs
+
+and elabDefs e bindk bindings = function
+|   []                -> bindk bindings
+|   (pat, expr)::defs -> 
+    (* Temporary expedient awaiting generalization of continuation from values to envs *)
+    let v = eval e (fun v -> v) expr in
+            elabDefs e bindk (matchPat pat v  bindings) defs
+
+(* Evaluates in L-R order, but the order of the result is reversed.
+   This preserves linear space and time (via the continuation architecture)
+*)
 and evalTuple: env -> (values -> value) ->  values -> exprs -> value = fun e k vs -> function
 | []       -> k vs
 | ex::exs  -> eval e (fun v -> evalTuple e k (v::vs) exs) ex 

@@ -2,7 +2,7 @@ open Expr
 open Value
 open Parsing
 
-(* Library Primitives *)
+(* Primitive Adapters *)
 
 let num2num f = Prim (function 
     | (Const (Num n))  -> Const(Num (f n)) 
@@ -28,31 +28,85 @@ let con2con2bool f = Prim (function
     | (Const n) -> con2bool (fun m -> f n m)
     | other      -> Fail (show_value other))
     
-let process lexbuf =
-  let lexer = ExprLexer.lexer lexbuf in
+
+let globalEnv = ref @@ addBindings 
+    [ ("prim_succ",    num2num (fun n->n+1))
+    ; ("prim_pred",    num2num (fun n->n-1))
+    ; ("prim_add",     num2num2num  (fun n m -> n+m))
+    ; ("prim_sub",     num2num2num  (fun n m -> n-m))
+    ; ("prim_mul",     num2num2num  (fun n m -> n+m))
+    ; ("prim_div",     num2num2num  (fun n m -> n/m))
+    ; ("prim_eq",      num2num2bool (fun n m -> n==m))
+    ; ("prim_println", Prim(fun v -> Format.fprintf Format.std_formatter "%a\n%!" pp_value v; v))
+    ] 
+    emptyEnv
+
+let showAst = ref false
+and showEnv = ref false
+
+let processPhrase = function 
+    | Expr ast -> 
+           if !showAst then Format.fprintf Format.std_formatter "%a\n%!" pp_expr ast;
+           let v = eval !globalEnv (fun v -> v) ast in
+               Format.fprintf Format.std_formatter "%a\n%!" pp_value v
+    | Defs defs -> Format.fprintf Format.std_formatter "%a\n%!" pp_defs defs;
+                   let env' = elabRecDefs !globalEnv defs
+                   in  if !showEnv then Format.fprintf Format.std_formatter "%a\n%!" pp_env env';
+                       globalEnv := env' 
+    | EndFile   -> raise EndFile
+    | Nothing   -> ()
+
+let rec processLexbuf lexbuf =
+  let lexer = ExprLexer.lexer lexbuf in begin
   try
       match parse lexer lexbuf with
-      | OK ast  ->  
-        (match ast with Expr.EndFile -> raise EndFile | _ -> ());
-        Format.fprintf Format.std_formatter "%a\n%!" Expr.pp_phrase ast
+      | OK ast         ->  processPhrase ast
       | ERR (pos, msg) ->  
         Format.fprintf Format.std_formatter "*** %a %s%!"   Utils.pp_fpos pos msg
   with 
      (* abandon the current phrase on a lexer error *)
      ExprLexer.LexError (pos, msg) ->
          Format.fprintf Format.std_formatter "*** Lexing error: %s at %a\n%!" msg  Utils.pp_fpos pos
+  end;
+  processLexbuf lexbuf
+  
 
-let _ =
-    let chan   = open_in "/dev/stdin" in
+let processChan path chan =
     let istty  = Unix.isatty @@ Unix.descr_of_in_channel chan in
     let lexbuf = Sedlexing.Utf8.from_channel ~chunk_size:(if istty then 1 else 1024) chan in
-    Sedlexing.set_filename lexbuf "/dev/stdin";
+    Sedlexing.set_filename lexbuf path;
     if istty then
        Sedlexing.set_prompter lexbuf (fun () -> Format.printf "> %!");
     try 
-     while true do process lexbuf done
+     processLexbuf lexbuf
     with
      EndFile -> ()
+     
+let processArg path = 
+    match path with
+    | "+a" -> showAst := true
+    | "+e" -> showEnv := true
+    | _ -> let chan = open_in path in processChan path chan
+
+let rec main argv =     
+    match argv with
+    | []        -> processArg "/dev/stdin"
+    | "--"::ps  -> main ps
+    | p   ::ps  -> processArg p; main ps
+
+
+let _ = begin
+    Format.set_margin 80;
+    Sys.catch_break true; 
+    main(List.tl(Array.to_list(Sys.argv)))
+end
+
+
+
+
+
+    
+
 
 
 

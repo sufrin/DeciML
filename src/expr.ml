@@ -13,7 +13,7 @@ type con  = Num    of int         [@printer fun fmt n -> fprintf fmt "%s" (strin
           [@@deriving show { with_path = false }]
 
 type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show_id i)]      
-          | Tuple of exprs        [@printer fun fmt es -> fprintf fmt "@[(%a)@]" pp_exprs es]
+          | Tuple of exprs        [@printer fun fmt es -> fprintf fmt "@[(  %a)@]" pp_exprs es]
           (* Retain parenthesis structure for ease of prettyprinting *)
           | Bra   of expr         [@printer fun fmt e -> fprintf fmt "(%a)" pp_expr e]
           | Con   of con          [@printer pp_con]
