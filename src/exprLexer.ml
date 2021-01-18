@@ -113,7 +113,7 @@ open ExprParser
  
     let declareNotations declns =
         let declareFixity (associativity, priority, symbols) =
-            let priority = int_of_string priority in
+            let priority = match priority with Some p->p | None -> 9 in
             if (0<=priority && priority<=9) then
                let mkTok = match associativity with
                   "left"      -> leftOpSymbol.(priority)
@@ -200,13 +200,13 @@ let rec token buf =
   match%sedlex buf with
   | eof -> EOF
   | "--+"       -> comment true  buf; token buf
-  | "--"        -> comment false buf; token buf
+  | "---"       -> comment false buf; token buf
   | ';'         -> SEMI
   | ";;"        -> END
   | newline     -> token buf
   | blank       -> token buf
   | 0x27e8      -> FUN  (* ⟨ *)
-  | 0x27e9      -> NUF  (* ⟩ *)
+  | 0x27e9      -> NUF  (* ⟩⟩ *)
   (*
   | "{"         -> FUN
   | "}"         -> NUF

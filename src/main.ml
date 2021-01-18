@@ -54,6 +54,7 @@ let processPhrase = function
                    in  if !showEnv then Format.fprintf Format.std_formatter "%a\n%!" pp_env env';
                        globalEnv := env' 
     | EndFile   -> raise EndFile
+    | Notation notations -> ExprLexer.declareNotations notations
     | Nothing   -> ()
 
 let rec processLexbuf lexbuf =
@@ -106,6 +107,7 @@ end
 
 
     
+
 
 
 

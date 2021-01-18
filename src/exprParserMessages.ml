@@ -7,96 +7,98 @@ let message =
   fun s ->
     match s with
     | 0 ->
-        "Misplaced symbol \n"
+        "Expecting a top-level phrase \n"
     | 4549 ->
-        "Misplaced symbol \n"
+        "Expecting a juxtaposition (application) or the end or continuation of an expression \n"
     | 4543 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4545 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4555 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4563 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4571 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4579 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4587 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4595 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4603 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4611 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4619 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4547 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4557 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4565 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4573 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4581 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4589 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4597 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4605 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4613 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4621 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4551 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4559 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4567 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4575 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4583 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4591 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4599 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4607 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4615 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4623 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4553 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4561 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4569 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4577 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4585 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4593 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4601 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4609 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4617 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4625 ->
-        "Misplaced symbol \n"
+        "After an infix operator. Expecting another expression. \n"
     | 4 ->
         "In notation description\n"
     | 5 ->
         "In notation description\n"
     | 99 ->
+        "In notation description\n"
+    | 6 ->
         "In notation description\n"
     | 7 ->
         "In notation description\n"
@@ -183,8 +185,6 @@ let message =
     | 48 ->
         "In notation description\n"
     | 49 ->
-        "In notation description\n"
-    | 50 ->
         "In notation description\n"
     | 101 ->
         "Definition expected: \226\134\146 misplaced\n"
@@ -3267,215 +3267,215 @@ let message =
     | 217 ->
         "After '('. Expecting a tuple, a sectioned infix expression, or a function expression\n"
     | 3541 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3543 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3545 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3547 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3549 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3551 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3553 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3555 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3557 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3559 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3561 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3563 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3565 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3567 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3569 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3571 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3573 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3575 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3577 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3579 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3581 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3583 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3585 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3587 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3589 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3591 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3593 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3595 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3597 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3599 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3601 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3603 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3605 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3607 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3609 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3611 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3613 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3615 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3617 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3619 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 3621 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.\n"
     | 219 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3372 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3376 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3380 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3384 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3388 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3392 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3396 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3400 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3404 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3408 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3412 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3416 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3420 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3424 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3428 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3432 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3436 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3440 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3444 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3448 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3452 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3456 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3460 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3464 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3468 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3472 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3476 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3480 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3484 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3488 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3492 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3496 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3500 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3504 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3508 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3512 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3516 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3520 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3524 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3528 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3532 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3535 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 3536 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4367 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4371 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4375 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4379 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4383 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4387 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4391 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4395 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4399 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4403 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4407 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4411 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4415 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4419 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4423 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4427 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4431 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4435 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4439 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section\n"
     | 4443 ->
-        "Misplaced symbol\n"
+        "Expecting the closing ')' or the right hand operand of an infix section \n"
     | 4447 ->
         "in lhs of function case\n"
     | 493 ->

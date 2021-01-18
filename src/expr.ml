@@ -51,9 +51,13 @@ and cases = case list  [@printer pp_punct_list " | " pp_case]
 and pat  = expr        
            [@@deriving show { with_path = false }]
            
+type notation = string * int option * string list 
+           [@@deriving show { with_path = false }]
+           
 type phrase =
-     | Defs of defs [@printer fun fmt defs -> fprintf fmt "@[let @[<hov 4>%a@]@];;" pp_defs defs]
-     | Expr of expr [@printer fun fmt expr -> fprintf fmt "@[%a@];" pp_expr expr]
+     | Defs     of defs                 [@printer fun fmt defs -> fprintf fmt "@[let @[<hov 4>%a@]@];;" pp_defs defs]
+     | Expr     of expr                 [@printer fun fmt expr -> fprintf fmt "@[%a@];" pp_expr expr]
+     | Notation of notation list        [@printer fun fmt notns -> fprintf fmt "notation %a" (pp_punct_list "; " pp_notation) notns]
      | EndFile 
      | Nothing 
      [@@deriving show { with_path = false }]
@@ -71,6 +75,7 @@ type t   = expr [@printer pp_expr]
            [@@deriving show { with_path = false }]
 
 (* For desugaring *)
-let flip = Id "flip"
+let flip = Id "prim_flip"
+
 
 

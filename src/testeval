@@ -1,6 +1,20 @@
+--+ Standard library notation
+
+notation
+     left  6 && || ;
+     left  7 + - ;
+     left  8 * / ;
+     right 9 ** ;
+     id    ~ Σ ϕ Π ∐ ∀ ∃ ↯
+     ;;
+
+let flip f x y = f y x;;
+
 let x + y = prim_add x y;
     (-) = prim_sub;
     (*) = prim_mul;
     (/) = prim_div;
-    (=) = prim_eq;;
+    (=) = prim_eq;
+    ~ n = 0-n;;
+
 

@@ -9,6 +9,8 @@
 
         let mkNum(base, first, buf) = Expr.Con(Expr.Num(Utils.num_value base first buf))
         
+        let mkPriority(base, first, buf) = Utils.num_value base first buf
+        
         let mkString s = Expr.Con(Expr.String s)
         
         let mkId    s = Expr.Id s
@@ -110,13 +112,13 @@
 %right BINR9, CONR9
 %left  BINL9, CONL9
 
-
-
 (**************************************************************************)
+%type <int option> priority
 
 %start          phrase 
 %type           <Expr.phrase> phrase
 %%
+
 
 (**************************************************************************)
 
@@ -142,10 +144,9 @@ INFIX   :       BINL                            {$1}
         |       EQ                              {$1}
 
 let phrase := 
-    | LET; ~=defs; endoreof;        <Expr.Defs>
-    | ~=topexpr;   terminator;      <Expr.Expr>
-    | NOTATION; notations; endoreof; 
-                {(*Utils.declareNotations;*) Expr.Nothing}
+    | LET; ~=defs; endoreof;         <Expr.Defs>
+    | ~=topexpr;   terminator;       <Expr.Expr>
+    | NOTATION; ~=notations; endoreof; <Expr.Notation>
     | SEMI;             {Expr.Nothing}
     | END;              {Expr.Nothing}
     | EOF;              {Expr.EndFile}
@@ -170,7 +171,7 @@ let notations :=
     | ~=notation; SEMI; ~=notations;    {notation :: notations}
     
 let notation := 
-    | lr=ID; bp=NUM?; ~=symbols;         { (lr, bp, symbols) }
+    | lr=ID; bp=priority; ~=symbols;         { (lr, bp, symbols) }    
     
 let symbols := 
     | { [] }
@@ -241,4 +242,5 @@ id  :
     |  name=ID                      { mkId name }
     |  name=CONID                   { mkConId name }
 
+let priority == value=NUM; { Some(mkPriority value)} | { None }
 
