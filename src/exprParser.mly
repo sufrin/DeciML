@@ -153,9 +153,17 @@ let phrase :=
 let endoreof == END | EOF
 let terminator == endoreof | SEMI
 
-let defs     == ~=revdefs;              <List.rev>
-let cases    == ~=revcases;             <List.rev>
-let exprlist == ~=revexprlist;          <List.rev>
+let defs     ==
+    | { [] }
+    |  ~=revdefs;              <List.rev>
+
+let cases    == 
+    | { [] }
+    | ~=revcases;             <List.rev>
+    
+let exprlist == 
+    | { [] }
+    | ~=revexprlist;          <List.rev>
 
 let notations :=
     | ~=notation;                       {[notation]}
@@ -226,11 +234,11 @@ let simplex ==
     | BRA; op=INFIX; KET;                {Expr.Bra(Id op)}
     
 let revexprlist :=
-    |                               { []}
     | ~=expr;                       { [expr]}
     | ~=revexprlist; COMMA; ~=expr; { expr::revexprlist }
 
 id  : 
     |  name=ID                      { mkId name }
     |  name=CONID                   { mkConId name }
+
 
