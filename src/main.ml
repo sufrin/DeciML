@@ -51,7 +51,10 @@ let processPhrase = function
                Format.fprintf Format.std_formatter "%a\n%!" pp_value v
     | Defs defs -> Format.fprintf Format.std_formatter "%a\n%!" pp_defs defs;
                    let env' = elabRecDefs !globalEnv defs
-                   in  if !showEnv then Format.fprintf Format.std_formatter "%a\n%!" pp_env env';
+                   in  
+                   let ext = envDiff env' !globalEnv
+                   in
+                       if !showEnv then Format.fprintf Format.std_formatter "%a\n%!" pp_env ext;
                        globalEnv := env' 
     | EndFile   -> raise EndFile
     | Notation notations -> ExprLexer.declareNotations notations
@@ -87,6 +90,7 @@ let processArg path =
     match path with
     | "+a" -> showAst := true
     | "+e" -> showEnv := true
+    | "+n" -> ExprLexer.showNotation := true
     | _ -> let chan = open_in path in processChan path chan
 
 let rec main argv =     
@@ -107,6 +111,8 @@ end
 
 
     
+
+
 
 
 

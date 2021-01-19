@@ -48,7 +48,10 @@ and bindings = binding list [@printer pp_punct_list "," pp_binding]
 and binding = (id * value) [@printer fun fmt (i, v) -> fprintf fmt "@[%a=%a@]" pp_id i pp_value v]
     [@@deriving show { with_path = false }]
     
-    
+let envDiff layers' layers =
+       let rec dropFrom l n =if n<=0 || l==[] then l else dropFrom (List.tl l) (n-1)           
+       in dropFrom (List.rev layers') (List.length layers' - List.length layers)
+        
 let lookup: id -> cont -> env -> value = fun i k e ->
     let rec layers = function 
         | []    -> k(Fail i)
@@ -192,6 +195,7 @@ let force k = function
    ) 
 |  v -> k v
  
+
 
 
 

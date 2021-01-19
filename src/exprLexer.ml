@@ -2,11 +2,6 @@ open Sedlexing
 
 type token = ExprParser.token
 
-let braCount = ref 0 
-let incBra() = incr braCount
-let decBra() = decr braCount
-let inBra()  = not(!braCount == 0)
-
 open ExprParser
 
 (*****************************  Symbol Table *************************) 
@@ -33,16 +28,7 @@ open ExprParser
        ;       "else"     , ELSE
        ;       "import"   , IMPORT
        ;       "notation" , NOTATION
-       ];
-       notation (fun s -> ID s) 
-                [ 0x2205 (* ∅ *)
-                ; 0x2211 (* ∑ *)
-                ; 0x220f (* ∏ *)
-                ; 0x2210 (* ∐ *)
-                ; 0x2200 (* ∀ *)
-                ; 0x2203 (* ∃ *)
-                ; 0x21af (* ↯ *)
-                ]
+       ]
 
 (* Syntactic roles of identifier strings are looked up by the scanner using mkXXXX 
    All identifiers that appear are mapped by the idMap to their default or declared role
@@ -109,7 +95,8 @@ open ExprParser
     ]
 
    (* Experimental notation declarations *)
-        
+    
+    let showNotation = ref false   
  
     let declareNotations declns =
         let declareFixity (associativity, priority, symbols) =
@@ -124,8 +111,10 @@ open ExprParser
                 | "constant"  -> (fun x -> CONID x)
                 | _           -> failwith ("fixity misdeclared as: "^associativity^", but should be one of: left, right, leftdata, rightdata, id, con) ")
                in 
-               let addSymbol str = Hashtbl.add idMap str (mkTok str)
-               in List.iter addSymbol symbols           
+               let addSymbol str = Hashtbl.add idMap str (mkTok str);
+                                   if !showNotation then Format.fprintf Format.std_formatter "notation %s %d %s\n%!" associativity priority str
+               in 
+                  List.iter addSymbol symbols           
             else failwith ("priority out of bounds: " ^ string_of_int priority)
     in List.iter declareFixity declns
     
@@ -154,15 +143,18 @@ let octal_ascii   = [%sedlex.regexp? "0o", Plus ('0' .. '7')]
 let hex_ascii     = [%sedlex.regexp? "0x", Plus (('0' .. '9' | 'a' .. 'f' | 'A' .. 'F'))]
 
 let alpha         = [%sedlex.regexp?  ('a' .. 'z' | 'A' .. 'Z' | '_') ] 
+let greek         = [%sedlex.regexp?  (0x0391 .. 0x03ff) ]  
 let digit         = [%sedlex.regexp?  ('0' .. '9') ] 
 let ident         = [%sedlex.regexp?  ('a' .. 'z'), Star(alpha|digit) ]
 let cident        = [%sedlex.regexp?  ('A' .. 'Z'), Star(alpha|digit) ]
 
 let stringChunk   = [%sedlex.regexp? Star (Compl ('"' | '\\' | '\n'))]
 
-let mathop        = [%sedlex.regexp? (0x2200 .. 0x22ff | 0x2190 .. 0x21ff | 0x2a00 .. 0x2aff | 0x2300 .. 0x23ff)]
+let mathop        = [%sedlex.regexp? (0x27f0 .. 0x27ff | 0x2900 .. 0x297x |
+                                      0x2200 .. 0x22ff | 0x2190 .. 0x21ff |
+                                      0x2a00 .. 0x2aff | 0x2300 .. 0x23ff)]
 
-let binop         = [%sedlex.regexp? Chars "+-=#&*/~\\!@<>?|"]
+let aop           = [%sedlex.regexp? Chars "+-=#&*/~\\!@<>?|" | 0x00d7 (* × *)]
 
 
 let rec skipWhitespace buf =
@@ -208,21 +200,22 @@ let rec token buf =
   | 0x27e8      -> FUN  (* ⟨ *)
   | 0x27e9      -> NUF  (* ⟩⟩ *)
   (*
-  | "{"         -> FUN
-  | "}"         -> NUF
+  | "{"         -> CBRA
+  | "}"         -> CKET
   *)
   | '|'         -> ALT
   | 0x03bb      -> LAM  (* λ *)                             
   | 0x2192      -> TO   (* → *)
   | '"'         -> STRING(string buf)
   | ','         -> COMMA
-  | '='         -> EQ (Utf8.lexeme buf)
-  | '('         -> incBra(); BRA
-  | ')'         -> decBra(); KET
-  | ident       -> mkID  (Utf8.lexeme buf)
-  | cident      -> mkCONID  (Utf8.lexeme buf)
-  | mathop      -> mkMath(Utf8.lexeme buf)
-  | binop, Star binop -> mkOP(Utf8.lexeme buf)
+  | '='         -> EQ           (Utf8.lexeme buf)
+  | '('         -> BRA
+  | ')'         -> KET
+  | ident       -> mkID         (Utf8.lexeme buf)
+  | cident      -> mkCONID      (Utf8.lexeme buf)
+  | greek       -> mkID         (Utf8.lexeme buf)
+  | mathop      -> mkMath       (Utf8.lexeme buf)
+  | aop, Star aop -> mkOP       (Utf8.lexeme buf)
   | decimal_ascii -> NUM(10, 0, Utf8.lexeme buf) 
   | octal_ascii   -> NUM(8,  2, Utf8.lexeme buf) 
   | hex_ascii     -> NUM(16, 2, Utf8.lexeme buf) 
@@ -234,6 +227,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

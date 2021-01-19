@@ -1,0 +1,8 @@
+notation id 9 ∅ ;;      
+notation id 9 ⋿ ;;      
+notation id ⨀;;        
+notation id α β γ ω;;   
+notation id ⇿ ;;        
+notation id ←  ∀ ∃ ∐ ;;      
+notation id 9 ∑ ;; -- different to the greek capital sigma
+
