@@ -1,6 +1,6 @@
 open Utils
 
-type tag  = int * string [@printer fun fmt (_,s) -> fprintf fmt "`%s" s]
+type tag  = int * string [@printer fun fmt (_,s) -> fprintf fmt "%s" s]
             [@@deriving show { with_path = false }]
 
 type id   = string       [@printer fun fmt s -> fprintf fmt "%s" s]

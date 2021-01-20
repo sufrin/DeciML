@@ -37,7 +37,7 @@ open ExprParser
     let ret id sym = (Hashtbl.add idMap id sym; sym)
     
     let mkID      id = try Hashtbl.find idMap id with Not_found -> ret id @@ ID id
-    let mkCONID   id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONID id
+    let mkCONID   id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONID(0, id) (* Default arity is 0 *)
     let mkMath    id = try Hashtbl.find idMap id with Not_found -> ret id @@ BINL9 id
     let mkMathCon id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONL9 id
 
@@ -99,23 +99,23 @@ open ExprParser
     let showNotation = ref false   
  
     let declareNotations declns =
-        let declareFixity (associativity, priority, symbols) =
-            let priority = match priority with Some p->p | None -> 9 in
-            if (0<=priority && priority<=9) then
+        let declareFixity (associativity, num, symbols) =
+            let num = match num with Some p->p | None -> 0 in
+            if (0<=num && num<=9) then
                let mkTok = match associativity with
-                  "left"      -> leftOpSymbol.(priority)
-                | "right"     -> rightOpSymbol.(priority)
-                | "leftdata"  -> leftConSymbol.(priority)
-                | "rightdata" -> rightConSymbol.(priority)
+                  "left"      -> leftOpSymbol.(num)
+                | "right"     -> rightOpSymbol.(num)
+                | "leftdata"  -> leftConSymbol.(num)
+                | "rightdata" -> rightConSymbol.(num)
                 | "id"        -> (fun x -> ID x)
-                | "constant"  -> (fun x -> CONID x)
-                | _           -> failwith ("fixity misdeclared as: "^associativity^", but should be one of: left, right, leftdata, rightdata, id, con) ")
+                | "data"      -> (fun x -> CONID(num, x))  (* num is the arity of the (curried if nonzero) constructor *)
+                | _           -> failwith ("fixity misdeclared as: "^associativity^", but should be one of: left, right, leftdata, rightdata, data, id) ")
                in 
                let addSymbol str = Hashtbl.add idMap str (mkTok str);
-                                   if !showNotation then Format.fprintf Format.std_formatter "notation %s %d %s\n%!" associativity priority str
+                                   if !showNotation then Format.fprintf Format.std_formatter "notation %s %d %s\n%!" associativity num str
                in 
                   List.iter addSymbol symbols           
-            else failwith ("priority out of bounds: " ^ string_of_int priority)
+            else failwith ("priority or arity out of bounds: " ^ string_of_int num)
     in List.iter declareFixity declns
     
     

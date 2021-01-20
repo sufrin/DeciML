@@ -3,10 +3,10 @@ open Expr
 open Utils
 
 type value  = 
- | Const   of con               [@printer pp_con]
+ | Const   of con               [@printer fun fmt c       -> fprintf fmt "`%a" pp_con c]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "(%a)" (pp_punct_list "," pp_value) vs]
- | Cons    of tag * values      [@printer fun fmt (t, v)  -> fprintf fmt "%a(%a)" pp_tag t pp_values v]
- | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ %a (in %a)"  pp_cases cs pp_env []] (********)
+ | Cons    of tag * values      [@printer fun fmt (t, v)  -> fprintf fmt "(`%a %a)" pp_tag t ((pp_punct_list " " pp_value)) v]
+ | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ (%a) (in %a)"  pp_cases cs pp_env []] (********)
  | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "\\\\ %a (in %a)"  pp_case c pp_env []] (********)
  | Thunk   of thunk             [@printer fun fmt r       -> fprintf fmt "@@%a" pp_thunk r]
  | Prim    of (value -> value)  [@opaque]
@@ -52,9 +52,9 @@ let envDiff layers' layers =
        let rec dropFrom l n =if n<=0 || l==[] then l else dropFrom (List.tl l) (n-1)           
        in dropFrom (List.rev layers') (List.length layers' - List.length layers)
         
-let lookup: id -> cont -> env -> value = fun i k e ->
+let lookup: location option -> id -> cont -> env -> value = fun loc i k e ->
     let rec layers = function 
-        | []    -> k(Fail i)
+        | []    -> semanticError @@ (Format.sprintf "Unbound variable: %s %s" i (match loc with None -> "" | Some l -> Utils.show_location l))
         | l::ls -> match layer l with Some v -> k v | None -> layers ls
         and layer = function
         |  Rec  bs -> bindings !bs
@@ -108,19 +108,32 @@ let loop2: ('state->'a->'b->'state) ->  'state -> ('a list * 'b list) -> 'state 
     in  loop
 
 let rec matchPat: pat -> value -> bindings -> bindings = fun p v bs -> 
+Format.eprintf "match %a with %a\n%!" pp_pat p pp_value v;
 match p, v with 
+| At(_, p),     v                              -> matchPat p v bs  (* just in case we left a location in *)
 | Id i,          _                             -> addBinding i v bs
 | Tuple ps,     Tup vs                         -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs)
-| Construct (c, ps), Cons (c', vs') when c=c'  -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
+| Construct (c, ps), Cons (c', vs') when c=c'  -> Format.eprintf "-- Constructors %a -- %a\n%!" pp_tag c pp_tag c';  loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
+| Construct (c, ps), Cons (c', vs')            -> Format.eprintf "-- Constructors %a -- %a\n%!" pp_tag c pp_tag c';  loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
 | Con c,        Const c' when c=c'             -> emptyBindings
-| Cid t,        Const(Tag t') when t=t'         -> emptyBindings
+| Cid t,        Const(Tag t') when t=t'        -> emptyBindings
 | _,        _                                  -> if debugMatch then eprintf "@." else (); noMatch()
  
 
+(* Utilities that throw errors that will eventually be detected by a type checker *)
+
+let isTrue: value -> bool = 
+    function Const(Tag(_, "True")) -> true | Const(Tag(_, "False")) -> false |   other -> semanticError @@  (Format.sprintf "Type error in guard: %s" (show_value other))
+
+let checkArity: int -> tag -> unit = 
+    fun arity -> function ((required, s)) -> if arity < required then () else semanticError @@  (Format.sprintf "Arity error applying %s [arity %d]" s required)
+
+
 (* Evaluation *)
+
    
-let rec eval: env -> cont -> expr -> value = fun env k -> function
-| Id i              -> lookup i k env
+let rec eval: ?loc:Utils.location option -> env -> cont -> expr -> value = fun ?(loc=None) -> fun env k -> function
+| Id i              -> lookup loc i k env
 | Cid t             -> k(Const(Tag t))
 | Con c             -> k(Const c)
 | Label(name, body) -> eval (bind name (Prim k) env) k body
@@ -130,15 +143,12 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
 | Fn defs           -> k(Fun(env, defs))
 | LazyFn case       -> k(LazyFun(env, case))
 | If (g, e1, e2) ->
-     let choose = function
-         |  (Const(Bool false)) ->  eval env k e2
-         |  _                   ->  eval env k e1
-     in
-         eval env choose g
+     let choose = fun v -> eval env k (if isTrue v then e1 else e2)
+     in  eval env choose g
 |    Ap (rator, rand) ->
         let apply = function
-            | Cons(t, v)         ->  eval env (fun w -> k(Cons(t, v@[w]))) rand
-            | Const(Tag t)       ->  eval env (fun v -> k(Cons(t, [v]))) rand
+            | Cons(t, v)         ->  checkArity (List.length v) t; eval env (fun w -> k(Cons(t, v@[w]))) rand 
+            | Const(Tag t)       ->  checkArity 0 t;               eval env (fun v -> k(Cons(t, [v]))) rand 
             | Prim f             ->  eval env (f >> k) rand
             | Fun(defenv, cases) ->  eval env (fun v -> evalCases defenv k v cases) rand
             | LazyFun(defenv, (Id i, body)) ->  
@@ -154,8 +164,8 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
          let env'       = recEnv env in  
          let evBody ext = eval (recFix ext env') k body in
              evalDefs env' evBody [] defs 
-|    At(_, ex) ->    
-       eval env k ex         
+|    At(location, ex) ->    
+       eval ~loc:(Some(location)) env k ex         
               
 (* |    other -> failwith (show_expr other) *)
 

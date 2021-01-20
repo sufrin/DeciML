@@ -21,6 +21,9 @@ type location = Ppxlib.position * Ppxlib.position
 
 let pp_location out loc =
     Format.fprintf out "%a-%a" pp_fpos (fst loc) pp_pos (snd loc)
+
+let show_location loc =
+    Format.asprintf "%a-%a" pp_fpos (fst loc) pp_pos (snd loc)
     
 (* Numbers *)
 
@@ -57,6 +60,10 @@ let pp_punct_list punct pp_item  fmt items =
   end;
   Format.pp_close_box fmt ()
 
+(* Semantic error exceptions *)
 
+exception SemanticError of string
+
+let semanticError s = raise (SemanticError s)
 
 

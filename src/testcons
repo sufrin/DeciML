@@ -1,5 +1,14 @@
-notation rightdata 3 : ;
-         constant nil
+notation rightdata 3 :  ;
+         data nil       ;
+         data 1 A B ;
+         data 2 X   
 ;;
+
+let null = λ ( nil -> True | x:xs -> False );;
+let isA  = λ ( a x -> True | b x -> False );;
+
+let eX = (| X x y -> (x,y) |);;
+
+eX(X 1 2);;
 
 

@@ -1,12 +1,13 @@
 open Expr
 open Value
 open Parsing
+open Utils
 
 (* Booleans *)
 
 let trueVal = (Tag(0,  "True"))
 
-let falseVal = (Tag(1,  "False"))
+let falseVal = (Tag(0,  "False"))
 
 let mkBool: bool -> value = function true -> Const trueVal | false -> Const falseVal
 
@@ -14,27 +15,27 @@ let mkBool: bool -> value = function true -> Const trueVal | false -> Const fals
 
 let num2num f = Prim (function 
     | (Const (Num n))  -> Const(Num (f n)) 
-    | other            -> Fail (show_value other))
+    | other            -> semanticError @@ "Expecting a number, got: "^(show_value other))
 
 let num2bool f = Prim (function 
     | (Const (Num n))  -> mkBool (f n) 
-    | other            -> Fail (show_value other))
+    | other            -> semanticError @@ "Expecting a number, got: "^(show_value other))
    
 let num2num2num f = Prim (function 
     | (Const (Num n)) -> num2num (fun m -> f n m)
-    | other           -> Fail (show_value other))
+    | other           -> semanticError @@ "Expecting a number, got: "^(show_value other))
 
 let num2num2bool f = Prim (function 
     | (Const (Num n)) -> num2bool (fun m -> (f n m))
-    | other           -> Fail (show_value other))
+    | other           -> semanticError @@ "Expecting a number, got: "^(show_value other))
 
 let con2bool f = Prim (function 
     | (Const n)  -> mkBool (f n)
-    | other      -> Fail (show_value other))
+    | other      -> semanticError @@ "Expecting a constant, got: "^(show_value other))
     
 let con2con2bool f = Prim (function 
     | (Const n)  -> con2bool (fun m -> f n m)
-    | other      -> Fail (show_value other))
+    | other      -> semanticError @@ "Expecting a constant, got: "^(show_value other))
     
 
 let globalEnv = ref @@ addBindings 
@@ -78,7 +79,11 @@ let rec processLexbuf lexbuf =
   let lexer = ExprLexer.lexer lexbuf in begin
   try
       match parse lexer lexbuf with
-      | OK ast         ->  processPhrase ast
+      | OK ast         ->  
+        (try processPhrase ast with
+        | SemanticError msg -> Format.fprintf Format.err_formatter "Runtime error: %s\n%!" msg
+        | Failure msg       -> Format.fprintf Format.err_formatter "Syntax error: %s\n%!" msg
+        )
       | ERR (pos, msg) ->  
         Format.fprintf Format.std_formatter "*** %a %s%!"   Utils.pp_fpos pos msg
   with 

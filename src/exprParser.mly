@@ -13,16 +13,16 @@
         
         let mkString s = Con(String s)
         
-        let mkId    s = Id s
-        let mkConId s = Cid(0,s)
+        let mkId          s = Id s
+        let mkConId tag = Cid tag
         
         (* Expose the name: for notation declarations *)
-        let opToString = function
+        let rec opToString = function
             | Id s           -> s
             | Cid(_,s)       -> s
+            | At(_, op)      -> opToString op
             | _              -> assert false
                  
-        
         let mkTuple = function
             | [x] -> Bra x
             | xs  -> Tuple xs
@@ -46,6 +46,7 @@
             (* Format.eprintf "Abstractfrom (%a) %a\n%!" pp_expr expr pp_expr pat; *)
             match pat with
             | Bra p             -> abstractFrom expr p
+            | At(_, p)          -> abstractFrom expr p
             | Id    _
             | Con   _
             | Cid   _
@@ -71,8 +72,12 @@
 
 %token <int*int*string> NUM (* base, start, rep *)
 
+%token <int*string>  (* trying arity *)
+       CONID 
+       
 %token <string> 
-        ID CONID EQ 
+        ID 
+        EQ 
         BINR0 BINL0 CONR0 CONL0
         BINR1 BINL1 CONR1 CONL1
         BINR2 BINL2 CONR2 CONL2
@@ -151,8 +156,8 @@ CONL    :  CONL0 {$1} | CONL1 {$1} | CONL2 {$1} | CONL3 {$1} | CONL4 {$1}
 
 let infix ==    ~=BINL;                            <mkId>
         |       ~=BINR;                            <mkId>
-        |       ~=CONL;                            <mkConId>
-        |       ~=CONR;                            <mkConId>
+        |       op=CONL;                           {mkConId(2, op)}
+        |       op=CONR;                           {mkConId(2, op)}
         |       ~=EQ;                              <mkId>
                 
 
@@ -188,8 +193,8 @@ let notation :=
     
 let symbols := 
     | { [] }
-    | op=infix; ~=symbols; { opToString op ::symbols }
-    | op=id;    ~=symbols; { opToString op ::symbols }
+    | op=infix; ~=symbols; { opToString op :: symbols }
+    | op=id;    ~=symbols; { opToString op :: symbols }
       
 let revdefs := 
     | ~=def;                  {[def]}
@@ -251,7 +256,7 @@ let revexprlist :=
     | ~=revexprlist; COMMA; ~=expr; { expr::revexprlist }
 
 id  : 
-    |  name=ID                      { mkId name }
+    |  name=ID                      { At($loc, mkId name) }
     |  name=CONID                   { mkConId name }
 
 let priority == value=NUM; { Some(mkPriority value)} | { None }
