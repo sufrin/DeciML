@@ -154,7 +154,7 @@ let mathop        = [%sedlex.regexp? (0x27f0 .. 0x27ff | 0x2900 .. 0x297x |
                                       0x2200 .. 0x22ff | 0x2190 .. 0x21ff |
                                       0x2a00 .. 0x2aff | 0x2300 .. 0x23ff)]
 
-let aop           = [%sedlex.regexp? Chars "+-=#&*/~\\!@<>?|" | 0x00d7 (* × *)]
+let aop           = [%sedlex.regexp? Chars ":+-=#&*/~\\!@<>?|" | 0x00d7 (* × *)]
 
 
 let rec skipWhitespace buf =
@@ -227,6 +227,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

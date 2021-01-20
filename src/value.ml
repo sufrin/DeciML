@@ -5,9 +5,9 @@ open Utils
 type value  = 
  | Const   of con               [@printer pp_con]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "(%a)" (pp_punct_list "," pp_value) vs]
- | Cons    of tag * value       [@printer fun fmt (t, v)  -> fprintf fmt "%a %a" pp_tag t pp_value v]
- | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ %a (in %a)"  pp_cases cs pp_env e]
- | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "\\\\ %a (in %a)"  pp_case c pp_env e]
+ | Cons    of tag * values      [@printer fun fmt (t, v)  -> fprintf fmt "%a(%a)" pp_tag t pp_values v]
+ | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ %a (in %a)"  pp_cases cs pp_env []] (********)
+ | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "\\\\ %a (in %a)"  pp_case c pp_env []] (********)
  | Thunk   of thunk             [@printer fun fmt r       -> fprintf fmt "@@%a" pp_thunk r]
  | Prim    of (value -> value)  [@opaque]
  | Unbound of id                [@printer fun fmt id      -> fprintf fmt "Unbound %s" (show_id id)]
@@ -109,19 +109,23 @@ let loop2: ('state->'a->'b->'state) ->  'state -> ('a list * 'b list) -> 'state 
 
 let rec matchPat: pat -> value -> bindings -> bindings = fun p v bs -> 
 match p, v with 
-| Id i,     _                     -> addBinding i v bs
-| Tuple ts, Tup vs                -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ts, vs)
-| Con c,    Const c' when c=c'    -> emptyBindings
-| _,        _                     -> if debugMatch then eprintf "@." else (); noMatch()
-
+| Id i,          _                             -> addBinding i v bs
+| Tuple ps,     Tup vs                         -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs)
+| Construct (c, ps), Cons (c', vs') when c=c'  -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
+| Con c,        Const c' when c=c'             -> emptyBindings
+| Cid t,        Const(Tag t') when t=t'         -> emptyBindings
+| _,        _                                  -> if debugMatch then eprintf "@." else (); noMatch()
+ 
 
 (* Evaluation *)
    
 let rec eval: env -> cont -> expr -> value = fun env k -> function
 | Id i              -> lookup i k env
+| Cid t             -> k(Const(Tag t))
 | Con c             -> k(Const c)
 | Label(name, body) -> eval (bind name (Prim k) env) k body
-| Tuple exs         -> evalTuple env (fun vs -> k(Tup (List.rev vs))) [] exs 
+| Tuple exs         -> evalTuple env (fun vs -> k(Tup(List.rev vs))) [] exs
+| Construct(t, exs) -> evalTuple env (fun vs -> k(Cons(t, List.rev vs))) [] exs 
 | Bra ex            -> eval env k ex         
 | Fn defs           -> k(Fun(env, defs))
 | LazyFn case       -> k(LazyFun(env, case))
@@ -133,7 +137,8 @@ let rec eval: env -> cont -> expr -> value = fun env k -> function
          eval env choose g
 |    Ap (rator, rand) ->
         let apply = function
-            | Const(Tag t)       ->  eval env (fun v -> k(Cons(t, v))) rand
+            | Cons(t, v)         ->  eval env (fun w -> k(Cons(t, v@[w]))) rand
+            | Const(Tag t)       ->  eval env (fun v -> k(Cons(t, [v]))) rand
             | Prim f             ->  eval env (f >> k) rand
             | Fun(defenv, cases) ->  eval env (fun v -> evalCases defenv k v cases) rand
             | LazyFun(defenv, (Id i, body)) ->  
@@ -195,6 +200,7 @@ let force k = function
    ) 
 |  v -> k v
  
+
 
 
 

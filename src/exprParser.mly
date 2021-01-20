@@ -7,50 +7,63 @@
         
         open Expr
 
-        let mkNum(base, first, buf) = Expr.Con(Expr.Num(Utils.num_value base first buf))
+        let mkNum(base, first, buf) = Con(Num(Utils.num_value base first buf))
         
         let mkPriority(base, first, buf) = Utils.num_value base first buf
         
-        let mkString s = Expr.Con(Expr.String s)
+        let mkString s = Con(String s)
         
-        let mkId    s = Expr.Id s
-        let mkConId s = Con(Tag (0,s))
+        let mkId    s = Id s
+        let mkConId s = Cid(0,s)
+        
+        (* Expose the name: for notation declarations *)
+        let opToString = function
+            | Id s           -> s
+            | Cid(_,s)       -> s
+            | _              -> assert false
+                 
         
         let mkTuple = function
-            | [x] -> Expr.Bra x
-            | xs  -> Expr.Tuple xs
+            | [x] -> Bra x
+            | xs  -> Tuple xs
             
-        let mkFun cases = Expr.Fn cases
+        let mkFun cases = Fn cases
         
         let rec mkLambda(bvs, body) = 
             match bvs with 
-            | [pat]     -> Expr.Fn[(pat, body)]
-            | pat::pats -> Expr.Fn[(pat, mkLambda(pats, body))]
+            | [pat]     -> Fn[(pat, body)]
+            | pat::pats -> Fn[(pat, mkLambda(pats, body))]
             | _         -> assert false
         
         let rec mkLazy(bvs, body) = 
             match bvs with 
-            | [pat]     -> Expr.LazyFn(pat, body)
-            | pat::pats -> Expr.LazyFn(pat, mkLazy(pats, body))
+            | [pat]     -> LazyFn(pat, body)
+            | pat::pats -> LazyFn(pat, mkLazy(pats, body))
             | _         -> assert false
             
         let mkDef (pattern, body) = 
             let rec abstractFrom expr pat = 
             (* Format.eprintf "Abstractfrom (%a) %a\n%!" pp_expr expr pp_expr pat; *)
             match pat with
-            | Bra p          -> abstractFrom expr p
+            | Bra p             -> abstractFrom expr p
             | Id    _
             | Con   _
-            | Tuple _ -> (pat, expr)
+            | Cid   _
+            | Construct   _
+            | Tuple _           -> (pat, expr)
             | Apply(el, op, er) -> abstractFrom expr (Ap(Ap(op, el), er))
-            | Ap(rator, ((Id _) as rand)) -> abstractFrom (Expr.Fn [(rand, expr)]) rator
+            | Ap(rator, ((Id _) as rand)) -> abstractFrom (Fn [(rand, expr)]) rator
             | Ap(rator, rand) ->
             ( match rand with
               | Con   _
-              | Tuple _ -> abstractFrom (Expr.Fn [(rand, expr)]) rator
-              | _       -> (Format.eprintf "Erroneous pattern: %a in %a%!" pp_expr pat pp_expr pattern; failwith "Syntax")
+              | Cid   _
+              | Construct   _
+              | Tuple _ -> abstractFrom (Fn [(rand, expr)]) rator
+              | _       -> 
+                (Format.eprintf "Erroneous pattern: %a in %a\n%!" pp_expr pat pp_expr pattern; failwith "Syntax")
             )
-            | _        -> (Format.eprintf "Erroneous pattern: %a in %a%!" pp_expr pat pp_expr pattern; failwith "Syntax")
+            | _        
+              -> (Format.eprintf "Erroneous pattern: %a in %a\n%!" pp_expr pat pp_expr pattern; failwith "Syntax")
          in abstractFrom body pattern
              
 
@@ -136,12 +149,12 @@ CONR    :  CONR0 {$1} | CONR1 {$1} | CONR2 {$1} | CONR3 {$1} | CONR4 {$1}
 CONL    :  CONL0 {$1} | CONL1 {$1} | CONL2 {$1} | CONL3 {$1} | CONL4 {$1} 
         |  CONL5 {$1} | CONL6 {$1} | CONL7 {$1} | CONL8 {$1} | CONL9 {$1}
 
-%inline        
-INFIX   :       BINL                            {$1}
-        |       BINR                            {$1}
-        |       CONL                            {$1}
-        |       CONR                            {$1}
-        |       EQ                              {$1}
+let infix ==    ~=BINL;                            <mkId>
+        |       ~=BINR;                            <mkId>
+        |       ~=CONL;                            <mkConId>
+        |       ~=CONR;                            <mkConId>
+        |       ~=EQ;                              <mkId>
+                
 
 let phrase := 
     | LET; ~=defs; endoreof;         <Expr.Defs>
@@ -175,9 +188,8 @@ let notation :=
     
 let symbols := 
     | { [] }
-    | op=INFIX; ~=symbols; { op::symbols }
-    | op=ID;    ~=symbols; { op::symbols }
-    | op=CONID; ~=symbols; { op::symbols }
+    | op=infix; ~=symbols; { opToString op ::symbols }
+    | op=id;    ~=symbols; { opToString op ::symbols }
       
 let revdefs := 
     | ~=def;                  {[def]}
@@ -206,7 +218,7 @@ let topexpr :=
     
 let expr := 
     | ~=term;                                   {term}
-    | t1=expr; op=INFIX; t2=expr;               {Apply(t1, Id op, t2)}
+    | t1=expr; op=infix; t2=expr;               {Apply(t1, op, t2)}
 
 let term :=
     | ~=app; <>    
@@ -219,8 +231,8 @@ let app :=
 let prim :=
     | ~=simplex;                         {simplex}
     (* Sections *)
-    | BRA; op=INFIX; ~=expr; KET;        {Bra(Ap(Ap(Expr.flip, Bra(Id op)), expr))}   
-    | BRA; ~=expr; op=INFIX; KET;        {Bra(Ap(Bra(Id op), expr))}
+    | BRA; op=infix; ~=expr; KET;        {Bra(Ap(Ap(Expr.flip, Bra(op)), expr))}   
+    | BRA; ~=expr; op=infix; KET;        {Bra(Ap(Bra(op), expr))}
     (* Balanced *)
     | BRA; eoc; ~=cases; eoc; KET;       <mkFun>
     | FUN; eoc?; ~=cases; NUF;           <mkFun>
@@ -232,7 +244,7 @@ let simplex ==
     | ~=NUM;                             <mkNum>
     | ~=STRING;                          <mkString>
     | BRA; ~=exprlist; KET;              <mkTuple>
-    | BRA; op=INFIX; KET;                {Expr.Bra(Id op)}
+    | BRA; op=infix; KET;                {Expr.Bra(op)}
     
 let revexprlist :=
     | ~=expr;                       { [expr]}
@@ -243,4 +255,6 @@ id  :
     |  name=CONID                   { mkConId name }
 
 let priority == value=NUM; { Some(mkPriority value)} | { None }
+
+
 

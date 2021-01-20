@@ -8,15 +8,17 @@ type id   = string       [@printer fun fmt s -> fprintf fmt "%s" s]
 
 type con  = Num    of int         [@printer fun fmt n -> fprintf fmt "%s" (string_of_int n)]
           | String of string      [@printer fun fmt s -> fprintf fmt "%s" s]
-          | Bool   of bool        [@printer fun fmt b -> fprintf fmt "%s" (string_of_bool b)]
+          | Bool   of bool        [@printer fun fmt b -> fprintf fmt "%s" (if b then "True" else "False")]
           | Tag    of tag         [@printer fun fmt t -> fprintf fmt "%s" (show_tag t)]
           [@@deriving show { with_path = false }]
 
-type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show_id i)]      
+type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show_id i)] 
+          | Cid   of tag          [@printer pp_tag]
+          | Con   of con          [@printer pp_con]
           | Tuple of exprs        [@printer fun fmt es -> fprintf fmt "@[(  %a)@]" pp_exprs es]
           (* Retain parenthesis structure for ease of prettyprinting *)
           | Bra   of expr         [@printer fun fmt e -> fprintf fmt "(%a)" pp_expr e]
-          | Con   of con          [@printer pp_con]
+          | Construct of tag * exprs [@printer fun fmt (t,es) -> fprintf fmt "@[%a( %a)@]" pp_tag t pp_exprs es]
           | If    of expr*expr*expr
           | Ap    of expr*expr    [@printer fun fmt (f,e) -> fprintf fmt "%s %s" (show_expr f)(show_expr e)]
           (* Apply is for  convenience in generating diagnostic messages: it is desugared at runtime *)
@@ -63,19 +65,13 @@ type phrase =
      [@@deriving show { with_path = false }]
 
 
-(* Not all expressions are patterns *)                
-let rec isPat: expr->bool = function
-| Id    _  -> true
-| Tuple ts -> List.for_all isPat ts
-| Con   _  -> true
-| _        -> false
-
 
 type t   = expr [@printer pp_expr]
            [@@deriving show { with_path = false }]
 
 (* For desugaring *)
 let flip = Id "prim_flip"
+
 
 
 

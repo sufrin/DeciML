@@ -2,6 +2,14 @@ open Expr
 open Value
 open Parsing
 
+(* Booleans *)
+
+let trueVal = (Tag(0,  "True"))
+
+let falseVal = (Tag(1,  "False"))
+
+let mkBool: bool -> value = function true -> Const trueVal | false -> Const falseVal
+
 (* Primitive Adapters *)
 
 let num2num f = Prim (function 
@@ -9,7 +17,7 @@ let num2num f = Prim (function
     | other            -> Fail (show_value other))
 
 let num2bool f = Prim (function 
-    | (Const (Num n))  -> Const(Bool (f n)) 
+    | (Const (Num n))  -> mkBool (f n) 
     | other            -> Fail (show_value other))
    
 let num2num2num f = Prim (function 
@@ -17,15 +25,15 @@ let num2num2num f = Prim (function
     | other           -> Fail (show_value other))
 
 let num2num2bool f = Prim (function 
-    | (Const (Num n)) -> num2bool (fun m -> f n m)
+    | (Const (Num n)) -> num2bool (fun m -> (f n m))
     | other           -> Fail (show_value other))
 
 let con2bool f = Prim (function 
-    | (Const n)  -> Const(Bool (f n)) 
+    | (Const n)  -> mkBool (f n)
     | other      -> Fail (show_value other))
     
 let con2con2bool f = Prim (function 
-    | (Const n) -> con2bool (fun m -> f n m)
+    | (Const n)  -> con2bool (fun m -> f n m)
     | other      -> Fail (show_value other))
     
 
@@ -37,6 +45,12 @@ let globalEnv = ref @@ addBindings
     ; ("prim_mul",     num2num2num  (fun n m -> n+m))
     ; ("prim_div",     num2num2num  (fun n m -> n/m))
     ; ("prim_eq",      num2num2bool (fun n m -> n==m))
+    ; ("prim_ls",      num2num2bool (fun n m -> n<m))
+    ; ("prim_le",      num2num2bool (fun n m -> n<=m))
+    ; ("prim_gr",      num2num2bool (fun n m -> n>m))
+    ; ("prim_ge",      num2num2bool (fun n m -> n>=m))
+    ; ("True",         mkBool true)
+    ; ("False",        mkBool false)
     ; ("prim_println", Prim(fun v -> Format.fprintf Format.std_formatter "%a\n%!" pp_value v; v))
     ] 
     emptyEnv
@@ -111,6 +125,7 @@ end
 
 
     
+
 
 
 

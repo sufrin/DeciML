@@ -22,7 +22,6 @@ type location = Ppxlib.position * Ppxlib.position
 let pp_location out loc =
     Format.fprintf out "%a-%a" pp_fpos (fst loc) pp_pos (snd loc)
     
-    
 (* Numbers *)
 
 let digit_value c =
@@ -57,6 +56,7 @@ let pp_punct_list punct pp_item  fmt items =
       end
   end;
   Format.pp_close_box fmt ()
+
 
 
 
