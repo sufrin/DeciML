@@ -1,14 +1,64 @@
 notation rightdata 3 :  ;
          data nil       ;
-         data 1 A B ;
-         data 2 X   
+         data 1 A B     ;
+         data 2 X Y     
 ;;
 
-let null = λ ( nil -> True | x:xs -> False );;
-let isA  = λ ( a x -> True | b x -> False );;
+--+ Some definitions
+let null  = λ ( nil -> True | (:) x xs -> False );;
+let nullz = λ ( nil -> True | x : xs -> False );;
+let isA   = λ ( A x -> True | B x -> False );;
+let eX    = (| X x y -> (x,y) |);;
+let eY    = λ ( Y x y -> (x,y,z) );;
+let ez    = λ x y z -> (x,y,z);;
 
-let eX = (| X x y -> (x,y) |);;
+--+ null nil = True; null (3:nil)=False; ditto for nullz
+null    nil;;
+null    (3:nil);;
+nullz   nil;;
+nullz   (3:nil);;
 
+--+ 
 eX(X 1 2);;
+eY(Y 1 2);;
+ez 1 2 3;;
+
+--+ Call by need within the body of a lazy function
+let mkA   = \\ x -> A x;;
+let lazy  = \\ x -> (x,x);;
+
+let p1 (x,y)=x;
+    p2(x,y)=y;;
+let lez = lazy(ez 1 2 3);;
+
+lez;
+
+p1 lez;
+
+force(p1 lez);
+
+lez;;
+
+--+ deep forcing
+
+
+let td = lazy (mkA (3:nil));;
+td;
+deepForce td;
+
+let te = lazy (A (3:nil));;
+te;
+deepForce te;
+
+--+ deepforcing here will fail: because lazy's closure doesn't contain badA
+--- This is counterintuitive: but what environment SHOULD a lazy function enclose 
+--- if it isn't that current at its point of abstraction? 
+--- This underscores the potential need for a SYNTAX for deferred expressions.
+--- (Of course we COULD make a "special" environment that "finally" looks in the global environment
+---  when all else fails, but that wouldn't be typesafe in a world where the global enviroment can change)
+let badA x = A x;;
+let tb = lazy (badA (3:nil));; 
+tb;
+deepForce tb;
 
 

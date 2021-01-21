@@ -25056,7 +25056,7 @@ phrase: LET STRING TO
 ## app
 ##
 
-Definition expected: → misplaced
+Definition expected: perhaps you need to put parenthesis around your pattern.
 
 phrase: LET TO
 ##
@@ -25077,7 +25077,7 @@ Definition expected: → misplaced
 
 phrase: NOTATION ID BINL0 TO
 ##
-## Ends in an error in state: 50.
+## Ends in an error in state: 49.
 ##
 ## symbols -> BINL0 . symbols [ SEMI EOF END ]
 ##
@@ -25089,7 +25089,7 @@ In notation description
 
 phrase: NOTATION ID BINL1 TO
 ##
-## Ends in an error in state: 49.
+## Ends in an error in state: 48.
 ##
 ## symbols -> BINL1 . symbols [ SEMI EOF END ]
 ##
@@ -25101,7 +25101,7 @@ In notation description
 
 phrase: NOTATION ID BINL2 TO
 ##
-## Ends in an error in state: 48.
+## Ends in an error in state: 47.
 ##
 ## symbols -> BINL2 . symbols [ SEMI EOF END ]
 ##
@@ -25113,7 +25113,7 @@ In notation description
 
 phrase: NOTATION ID BINL3 TO
 ##
-## Ends in an error in state: 47.
+## Ends in an error in state: 46.
 ##
 ## symbols -> BINL3 . symbols [ SEMI EOF END ]
 ##
@@ -25125,7 +25125,7 @@ In notation description
 
 phrase: NOTATION ID BINL4 TO
 ##
-## Ends in an error in state: 46.
+## Ends in an error in state: 45.
 ##
 ## symbols -> BINL4 . symbols [ SEMI EOF END ]
 ##
@@ -25137,7 +25137,7 @@ In notation description
 
 phrase: NOTATION ID BINL5 TO
 ##
-## Ends in an error in state: 45.
+## Ends in an error in state: 44.
 ##
 ## symbols -> BINL5 . symbols [ SEMI EOF END ]
 ##
@@ -25149,7 +25149,7 @@ In notation description
 
 phrase: NOTATION ID BINL6 TO
 ##
-## Ends in an error in state: 44.
+## Ends in an error in state: 43.
 ##
 ## symbols -> BINL6 . symbols [ SEMI EOF END ]
 ##
@@ -25161,7 +25161,7 @@ In notation description
 
 phrase: NOTATION ID BINL7 TO
 ##
-## Ends in an error in state: 43.
+## Ends in an error in state: 42.
 ##
 ## symbols -> BINL7 . symbols [ SEMI EOF END ]
 ##
@@ -25173,7 +25173,7 @@ In notation description
 
 phrase: NOTATION ID BINL8 TO
 ##
-## Ends in an error in state: 42.
+## Ends in an error in state: 41.
 ##
 ## symbols -> BINL8 . symbols [ SEMI EOF END ]
 ##
@@ -25185,7 +25185,7 @@ In notation description
 
 phrase: NOTATION ID BINL9 TO
 ##
-## Ends in an error in state: 41.
+## Ends in an error in state: 40.
 ##
 ## symbols -> BINL9 . symbols [ SEMI EOF END ]
 ##
@@ -25197,7 +25197,7 @@ In notation description
 
 phrase: NOTATION ID BINR0 TO
 ##
-## Ends in an error in state: 40.
+## Ends in an error in state: 39.
 ##
 ## symbols -> BINR0 . symbols [ SEMI EOF END ]
 ##
@@ -25209,7 +25209,7 @@ In notation description
 
 phrase: NOTATION ID BINR1 TO
 ##
-## Ends in an error in state: 39.
+## Ends in an error in state: 38.
 ##
 ## symbols -> BINR1 . symbols [ SEMI EOF END ]
 ##
@@ -25221,7 +25221,7 @@ In notation description
 
 phrase: NOTATION ID BINR2 TO
 ##
-## Ends in an error in state: 38.
+## Ends in an error in state: 37.
 ##
 ## symbols -> BINR2 . symbols [ SEMI EOF END ]
 ##
@@ -25233,7 +25233,7 @@ In notation description
 
 phrase: NOTATION ID BINR3 TO
 ##
-## Ends in an error in state: 37.
+## Ends in an error in state: 36.
 ##
 ## symbols -> BINR3 . symbols [ SEMI EOF END ]
 ##
@@ -25245,7 +25245,7 @@ In notation description
 
 phrase: NOTATION ID BINR4 TO
 ##
-## Ends in an error in state: 36.
+## Ends in an error in state: 35.
 ##
 ## symbols -> BINR4 . symbols [ SEMI EOF END ]
 ##
@@ -25257,7 +25257,7 @@ In notation description
 
 phrase: NOTATION ID BINR5 TO
 ##
-## Ends in an error in state: 35.
+## Ends in an error in state: 34.
 ##
 ## symbols -> BINR5 . symbols [ SEMI EOF END ]
 ##
@@ -25269,7 +25269,7 @@ In notation description
 
 phrase: NOTATION ID BINR6 TO
 ##
-## Ends in an error in state: 34.
+## Ends in an error in state: 33.
 ##
 ## symbols -> BINR6 . symbols [ SEMI EOF END ]
 ##
@@ -25281,7 +25281,7 @@ In notation description
 
 phrase: NOTATION ID BINR7 TO
 ##
-## Ends in an error in state: 33.
+## Ends in an error in state: 32.
 ##
 ## symbols -> BINR7 . symbols [ SEMI EOF END ]
 ##
@@ -25293,7 +25293,7 @@ In notation description
 
 phrase: NOTATION ID BINR8 TO
 ##
-## Ends in an error in state: 32.
+## Ends in an error in state: 31.
 ##
 ## symbols -> BINR8 . symbols [ SEMI EOF END ]
 ##
@@ -25305,7 +25305,7 @@ In notation description
 
 phrase: NOTATION ID BINR9 TO
 ##
-## Ends in an error in state: 31.
+## Ends in an error in state: 30.
 ##
 ## symbols -> BINR9 . symbols [ SEMI EOF END ]
 ##
@@ -25317,19 +25317,19 @@ In notation description
 
 phrase: NOTATION ID CONID TO
 ##
-## Ends in an error in state: 30.
+## Ends in an error in state: 51.
 ##
-## symbols -> CONID . symbols [ SEMI EOF END ]
+## symbols -> id . symbols [ SEMI EOF END ]
 ##
 ## The known suffix of the stack is as follows:
-## CONID
+## id
 ##
 
 In notation description
 
 phrase: NOTATION ID CONL0 TO
 ##
-## Ends in an error in state: 29.
+## Ends in an error in state: 28.
 ##
 ## symbols -> CONL0 . symbols [ SEMI EOF END ]
 ##
@@ -25341,7 +25341,7 @@ In notation description
 
 phrase: NOTATION ID CONL1 TO
 ##
-## Ends in an error in state: 28.
+## Ends in an error in state: 27.
 ##
 ## symbols -> CONL1 . symbols [ SEMI EOF END ]
 ##
@@ -25353,7 +25353,7 @@ In notation description
 
 phrase: NOTATION ID CONL2 TO
 ##
-## Ends in an error in state: 27.
+## Ends in an error in state: 26.
 ##
 ## symbols -> CONL2 . symbols [ SEMI EOF END ]
 ##
@@ -25365,7 +25365,7 @@ In notation description
 
 phrase: NOTATION ID CONL3 TO
 ##
-## Ends in an error in state: 26.
+## Ends in an error in state: 25.
 ##
 ## symbols -> CONL3 . symbols [ SEMI EOF END ]
 ##
@@ -25377,7 +25377,7 @@ In notation description
 
 phrase: NOTATION ID CONL4 TO
 ##
-## Ends in an error in state: 25.
+## Ends in an error in state: 24.
 ##
 ## symbols -> CONL4 . symbols [ SEMI EOF END ]
 ##
@@ -25389,7 +25389,7 @@ In notation description
 
 phrase: NOTATION ID CONL5 TO
 ##
-## Ends in an error in state: 24.
+## Ends in an error in state: 23.
 ##
 ## symbols -> CONL5 . symbols [ SEMI EOF END ]
 ##
@@ -25401,7 +25401,7 @@ In notation description
 
 phrase: NOTATION ID CONL6 TO
 ##
-## Ends in an error in state: 23.
+## Ends in an error in state: 22.
 ##
 ## symbols -> CONL6 . symbols [ SEMI EOF END ]
 ##
@@ -25413,7 +25413,7 @@ In notation description
 
 phrase: NOTATION ID CONL7 TO
 ##
-## Ends in an error in state: 22.
+## Ends in an error in state: 21.
 ##
 ## symbols -> CONL7 . symbols [ SEMI EOF END ]
 ##
@@ -25425,7 +25425,7 @@ In notation description
 
 phrase: NOTATION ID CONL8 TO
 ##
-## Ends in an error in state: 21.
+## Ends in an error in state: 20.
 ##
 ## symbols -> CONL8 . symbols [ SEMI EOF END ]
 ##
@@ -25437,7 +25437,7 @@ In notation description
 
 phrase: NOTATION ID CONL9 TO
 ##
-## Ends in an error in state: 20.
+## Ends in an error in state: 19.
 ##
 ## symbols -> CONL9 . symbols [ SEMI EOF END ]
 ##
@@ -25449,7 +25449,7 @@ In notation description
 
 phrase: NOTATION ID CONR0 TO
 ##
-## Ends in an error in state: 19.
+## Ends in an error in state: 18.
 ##
 ## symbols -> CONR0 . symbols [ SEMI EOF END ]
 ##
@@ -25461,7 +25461,7 @@ In notation description
 
 phrase: NOTATION ID CONR1 TO
 ##
-## Ends in an error in state: 18.
+## Ends in an error in state: 17.
 ##
 ## symbols -> CONR1 . symbols [ SEMI EOF END ]
 ##
@@ -25473,7 +25473,7 @@ In notation description
 
 phrase: NOTATION ID CONR2 TO
 ##
-## Ends in an error in state: 17.
+## Ends in an error in state: 16.
 ##
 ## symbols -> CONR2 . symbols [ SEMI EOF END ]
 ##
@@ -25485,7 +25485,7 @@ In notation description
 
 phrase: NOTATION ID CONR3 TO
 ##
-## Ends in an error in state: 16.
+## Ends in an error in state: 15.
 ##
 ## symbols -> CONR3 . symbols [ SEMI EOF END ]
 ##
@@ -25497,7 +25497,7 @@ In notation description
 
 phrase: NOTATION ID CONR4 TO
 ##
-## Ends in an error in state: 15.
+## Ends in an error in state: 14.
 ##
 ## symbols -> CONR4 . symbols [ SEMI EOF END ]
 ##
@@ -25509,7 +25509,7 @@ In notation description
 
 phrase: NOTATION ID CONR5 TO
 ##
-## Ends in an error in state: 14.
+## Ends in an error in state: 13.
 ##
 ## symbols -> CONR5 . symbols [ SEMI EOF END ]
 ##
@@ -25521,7 +25521,7 @@ In notation description
 
 phrase: NOTATION ID CONR6 TO
 ##
-## Ends in an error in state: 13.
+## Ends in an error in state: 12.
 ##
 ## symbols -> CONR6 . symbols [ SEMI EOF END ]
 ##
@@ -25533,7 +25533,7 @@ In notation description
 
 phrase: NOTATION ID CONR7 TO
 ##
-## Ends in an error in state: 12.
+## Ends in an error in state: 11.
 ##
 ## symbols -> CONR7 . symbols [ SEMI EOF END ]
 ##
@@ -25545,7 +25545,7 @@ In notation description
 
 phrase: NOTATION ID CONR8 TO
 ##
-## Ends in an error in state: 11.
+## Ends in an error in state: 10.
 ##
 ## symbols -> CONR8 . symbols [ SEMI EOF END ]
 ##
@@ -25557,7 +25557,7 @@ In notation description
 
 phrase: NOTATION ID CONR9 TO
 ##
-## Ends in an error in state: 10.
+## Ends in an error in state: 9.
 ##
 ## symbols -> CONR9 . symbols [ SEMI EOF END ]
 ##
@@ -25569,7 +25569,7 @@ In notation description
 
 phrase: NOTATION ID EQ TO
 ##
-## Ends in an error in state: 9.
+## Ends in an error in state: 8.
 ##
 ## symbols -> EQ . symbols [ SEMI EOF END ]
 ##
@@ -25579,26 +25579,14 @@ phrase: NOTATION ID EQ TO
 
 In notation description
 
-phrase: NOTATION ID ID TO
-##
-## Ends in an error in state: 8.
-##
-## symbols -> ID . symbols [ SEMI EOF END ]
-##
-## The known suffix of the stack is as follows:
-## ID
-##
-
-In notation description
-
 phrase: NOTATION ID NUM ALT
 ##
-## Ends in an error in state: 7.
+## Ends in an error in state: 6.
 ##
-## notation -> ID option(NUM) . symbols [ SEMI EOF END ]
+## notation -> ID NUM . symbols [ SEMI EOF END ]
 ##
 ## The known suffix of the stack is as follows:
-## ID option(NUM)
+## ID NUM
 ##
 
 In notation description
@@ -25619,7 +25607,8 @@ phrase: NOTATION ID TO
 ##
 ## Ends in an error in state: 5.
 ##
-## notation -> ID . option(NUM) symbols [ SEMI EOF END ]
+## notation -> ID . NUM symbols [ SEMI EOF END ]
+## notation -> ID . symbols [ SEMI EOF END ]
 ##
 ## The known suffix of the stack is as follows:
 ## ID
@@ -26156,6 +26145,8 @@ phrase: TO
 ##
 
 Expecting a top-level phrase 
+
+
 
 
 

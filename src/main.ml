@@ -52,12 +52,13 @@ let globalEnv = ref @@ addBindings
     ; ("prim_ge",      num2num2bool (fun n m -> n>=m))
     ; ("True",         mkBool true)
     ; ("False",        mkBool false)
+    ; ("force",        Prim (force (fun v->v)))
+    ; ("deepForce",    Prim deepForce)
     ; ("prim_println", Prim(fun v -> Format.fprintf Format.std_formatter "%a\n%!" pp_value v; v))
     ] 
     emptyEnv
 
 let showAst = ref false
-and showEnv = ref false
 
 let processPhrase = function 
     | Expr ast -> 
@@ -87,9 +88,10 @@ let rec processLexbuf lexbuf =
       | ERR (pos, msg) ->  
         Format.fprintf Format.std_formatter "*** %a %s%!"   Utils.pp_fpos pos msg
   with 
-     (* abandon the current phrase on a lexer error *)
-     ExprLexer.LexError (pos, msg) ->
+  |   (* abandon the current phrase on a lexer error *)
+      ExprLexer.LexError (pos, msg) ->
          Format.fprintf Format.std_formatter "*** Lexing error: %s at %a\n%!" msg  Utils.pp_fpos pos
+  | SyntaxError   msg -> Format.fprintf Format.err_formatter "Syntax error: %s\n%!" msg
   end;
   processLexbuf lexbuf
   
@@ -107,9 +109,14 @@ let processChan path chan =
      
 let processArg path = 
     match path with
+    | "+d" -> Utils.desugarInfix  := true
+    | "-d" -> Utils.desugarInfix  := false
+    | "+l" -> Utils.idLocs  := true
+    | "-l" -> Utils.idLocs  := false
     | "+a" -> showAst := true
-    | "+e" -> showEnv := true
+    | "+e" -> Utils.showEnv := true
     | "+n" -> ExprLexer.showNotation := true
+    | "+m" -> Value.debugMatch := true
     | _ -> let chan = open_in path in processChan path chan
 
 let rec main argv =     
@@ -130,6 +137,7 @@ end
 
 
     
+
 
 
 

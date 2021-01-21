@@ -3,6 +3,10 @@ open Utils
 type tag  = int * string [@printer fun fmt (_,s) -> fprintf fmt "%s" s]
             [@@deriving show { with_path = false }]
 
+let getArity: tag -> int = function (arity, _) -> arity
+
+let pp_full_tag fmt (arity, name) =  Format.fprintf fmt "%s [arity %d]" name arity
+            
 type id   = string       [@printer fun fmt s -> fprintf fmt "%s" s]
             [@@deriving show { with_path = false }]
 
@@ -18,7 +22,7 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
           | Tuple of exprs        [@printer fun fmt es -> fprintf fmt "@[(  %a)@]" pp_exprs es]
           (* Retain parenthesis structure for ease of prettyprinting *)
           | Bra   of expr         [@printer fun fmt e -> fprintf fmt "(%a)" pp_expr e]
-          | Construct of tag * exprs [@printer fun fmt (t,es) -> fprintf fmt "@[%a( %a)@]" pp_tag t pp_exprs es]
+          | Construct of tag * exprs [@printer fun fmt (t,es) -> fprintf fmt "@[(%a %a)@]" pp_tag t (pp_punct_list " " pp_expr) es]
           | If    of expr*expr*expr
           | Ap    of expr*expr    [@printer fun fmt (f,e) -> fprintf fmt "%s %s" (show_expr f)(show_expr e)]
           (* Apply is for  convenience in generating diagnostic messages: it is desugared at runtime *)

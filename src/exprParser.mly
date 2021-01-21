@@ -6,6 +6,8 @@
 %{
         
         open Expr
+        open Utils
+        
 
         let mkNum(base, first, buf) = Con(Num(Utils.num_value base first buf))
         
@@ -13,58 +15,84 @@
         
         let mkString s = Con(String s)
         
+        (* Remove topmost bracket or location information *)
+        let rec rawExpr = function
+        | At(_, e) -> rawExpr e
+        | Bra e    -> rawExpr e
+        | e        -> e
+        
         let mkId          s = Id s
         let mkConId tag = Cid tag
         
-        (* Expose the name: for notation declarations *)
+        (* Transform unsaturated applications of proper constructors into Constructs. *)
+        let rec mkAp loc (rator, rand) = 
+        match rator with
+        |  Bra rator -> mkAp loc (rator, rand)
+        |  Cid tag ->     
+               if getArity tag==0 then 
+               let res = Ap(rator, rand) in begin 
+                  syntaxWarning @@ Format.asprintf "Constant used in construction %a %a" pp_expr res pp_location loc;
+                  res 
+               end else
+                  Construct(tag, [rand])
+         | Construct(tag, exs) ->
+               let res = Construct(tag, exs@[rand]) in
+               let arity = getArity tag in
+               if arity <= List.length exs then 
+                  syntaxWarning @@ Format.asprintf "Constructor of arity %d used in construction %a %a" arity pp_expr res pp_location loc;
+               res
+        | _ -> Ap(rator, rand)
+        
+        (* Expose the name of an operator -- for notation declarations *)
         let rec opToString = function
             | Id s           -> s
             | Cid(_,s)       -> s
             | At(_, op)      -> opToString op
             | _              -> assert false
-                 
+        
+        (* Distinguish proper tuples from bracketed expressions *)
+        (* We keep the bracket in the ast to simplifiy prettyprinting during diagnostivs *)    
         let mkTuple = function
             | [x] -> Bra x
             | xs  -> Tuple xs
             
         let mkFun cases = Fn cases
         
+        
         let rec mkLambda(bvs, body) = 
             match bvs with 
-            | [pat]     -> Fn[(pat, body)]
-            | pat::pats -> Fn[(pat, mkLambda(pats, body))]
+            | [pat]     -> Fn[(rawExpr pat, body)]
+            | pat::pats -> Fn[(rawExpr pat, mkLambda(pats, body))]
             | _         -> assert false
         
         let rec mkLazy(bvs, body) = 
             match bvs with 
-            | [pat]     -> LazyFn(pat, body)
-            | pat::pats -> LazyFn(pat, mkLazy(pats, body))
+            | [pat]     -> LazyFn(rawExpr pat, body)
+            | pat::pats -> LazyFn(rawExpr pat, mkLazy(pats, body))
             | _         -> assert false
-            
-        let mkDef (pattern, body) = 
+                
+        let mkDef loc (pattern, body) = 
             let rec abstractFrom expr pat = 
             (* Format.eprintf "Abstractfrom (%a) %a\n%!" pp_expr expr pp_expr pat; *)
+            let pat = rawExpr pat in
             match pat with
-            | Bra p             -> abstractFrom expr p
-            | At(_, p)          -> abstractFrom expr p
             | Id    _
             | Con   _
             | Cid   _
             | Construct   _
             | Tuple _           -> (pat, expr)
-            | Apply(el, op, er) -> abstractFrom expr (Ap(Ap(op, el), er))
-            | Ap(rator, ((Id _) as rand)) -> abstractFrom (Fn [(rand, expr)]) rator
+            | Apply(el, op, er) -> abstractFrom expr (mkAp loc (mkAp loc (op, el), er))
             | Ap(rator, rand) ->
-            ( match rand with
+            ( let rand = rawExpr rand in
+              match rand with
+              | Id _
               | Con   _
               | Cid   _
               | Construct   _
               | Tuple _ -> abstractFrom (Fn [(rand, expr)]) rator
-              | _       -> 
-                (Format.eprintf "Erroneous pattern: %a in %a\n%!" pp_expr pat pp_expr pattern; failwith "Syntax")
+              | _       -> syntaxError (Format.asprintf "Erroneous operand %a within lhs of definition at %a\n%!" pp_expr rand pp_location loc) 
             )
-            | _        
-              -> (Format.eprintf "Erroneous pattern: %a in %a\n%!" pp_expr pat pp_expr pattern; failwith "Syntax")
+            | _  -> syntaxError (Format.asprintf "Erroneous pattern %a within lhs of definition at %a\n%!" pp_expr pat pp_location loc)
          in abstractFrom body pattern
              
 
@@ -204,7 +232,7 @@ let eod == SEMI
 let eoc == ALT
     
 let def :=
-    | lhs=expr; EQ; body=topexpr;     { mkDef(lhs, body) }
+    | lhs=expr; EQ; body=topexpr;     { mkDef $loc (lhs, body) }
 
 let revcases := 
     | ~=case;                    {[case]}
@@ -216,33 +244,36 @@ let case :=
 let topexpr :=
     | LET; ~=defs; IN; ~=topexpr;                  { Let(defs, topexpr) }
     | IF; g=expr; THEN; e1=expr; ELSE; e2=topexpr; { If(g, e1, e2)}
-    | LAZY; bvs=id+; TO; body=topexpr;             <mkLazy>
-    | LAM; bvs=patterns; TO; body=topexpr;         <mkLambda>
-    | LAM; BRA; ~=cases; KET;                      <mkFun>
+    | LAZY; bvs=bid+; TO; body=topexpr;         <mkLazy>
+    | LAM;  bvs=bid+; TO; body=topexpr;         <mkLambda>
+    | LAM; BRA; ~=cases; KET;                   <mkFun>
     | ~=expr; <>
     
 let expr := 
     | ~=term;                                   {term}
-    | t1=expr; op=infix; t2=expr;               {Apply(t1, op, t2)}
-
+    | el=expr; op=infix; er=expr;               {if !Utils.desugarInfix then 
+                                                    mkAp $loc (mkAp $loc (op, el), er)
+                                                 else 
+                                                    Apply(el, op, er) 
+                                                }
 let term :=
     | ~=app; <>    
 
 let app :=
     | ~=prim;                           {prim}
-    | ~=app; ~=prim;                    {Ap(app,prim)}
+    | ~=app; ~=prim;                    {mkAp $loc (app,prim)}
     
     
 let prim :=
     | ~=simplex;                         {simplex}
     (* Sections *)
-    | BRA; op=infix; ~=expr; KET;        {Bra(Ap(Ap(Expr.flip, Bra(op)), expr))}   
-    | BRA; ~=expr; op=infix; KET;        {Bra(Ap(Bra(op), expr))}
+    | BRA; op=infix; ~=expr; KET;        {Bra(mkAp $loc (mkAp $loc (Expr.flip, Bra(op)), expr))}   
+    | BRA; ~=expr; op=infix; KET;        {Bra(mkAp $loc (Bra(op), expr))}
     (* Balanced *)
     | BRA; eoc; ~=cases; eoc; KET;       <mkFun>
     | FUN; eoc?; ~=cases; NUF;           <mkFun>
 
-let patterns == simplex+
+let pattern == ~=simplex;               {[simplex]}
 
 let simplex == 
     | ~=id;                              {id}
@@ -256,10 +287,15 @@ let revexprlist :=
     | ~=revexprlist; COMMA; ~=expr; { expr::revexprlist }
 
 id  : 
-    |  name=ID                      { At($loc, mkId name) }
+    |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
     |  name=CONID                   { mkConId name }
 
+bid  : 
+     |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
+
 let priority == value=NUM; { Some(mkPriority value)} | { None }
+
+
 
 
 

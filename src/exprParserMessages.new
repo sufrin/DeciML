@@ -2083,7 +2083,7 @@ phrase: BRA BINL0 TO
 ## BRA BINL0
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section 
 
 phrase: BRA BINL1 TO
 ##
@@ -2096,7 +2096,7 @@ phrase: BRA BINL1 TO
 ## BRA BINL1
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINL2 TO
 ##
@@ -2109,7 +2109,7 @@ phrase: BRA BINL2 TO
 ## BRA BINL2
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINL3 TO
 ##
@@ -2122,7 +2122,7 @@ phrase: BRA BINL3 TO
 ## BRA BINL3
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINL4 TO
 ##
@@ -2135,7 +2135,7 @@ phrase: BRA BINL4 TO
 ## BRA BINL4
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINL5 TO
 ##
@@ -2148,7 +2148,7 @@ phrase: BRA BINL5 TO
 ## BRA BINL5
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINL6 TO
 ##
@@ -2161,7 +2161,7 @@ phrase: BRA BINL6 TO
 ## BRA BINL6
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINL7 TO
 ##
@@ -2174,7 +2174,7 @@ phrase: BRA BINL7 TO
 ## BRA BINL7
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINL8 TO
 ##
@@ -2187,7 +2187,7 @@ phrase: BRA BINL8 TO
 ## BRA BINL8
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINL9 TO
 ##
@@ -2200,7 +2200,7 @@ phrase: BRA BINL9 TO
 ## BRA BINL9
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR0 TO
 ##
@@ -2213,7 +2213,7 @@ phrase: BRA BINR0 TO
 ## BRA BINR0
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR1 TO
 ##
@@ -2226,7 +2226,7 @@ phrase: BRA BINR1 TO
 ## BRA BINR1
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR2 TO
 ##
@@ -2239,7 +2239,7 @@ phrase: BRA BINR2 TO
 ## BRA BINR2
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR3 TO
 ##
@@ -2252,7 +2252,7 @@ phrase: BRA BINR3 TO
 ## BRA BINR3
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR4 TO
 ##
@@ -2265,7 +2265,7 @@ phrase: BRA BINR4 TO
 ## BRA BINR4
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR5 TO
 ##
@@ -2278,7 +2278,7 @@ phrase: BRA BINR5 TO
 ## BRA BINR5
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR6 TO
 ##
@@ -2291,7 +2291,7 @@ phrase: BRA BINR6 TO
 ## BRA BINR6
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR7 TO
 ##
@@ -2304,7 +2304,7 @@ phrase: BRA BINR7 TO
 ## BRA BINR7
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR8 TO
 ##
@@ -2317,7 +2317,7 @@ phrase: BRA BINR8 TO
 ## BRA BINR8
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BINR9 TO
 ##
@@ -2330,7 +2330,7 @@ phrase: BRA BINR9 TO
 ## BRA BINR9
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA ALT STRING TO CONID ALT TO
 ##
@@ -2343,7 +2343,7 @@ phrase: BRA BRA ALT STRING TO CONID ALT TO
 ## BRA ALT revcases ALT
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA ALT STRING TO LAM BRA STRING TO CONID KET TO
 ##
@@ -2356,7 +2356,7 @@ phrase: BRA BRA ALT STRING TO LAM BRA STRING TO CONID KET TO
 ## BRA ALT revcases
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA ALT TO
 ##
@@ -2369,7 +2369,7 @@ phrase: BRA BRA ALT TO
 ## BRA ALT
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL0 TO
 ##
@@ -2382,7 +2382,7 @@ phrase: BRA BRA BINL0 TO
 ## BRA BINL0
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL1 TO
 ##
@@ -2395,7 +2395,7 @@ phrase: BRA BRA BINL1 TO
 ## BRA BINL1
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL2 TO
 ##
@@ -2408,7 +2408,7 @@ phrase: BRA BRA BINL2 TO
 ## BRA BINL2
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL3 TO
 ##
@@ -2421,7 +2421,7 @@ phrase: BRA BRA BINL3 TO
 ## BRA BINL3
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL4 TO
 ##
@@ -2434,7 +2434,7 @@ phrase: BRA BRA BINL4 TO
 ## BRA BINL4
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL5 TO
 ##
@@ -2447,7 +2447,7 @@ phrase: BRA BRA BINL5 TO
 ## BRA BINL5
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL6 TO
 ##
@@ -2460,7 +2460,7 @@ phrase: BRA BRA BINL6 TO
 ## BRA BINL6
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL7 TO
 ##
@@ -2473,7 +2473,7 @@ phrase: BRA BRA BINL7 TO
 ## BRA BINL7
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL8 TO
 ##
@@ -2486,7 +2486,7 @@ phrase: BRA BRA BINL8 TO
 ## BRA BINL8
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINL9 TO
 ##
@@ -2499,7 +2499,7 @@ phrase: BRA BRA BINL9 TO
 ## BRA BINL9
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR0 TO
 ##
@@ -2512,7 +2512,7 @@ phrase: BRA BRA BINR0 TO
 ## BRA BINR0
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR1 TO
 ##
@@ -2525,7 +2525,7 @@ phrase: BRA BRA BINR1 TO
 ## BRA BINR1
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR2 TO
 ##
@@ -2538,7 +2538,7 @@ phrase: BRA BRA BINR2 TO
 ## BRA BINR2
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR3 TO
 ##
@@ -2551,7 +2551,7 @@ phrase: BRA BRA BINR3 TO
 ## BRA BINR3
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR4 TO
 ##
@@ -2564,7 +2564,7 @@ phrase: BRA BRA BINR4 TO
 ## BRA BINR4
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR5 TO
 ##
@@ -2577,7 +2577,7 @@ phrase: BRA BRA BINR5 TO
 ## BRA BINR5
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR6 TO
 ##
@@ -2590,7 +2590,7 @@ phrase: BRA BRA BINR6 TO
 ## BRA BINR6
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR7 TO
 ##
@@ -2603,7 +2603,7 @@ phrase: BRA BRA BINR7 TO
 ## BRA BINR7
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR8 TO
 ##
@@ -2616,7 +2616,7 @@ phrase: BRA BRA BINR8 TO
 ## BRA BINR8
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA BINR9 TO
 ##
@@ -2629,7 +2629,7 @@ phrase: BRA BRA BINR9 TO
 ## BRA BINR9
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL0 TO
 ##
@@ -2642,7 +2642,7 @@ phrase: BRA BRA CONL0 TO
 ## BRA CONL0
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL1 TO
 ##
@@ -2655,7 +2655,7 @@ phrase: BRA BRA CONL1 TO
 ## BRA CONL1
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL2 TO
 ##
@@ -2668,7 +2668,7 @@ phrase: BRA BRA CONL2 TO
 ## BRA CONL2
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL3 TO
 ##
@@ -2681,7 +2681,7 @@ phrase: BRA BRA CONL3 TO
 ## BRA CONL3
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL4 TO
 ##
@@ -2694,7 +2694,7 @@ phrase: BRA BRA CONL4 TO
 ## BRA CONL4
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL5 TO
 ##
@@ -2707,7 +2707,7 @@ phrase: BRA BRA CONL5 TO
 ## BRA CONL5
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL6 TO
 ##
@@ -2720,7 +2720,7 @@ phrase: BRA BRA CONL6 TO
 ## BRA CONL6
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL7 TO
 ##
@@ -2733,7 +2733,7 @@ phrase: BRA BRA CONL7 TO
 ## BRA CONL7
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL8 TO
 ##
@@ -2746,7 +2746,7 @@ phrase: BRA BRA CONL8 TO
 ## BRA CONL8
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONL9 TO
 ##
@@ -2759,7 +2759,7 @@ phrase: BRA BRA CONL9 TO
 ## BRA CONL9
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR0 TO
 ##
@@ -2772,7 +2772,7 @@ phrase: BRA BRA CONR0 TO
 ## BRA CONR0
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR1 TO
 ##
@@ -2785,7 +2785,7 @@ phrase: BRA BRA CONR1 TO
 ## BRA CONR1
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR2 TO
 ##
@@ -2798,7 +2798,7 @@ phrase: BRA BRA CONR2 TO
 ## BRA CONR2
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR3 TO
 ##
@@ -2811,7 +2811,7 @@ phrase: BRA BRA CONR3 TO
 ## BRA CONR3
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR4 TO
 ##
@@ -2824,7 +2824,7 @@ phrase: BRA BRA CONR4 TO
 ## BRA CONR4
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR5 TO
 ##
@@ -2837,7 +2837,7 @@ phrase: BRA BRA CONR5 TO
 ## BRA CONR5
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR6 TO
 ##
@@ -2850,7 +2850,7 @@ phrase: BRA BRA CONR6 TO
 ## BRA CONR6
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR7 TO
 ##
@@ -2863,7 +2863,7 @@ phrase: BRA BRA CONR7 TO
 ## BRA CONR7
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR8 TO
 ##
@@ -2876,7 +2876,7 @@ phrase: BRA BRA CONR8 TO
 ## BRA CONR8
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA CONR9 TO
 ##
@@ -2889,7 +2889,7 @@ phrase: BRA BRA CONR9 TO
 ## BRA CONR9
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA EQ TO
 ##
@@ -2902,7 +2902,7 @@ phrase: BRA BRA EQ TO
 ## BRA EQ
 ##
 
-Misplaced symbol
+Expecting the closing ')' or the right hand operand of an infix section
 
 phrase: BRA BRA STRING BINL0 TO
 ##
@@ -2915,7 +2915,7 @@ phrase: BRA BRA STRING BINL0 TO
 ## BRA expr BINL0
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINL1 TO
 ##
@@ -2928,7 +2928,7 @@ phrase: BRA BRA STRING BINL1 TO
 ## BRA expr BINL1
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINL2 TO
 ##
@@ -2941,7 +2941,7 @@ phrase: BRA BRA STRING BINL2 TO
 ## BRA expr BINL2
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINL3 TO
 ##
@@ -2954,7 +2954,7 @@ phrase: BRA BRA STRING BINL3 TO
 ## BRA expr BINL3
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINL4 TO
 ##
@@ -2967,7 +2967,7 @@ phrase: BRA BRA STRING BINL4 TO
 ## BRA expr BINL4
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINL5 TO
 ##
@@ -2980,7 +2980,7 @@ phrase: BRA BRA STRING BINL5 TO
 ## BRA expr BINL5
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINL6 TO
 ##
@@ -2993,7 +2993,7 @@ phrase: BRA BRA STRING BINL6 TO
 ## BRA expr BINL6
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINL7 TO
 ##
@@ -3006,7 +3006,7 @@ phrase: BRA BRA STRING BINL7 TO
 ## BRA expr BINL7
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINL8 TO
 ##
@@ -3019,7 +3019,7 @@ phrase: BRA BRA STRING BINL8 TO
 ## BRA expr BINL8
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINL9 TO
 ##
@@ -3032,7 +3032,7 @@ phrase: BRA BRA STRING BINL9 TO
 ## BRA expr BINL9
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR0 TO
 ##
@@ -3045,7 +3045,7 @@ phrase: BRA BRA STRING BINR0 TO
 ## BRA expr BINR0
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR1 TO
 ##
@@ -3058,7 +3058,7 @@ phrase: BRA BRA STRING BINR1 TO
 ## BRA expr BINR1
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR2 TO
 ##
@@ -3071,7 +3071,7 @@ phrase: BRA BRA STRING BINR2 TO
 ## BRA expr BINR2
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR3 TO
 ##
@@ -3084,7 +3084,7 @@ phrase: BRA BRA STRING BINR3 TO
 ## BRA expr BINR3
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR4 TO
 ##
@@ -3097,7 +3097,7 @@ phrase: BRA BRA STRING BINR4 TO
 ## BRA expr BINR4
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR5 TO
 ##
@@ -3110,7 +3110,7 @@ phrase: BRA BRA STRING BINR5 TO
 ## BRA expr BINR5
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR6 TO
 ##
@@ -3123,7 +3123,7 @@ phrase: BRA BRA STRING BINR6 TO
 ## BRA expr BINR6
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR7 TO
 ##
@@ -3136,7 +3136,7 @@ phrase: BRA BRA STRING BINR7 TO
 ## BRA expr BINR7
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR8 TO
 ##
@@ -3149,7 +3149,7 @@ phrase: BRA BRA STRING BINR8 TO
 ## BRA expr BINR8
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING BINR9 TO
 ##
@@ -3162,7 +3162,7 @@ phrase: BRA BRA STRING BINR9 TO
 ## BRA expr BINR9
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL0 TO
 ##
@@ -3175,7 +3175,7 @@ phrase: BRA BRA STRING CONL0 TO
 ## BRA expr CONL0
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL1 TO
 ##
@@ -3188,7 +3188,7 @@ phrase: BRA BRA STRING CONL1 TO
 ## BRA expr CONL1
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL2 TO
 ##
@@ -3201,7 +3201,7 @@ phrase: BRA BRA STRING CONL2 TO
 ## BRA expr CONL2
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL3 TO
 ##
@@ -3214,7 +3214,7 @@ phrase: BRA BRA STRING CONL3 TO
 ## BRA expr CONL3
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL4 TO
 ##
@@ -3227,7 +3227,7 @@ phrase: BRA BRA STRING CONL4 TO
 ## BRA expr CONL4
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL5 TO
 ##
@@ -3240,7 +3240,7 @@ phrase: BRA BRA STRING CONL5 TO
 ## BRA expr CONL5
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL6 TO
 ##
@@ -3253,7 +3253,7 @@ phrase: BRA BRA STRING CONL6 TO
 ## BRA expr CONL6
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL7 TO
 ##
@@ -3266,7 +3266,7 @@ phrase: BRA BRA STRING CONL7 TO
 ## BRA expr CONL7
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL8 TO
 ##
@@ -3279,7 +3279,7 @@ phrase: BRA BRA STRING CONL8 TO
 ## BRA expr CONL8
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONL9 TO
 ##
@@ -3292,7 +3292,7 @@ phrase: BRA BRA STRING CONL9 TO
 ## BRA expr CONL9
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR0 TO
 ##
@@ -3305,7 +3305,7 @@ phrase: BRA BRA STRING CONR0 TO
 ## BRA expr CONR0
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR1 TO
 ##
@@ -3318,7 +3318,7 @@ phrase: BRA BRA STRING CONR1 TO
 ## BRA expr CONR1
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR2 TO
 ##
@@ -3331,7 +3331,7 @@ phrase: BRA BRA STRING CONR2 TO
 ## BRA expr CONR2
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR3 TO
 ##
@@ -3344,7 +3344,7 @@ phrase: BRA BRA STRING CONR3 TO
 ## BRA expr CONR3
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR4 TO
 ##
@@ -3357,7 +3357,7 @@ phrase: BRA BRA STRING CONR4 TO
 ## BRA expr CONR4
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR5 TO
 ##
@@ -3370,7 +3370,7 @@ phrase: BRA BRA STRING CONR5 TO
 ## BRA expr CONR5
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR6 TO
 ##
@@ -3383,7 +3383,7 @@ phrase: BRA BRA STRING CONR6 TO
 ## BRA expr CONR6
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR7 TO
 ##
@@ -3396,7 +3396,7 @@ phrase: BRA BRA STRING CONR7 TO
 ## BRA expr CONR7
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR8 TO
 ##
@@ -3409,7 +3409,7 @@ phrase: BRA BRA STRING CONR8 TO
 ## BRA expr CONR8
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING CONR9 TO
 ##
@@ -3422,7 +3422,7 @@ phrase: BRA BRA STRING CONR9 TO
 ## BRA expr CONR9
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA STRING EQ TO
 ##
@@ -3435,7 +3435,7 @@ phrase: BRA BRA STRING EQ TO
 ## BRA expr EQ
 ##
 
-Misplaced symbol
+Expecting the closing ')' of a left-sectioned infix, or the continuing of a parenthesised expression.
 
 phrase: BRA BRA TO
 ##
@@ -25317,12 +25317,12 @@ In notation description
 
 phrase: NOTATION ID CONID TO
 ##
-## Ends in an error in state: 29.
+## Ends in an error in state: 51.
 ##
-## symbols -> CONID . symbols [ SEMI EOF END ]
+## symbols -> id . symbols [ SEMI EOF END ]
 ##
 ## The known suffix of the stack is as follows:
-## CONID
+## id
 ##
 
 In notation description
@@ -25581,12 +25581,12 @@ In notation description
 
 phrase: NOTATION ID ID TO
 ##
-## Ends in an error in state: 7.
+## Ends in an error in state: 51.
 ##
-## symbols -> ID . symbols [ SEMI EOF END ]
+## symbols -> id . symbols [ SEMI EOF END ]
 ##
 ## The known suffix of the stack is as follows:
-## ID
+## id
 ##
 
 In notation description
@@ -25651,7 +25651,7 @@ phrase: STRING BINL0 TO
 ## expr BINL0
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINL1 TO
 ##
@@ -25663,7 +25663,7 @@ phrase: STRING BINL1 TO
 ## expr BINL1
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINL2 TO
 ##
@@ -25675,7 +25675,7 @@ phrase: STRING BINL2 TO
 ## expr BINL2
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINL3 TO
 ##
@@ -25687,7 +25687,7 @@ phrase: STRING BINL3 TO
 ## expr BINL3
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINL4 TO
 ##
@@ -25699,7 +25699,7 @@ phrase: STRING BINL4 TO
 ## expr BINL4
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINL5 TO
 ##
@@ -25711,7 +25711,7 @@ phrase: STRING BINL5 TO
 ## expr BINL5
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINL6 TO
 ##
@@ -25723,7 +25723,7 @@ phrase: STRING BINL6 TO
 ## expr BINL6
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINL7 TO
 ##
@@ -25735,7 +25735,7 @@ phrase: STRING BINL7 TO
 ## expr BINL7
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINL8 TO
 ##
@@ -25747,7 +25747,7 @@ phrase: STRING BINL8 TO
 ## expr BINL8
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINL9 TO
 ##
@@ -25759,7 +25759,7 @@ phrase: STRING BINL9 TO
 ## expr BINL9
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR0 TO
 ##
@@ -25771,7 +25771,7 @@ phrase: STRING BINR0 TO
 ## expr BINR0
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR1 TO
 ##
@@ -25783,7 +25783,7 @@ phrase: STRING BINR1 TO
 ## expr BINR1
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR2 TO
 ##
@@ -25795,7 +25795,7 @@ phrase: STRING BINR2 TO
 ## expr BINR2
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR3 TO
 ##
@@ -25807,7 +25807,7 @@ phrase: STRING BINR3 TO
 ## expr BINR3
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR4 TO
 ##
@@ -25819,7 +25819,7 @@ phrase: STRING BINR4 TO
 ## expr BINR4
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR5 TO
 ##
@@ -25831,7 +25831,7 @@ phrase: STRING BINR5 TO
 ## expr BINR5
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR6 TO
 ##
@@ -25843,7 +25843,7 @@ phrase: STRING BINR6 TO
 ## expr BINR6
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR7 TO
 ##
@@ -25855,7 +25855,7 @@ phrase: STRING BINR7 TO
 ## expr BINR7
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR8 TO
 ##
@@ -25867,7 +25867,7 @@ phrase: STRING BINR8 TO
 ## expr BINR8
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING BINR9 TO
 ##
@@ -25879,7 +25879,7 @@ phrase: STRING BINR9 TO
 ## expr BINR9
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL0 TO
 ##
@@ -25891,7 +25891,7 @@ phrase: STRING CONL0 TO
 ## expr CONL0
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL1 TO
 ##
@@ -25903,7 +25903,7 @@ phrase: STRING CONL1 TO
 ## expr CONL1
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL2 TO
 ##
@@ -25915,7 +25915,7 @@ phrase: STRING CONL2 TO
 ## expr CONL2
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL3 TO
 ##
@@ -25927,7 +25927,7 @@ phrase: STRING CONL3 TO
 ## expr CONL3
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL4 TO
 ##
@@ -25939,7 +25939,7 @@ phrase: STRING CONL4 TO
 ## expr CONL4
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL5 TO
 ##
@@ -25951,7 +25951,7 @@ phrase: STRING CONL5 TO
 ## expr CONL5
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL6 TO
 ##
@@ -25963,7 +25963,7 @@ phrase: STRING CONL6 TO
 ## expr CONL6
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL7 TO
 ##
@@ -25975,7 +25975,7 @@ phrase: STRING CONL7 TO
 ## expr CONL7
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL8 TO
 ##
@@ -25987,7 +25987,7 @@ phrase: STRING CONL8 TO
 ## expr CONL8
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONL9 TO
 ##
@@ -25999,7 +25999,7 @@ phrase: STRING CONL9 TO
 ## expr CONL9
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR0 TO
 ##
@@ -26011,7 +26011,7 @@ phrase: STRING CONR0 TO
 ## expr CONR0
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR1 TO
 ##
@@ -26023,7 +26023,7 @@ phrase: STRING CONR1 TO
 ## expr CONR1
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR2 TO
 ##
@@ -26035,7 +26035,7 @@ phrase: STRING CONR2 TO
 ## expr CONR2
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR3 TO
 ##
@@ -26047,7 +26047,7 @@ phrase: STRING CONR3 TO
 ## expr CONR3
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR4 TO
 ##
@@ -26059,7 +26059,7 @@ phrase: STRING CONR4 TO
 ## expr CONR4
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR5 TO
 ##
@@ -26071,7 +26071,7 @@ phrase: STRING CONR5 TO
 ## expr CONR5
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR6 TO
 ##
@@ -26083,7 +26083,7 @@ phrase: STRING CONR6 TO
 ## expr CONR6
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR7 TO
 ##
@@ -26095,7 +26095,7 @@ phrase: STRING CONR7 TO
 ## expr CONR7
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR8 TO
 ##
@@ -26107,7 +26107,7 @@ phrase: STRING CONR8 TO
 ## expr CONR8
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING CONR9 TO
 ##
@@ -26119,7 +26119,7 @@ phrase: STRING CONR9 TO
 ## expr CONR9
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING EQ TO
 ##
@@ -26131,7 +26131,7 @@ phrase: STRING EQ TO
 ## expr EQ
 ##
 
-Misplaced symbol 
+After an infix operator. Expecting another expression. 
 
 phrase: STRING TO
 ##
@@ -26144,7 +26144,7 @@ phrase: STRING TO
 ## app
 ##
 
-Misplaced symbol 
+Expecting a juxtaposition (application) or the end or continuation of an expression 
 
 phrase: TO
 ##
@@ -26156,7 +26156,8 @@ phrase: TO
 ##
 ##
 
-Misplaced symbol 
+Expecting a top-level phrase 
+
 
 
 

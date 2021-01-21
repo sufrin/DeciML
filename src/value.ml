@@ -2,12 +2,14 @@ open Format
 open Expr
 open Utils
 
+let shortenEnv e = if !Utils.showEnv then e else []
+
 type value  = 
  | Const   of con               [@printer fun fmt c       -> fprintf fmt "`%a" pp_con c]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "(%a)" (pp_punct_list "," pp_value) vs]
  | Cons    of tag * values      [@printer fun fmt (t, v)  -> fprintf fmt "(`%a %a)" pp_tag t ((pp_punct_list " " pp_value)) v]
- | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ (%a) (in %a)"  pp_cases cs pp_env []] (********)
- | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "\\\\ %a (in %a)"  pp_case c pp_env []] (********)
+ | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ (%a) (in %a)"  pp_cases cs pp_env (shortenEnv e)] 
+ | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "\\\\ %a (in %a)"  pp_case c pp_env (shortenEnv e)] 
  | Thunk   of thunk             [@printer fun fmt r       -> fprintf fmt "@@%a" pp_thunk r]
  | Prim    of (value -> value)  [@opaque]
  | Unbound of id                [@printer fun fmt id      -> fprintf fmt "Unbound %s" (show_id id)]
@@ -19,7 +21,10 @@ and
   [@@deriving show { with_path = false }]
   
 and thunk = env * expr * value option ref 
-            [@printer fun fmt (env, expr, _)  -> fprintf fmt "%a ~> %a" pp_env env pp_expr expr]
+            [@printer fun fmt (env, expr, v)  -> fprintf fmt "%a ~> %a (%s)" 
+                                                             pp_env (shortenEnv env) 
+                                                             pp_expr expr 
+                                                             (match !v with None->""|Some v -> show_value v)]
   [@@deriving show { with_path = false }]
 
 and 
@@ -94,8 +99,7 @@ let recFix bs = function (Rec r :: _ as env) -> (r:=bs; env) | _ -> failwith "re
 let (>>) f g x = g(f x)
 
 
-let debuga     = true
-let debugMatch = true
+let debugMatch = ref false
 
 
 (* Pattern matching generates a bindings extension *)
@@ -108,16 +112,21 @@ let loop2: ('state->'a->'b->'state) ->  'state -> ('a list * 'b list) -> 'state 
     in  loop
 
 let rec matchPat: pat -> value -> bindings -> bindings = fun p v bs -> 
-Format.eprintf "match %a with %a\n%!" pp_pat p pp_value v;
+if !debugMatch then eprintf "match %a with %a\n%!" pp_pat p pp_value v;
 match p, v with 
 | At(_, p),     v                              -> matchPat p v bs  (* just in case we left a location in *)
+| Bra(p),       v                              -> matchPat p v bs  
 | Id i,          _                             -> addBinding i v bs
-| Tuple ps,     Tup vs                         -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs)
-| Construct (c, ps), Cons (c', vs') when c=c'  -> Format.eprintf "-- Constructors %a -- %a\n%!" pp_tag c pp_tag c';  loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
-| Construct (c, ps), Cons (c', vs')            -> Format.eprintf "-- Constructors %a -- %a\n%!" pp_tag c pp_tag c';  loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
+| Tuple ps,     Tup vs'                        -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
 | Con c,        Const c' when c=c'             -> emptyBindings
 | Cid t,        Const(Tag t') when t=t'        -> emptyBindings
-| _,        _                                  -> if debugMatch then eprintf "@." else (); noMatch()
+| Construct (c, ps), Cons (c', vs') when c=c'  -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
+(* This is for when we don't desugar infixes *)
+| Apply(pl, Cid c, pr), Cons (c', vs') when c=c' -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings ([pl;pr], vs')
+(*********************************************)
+(* Non-matching *)
+| Construct (c, _), Cons (c', _)               -> if !debugMatch then eprintf "-- Constructors %a -- %a\n%!" pp_full_tag c pp_full_tag c'; noMatch()                                           
+| _,        _                                  -> if !debugMatch then eprintf "@." else (); noMatch()
  
 
 (* Utilities that throw errors that will eventually be detected by a type checker *)
@@ -209,7 +218,16 @@ let force k = function
    | Some v -> k v
    ) 
 |  v -> k v
+
+
+let rec deepForce v = match v with
+| Thunk _       -> deepForce(force (fun v->v) v)
+| Tup vs        -> Tup(List.map deepForce vs)
+| Cons(c, vs)   -> Cons(c, List.map deepForce vs)
+| _             -> v
+
  
+
 
 
 

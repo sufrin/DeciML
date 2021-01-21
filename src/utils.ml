@@ -63,7 +63,20 @@ let pp_punct_list punct pp_item  fmt items =
 (* Semantic error exceptions *)
 
 exception SemanticError of string
+let semanticError: string -> 'a = fun s -> raise (SemanticError s)
 
-let semanticError s = raise (SemanticError s)
+exception SyntaxError   of string
+let syntaxError: string -> 'a = fun s -> raise (SyntaxError s)
+
+
+let syntaxWarning s = Format.eprintf "Warning: %s\n" s
+
+(* Switches *)
+
+let desugarInfix = ref false
+
+and idLocs = ref false 
+
+and showEnv = ref false
 
 

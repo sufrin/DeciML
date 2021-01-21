@@ -100,8 +100,6 @@ let message =
         "In notation description\n"
     | 6 ->
         "In notation description\n"
-    | 7 ->
-        "In notation description\n"
     | 8 ->
         "In notation description\n"
     | 9 ->
@@ -144,7 +142,7 @@ let message =
         "In notation description\n"
     | 28 ->
         "In notation description\n"
-    | 29 ->
+    | 51 ->
         "In notation description\n"
     | 30 ->
         "In notation description\n"
@@ -189,7 +187,7 @@ let message =
     | 101 ->
         "Definition expected: \226\134\146 misplaced\n"
     | 2745 ->
-        "Definition expected: \226\134\146 misplaced\n"
+        "Definition expected: perhaps you need to put parenthesis around your pattern.\n"
     | 4636 ->
         "Misplaced symbol on rhs of definition\n"
     | 4931 ->
