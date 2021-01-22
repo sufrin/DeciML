@@ -1,5 +1,6 @@
 open Format
 
+
 let rec showList punct show  = 
 function   []     -> ""
 |          [v]    -> show v
@@ -62,14 +63,12 @@ let pp_punct_list punct pp_item  fmt items =
 
 let isOp name = (* Ask the Lexer is better *)
     let c = name.[0] in not (('A' <= c && c <= 'Z')||('a' <= c && c <= 'z')||c='_')
-
  
-let pp_cons pp_value fmt ((arity, name), vs) = 
-    if arity=2 && isOp name then 
-       pp_punct_list name pp_value fmt vs 
-    else
-       Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
-
+let pp_cons pp_value fmt ((_, name), vs) = 
+    let open Syntaxrole in
+        match getRole name with 
+        | Infix _ -> pp_punct_list name pp_value fmt vs 
+        | Nonfix  -> Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
 
 (* Semantic error exceptions *)
 
@@ -89,6 +88,7 @@ let desugarInfix = ref false
 and idLocs = ref false 
 
 and showEnv = ref false
+
 
 
 

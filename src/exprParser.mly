@@ -100,7 +100,8 @@
 
 %token <int*int*string> NUM (* base, start, rep *)
 
-%token <int*string>  (* trying arity *)
+(* we associate arity with constant symbols to support runtime sanity checking *)
+%token <int*string>  
        CONID 
        
 %token <string> 
@@ -272,7 +273,7 @@ let prim :=
     (* Balanced *)
     | BRA; eoc; ~=cases; eoc; KET;       <mkFun>
     | FUN; eoc?; ~=cases; NUF;           <mkFun>
-
+    
 let pattern == ~=simplex;               {[simplex]}
 
 let simplex == 
@@ -294,6 +295,7 @@ bid  :
      |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
 
 let priority == value=NUM; { Some(mkPriority value)} | { None }
+
 
 
 

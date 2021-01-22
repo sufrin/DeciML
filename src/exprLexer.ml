@@ -41,13 +41,13 @@ open ExprParser
     let mkMath    id = try Hashtbl.find idMap id with Not_found -> ret id @@ BINL9 id
     let mkMathCon id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONL9 id
     
-    type assoc = L | R
-    type role  = Infix of assoc*int | Nonfix
     
     (* External interface for pretty-printing *)
-    let syntaxRole id =
+    let getRole id =
         try 
-           let role = 
+           let open Syntaxrole in
+           let
+               role = 
                match Hashtbl.find idMap id with
                 | CONL0 _ | BINL0 _ -> Infix(L, 0)
                 | CONL1 _ | BINL1 _ -> Infix(L, 1)
@@ -69,6 +69,7 @@ open ExprParser
                 | CONR7 _ | BINR7 _ -> Infix(R, 7)
                 | CONR8 _ | BINR8 _ -> Infix(R, 8)
                 | CONR9 _ | BINR9 _ -> Infix(R, 9)
+                | EQ _    -> Infix(R, 3)
                 | ID _    -> Nonfix
                 | CONID _ -> Nonfix
                 | _ -> failwith ("Syntax role inquiry for reserved symbol: "^id)
@@ -76,7 +77,9 @@ open ExprParser
                 role 
         with 
            Not_found -> failwith ("Syntax role inquiry for unknown symbol: "^id)
-
+    
+    (* Brute-force export *)
+    let _ = Syntaxrole.setGetRole getRole
        
     let leftOpSymbol = Array.of_list
     [ (fun x -> BINL0(x))
@@ -263,6 +266,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

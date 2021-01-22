@@ -84,6 +84,7 @@ let rec processLexbuf lexbuf =
         (try processPhrase ast with
         | SemanticError msg -> Format.fprintf Format.err_formatter "Runtime error: %s\n%!" msg
         | Failure msg       -> Format.fprintf Format.err_formatter "Syntax error: %s\n%!" msg
+        | Stdlib.Sys.Break  -> Format.fprintf Format.err_formatter "[Interrupted]\n%!" 
         )
       | ERR (pos, msg) ->  
         Format.fprintf Format.std_formatter "*** %a %s%!"   Utils.pp_fpos pos msg
@@ -91,6 +92,7 @@ let rec processLexbuf lexbuf =
   |   (* abandon the current phrase on a lexer error *)
       ExprLexer.LexError (pos, msg) ->
          Format.fprintf Format.std_formatter "*** Lexing error: %s at %a\n%!" msg  Utils.pp_fpos pos
+  | Stdlib.Sys.Break  -> Format.fprintf Format.err_formatter "[Interrupted]\n%!" 
   | SyntaxError   msg -> Format.fprintf Format.err_formatter "Syntax error: %s\n%!" msg
   end;
   processLexbuf lexbuf
@@ -137,6 +139,7 @@ end
 
 
     
+
 
 
 
