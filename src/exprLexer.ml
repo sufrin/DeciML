@@ -40,6 +40,42 @@ open ExprParser
     let mkCONID   id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONID(0, id) (* Default arity is 0 *)
     let mkMath    id = try Hashtbl.find idMap id with Not_found -> ret id @@ BINL9 id
     let mkMathCon id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONL9 id
+    
+    type assoc = L | R
+    type role  = Infix of assoc*int | Nonfix
+    
+    (* External interface for pretty-printing *)
+    let syntaxRole id =
+        try 
+           let role = 
+               match Hashtbl.find idMap id with
+                | CONL0 _ | BINL0 _ -> Infix(L, 0)
+                | CONL1 _ | BINL1 _ -> Infix(L, 1)
+                | CONL2 _ | BINL2 _ -> Infix(L, 2)
+                | CONL3 _ | BINL3 _ -> Infix(L, 3)
+                | CONL4 _ | BINL4 _ -> Infix(L, 4)
+                | CONL5 _ | BINL5 _ -> Infix(L, 5)
+                | CONL6 _ | BINL6 _ -> Infix(L, 6)
+                | CONL7 _ | BINL7 _ -> Infix(L, 7)
+                | CONL8 _ | BINL8 _ -> Infix(L, 8)
+                | CONL9 _ | BINL9 _ -> Infix(L, 9)
+                | CONR0 _ | BINR0 _ -> Infix(R, 0)
+                | CONR1 _ | BINR1 _ -> Infix(R, 1)
+                | CONR2 _ | BINR2 _ -> Infix(R, 2)
+                | CONR3 _ | BINR3 _ -> Infix(R, 3)
+                | CONR4 _ | BINR4 _ -> Infix(R, 4)
+                | CONR5 _ | BINR5 _ -> Infix(R, 5)
+                | CONR6 _ | BINR6 _ -> Infix(R, 6)
+                | CONR7 _ | BINR7 _ -> Infix(R, 7)
+                | CONR8 _ | BINR8 _ -> Infix(R, 8)
+                | CONR9 _ | BINR9 _ -> Infix(R, 9)
+                | ID _    -> Nonfix
+                | CONID _ -> Nonfix
+                | _ -> failwith ("Syntax role inquiry for reserved symbol: "^id)
+        in
+                role 
+        with 
+           Not_found -> failwith ("Syntax role inquiry for unknown symbol: "^id)
 
        
     let leftOpSymbol = Array.of_list
@@ -227,6 +263,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 
