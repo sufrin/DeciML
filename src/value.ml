@@ -5,9 +5,9 @@ open Utils
 let shortenEnv e = if !Utils.showEnv then e else []
 
 type value  = 
- | Const   of con               [@printer fun fmt c       -> fprintf fmt "`%a" pp_con c]
+ | Const   of con               [@printer fun fmt c       -> fprintf fmt "%a" pp_con c]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "(%a)" (pp_punct_list "," pp_value) vs]
- | Cons    of tag * values      [@printer fun fmt (t, v)  -> fprintf fmt "(`%a %a)" pp_tag t ((pp_punct_list " " pp_value)) v]
+ | Cons    of tag * values      [@printer pp_cons pp_value]
  | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ (%a) (in %a)"  pp_cases cs pp_env (shortenEnv e)] 
  | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "\\\\ %a (in %a)"  pp_case c pp_env (shortenEnv e)] 
  | Thunk   of thunk             [@printer fun fmt r       -> fprintf fmt "@@%a" pp_thunk r]
@@ -83,16 +83,21 @@ let emptyBindings: bindings = []
 (*    Recursive Environment construction  *)
 
 (* 
-    An environment built by extending e with a new empty environment layer, for later knot-tying by recFix 
+    An environment built by extending e with a new empty environment
+    layer, for later knot-tying by recFix
 *)
 let recEnv e = Rec(ref emptyBindings) :: e
 
 (*  
-    recFix bs env "ties the knot" in env by making the first layer of env refer to bs, providing  
-    bs are bindings of variables to values constructed in env. Each value will EMBED env unless
-    it is a normal form; so free variable references from it using env will themselves use env.
+    recFix bs env "ties the knot" in env by making the first layer
+    of env refer to bs, providing bs are bindings of variables to
+    values constructed in env. Each value will EMBED env unless it
+    is a normal form; so free variable references from it using env
+    will themselves use env.
 *)
-let recFix bs = function (Rec r :: _ as env) -> (r:=bs; env) | _ -> failwith "recFix at invalid env"
+let recFix bs = function 
+(Rec r :: _ as env) -> (r:=bs; env) 
+| _                 -> failwith "recFix at invalid env"
 
 (* Continuation Composition *)
 
@@ -155,14 +160,15 @@ let rec eval: ?loc:Utils.location option -> env -> cont -> expr -> value = fun ?
      let choose = fun v -> eval env k (if isTrue v then e1 else e2)
      in  eval env choose g
 |    Ap (rator, rand) ->
-        let apply = function
+        let rec apply = function
             | Cons(t, v)         ->  checkArity (List.length v) t; eval env (fun w -> k(Cons(t, v@[w]))) rand 
             | Const(Tag t)       ->  checkArity 0 t;               eval env (fun v -> k(Cons(t, [v]))) rand 
             | Prim f             ->  eval env (f >> k) rand
             | Fun(defenv, cases) ->  eval env (fun v -> evalCases defenv k v cases) rand
             | LazyFun(defenv, (Id i, body)) ->  
-               let env' = bind i (Thunk(defenv, rand, ref None)) env 
+               let env' = bind i (Thunk(env, rand, ref None)) defenv 
                in  eval env' k body
+            | (Thunk _) as op    ->  force apply op 
             | other              ->  k(Fail (show_value other))
         in  
             eval env apply rator
@@ -211,7 +217,7 @@ in evalFirst cases
 and evalCase: env -> cont -> value -> def -> value = fun e k v -> function (lhs, rhs) -> 
     let bindings = matchPat lhs v emptyBindings in eval (addBindings bindings e) k rhs 
     
-let force k = function
+and force k = function
 |  Thunk(env, expr, vr) ->
    (match !vr with
    | None   -> eval env (fun v -> vr:=Some v; k v) expr 
@@ -227,6 +233,8 @@ let rec deepForce v = match v with
 | _             -> v
 
  
+
+
 
 
 

@@ -22,7 +22,8 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
           | Tuple of exprs        [@printer fun fmt es -> fprintf fmt "@[(  %a)@]" pp_exprs es]
           (* Retain parenthesis structure for ease of prettyprinting *)
           | Bra   of expr         [@printer fun fmt e -> fprintf fmt "(%a)" pp_expr e]
-          | Construct of tag * exprs [@printer fun fmt (t,es) -> fprintf fmt "@[(%a %a)@]" pp_tag t (pp_punct_list " " pp_expr) es]
+          | Construct of tag * exprs [@printer pp_cons pp_expr]
+          (* [@printer fun fmt (t,es) -> fprintf fmt "@[(%a %a)@]" pp_tag t (pp_punct_list " " pp_expr) es] *)
           | If    of expr*expr*expr
           | Ap    of expr*expr    [@printer fun fmt (f,e) -> fprintf fmt "%s %s" (show_expr f)(show_expr e)]
           (* Apply is for  convenience in generating diagnostic messages: it is desugared at runtime *)
@@ -75,6 +76,7 @@ type t   = expr [@printer pp_expr]
 
 (* For desugaring *)
 let flip = Id "prim_flip"
+
 
 
 

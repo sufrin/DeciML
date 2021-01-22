@@ -1,7 +1,8 @@
 notation rightdata 3 :  ;
          data nil       ;
          data 1 A B     ;
-         data 2 X Y     
+         data 2 X Y     ;
+         right 0 !!     
 ;;
 
 --+ Some definitions
@@ -11,6 +12,8 @@ let isA   = λ ( A x -> True | B x -> False );;
 let eX    = (| X x y -> (x,y) |);;
 let eY    = λ ( Y x y -> (x,y,z) );;
 let ez    = λ x y z -> (x,y,z);;
+let (a !! b) = let c=prim_println a in b;;
+
 
 --+ null nil = True; null (3:nil)=False; ditto for nullz
 null    nil;;
@@ -18,7 +21,7 @@ null    (3:nil);;
 nullz   nil;;
 nullz   (3:nil);;
 
---+ 
+--+ Deconstructions
 eX(X 1 2);;
 eY(Y 1 2);;
 ez 1 2 3;;
@@ -28,8 +31,9 @@ let mkA   = \\ x -> A x;;
 let lazy  = \\ x -> (x,x);;
 
 let p1 (x,y)=x;
-    p2(x,y)=y;;
-let lez = lazy(ez 1 2 3);;
+    p2 (x,y)=y;;
+    
+let lez = lazy("ez" !! ez 1 2 3);;
 
 lez;
 
@@ -39,9 +43,7 @@ force(p1 lez);
 
 lez;;
 
---+ deep forcing
-
-
+--+ Deep forcing
 let td = lazy (mkA (3:nil));;
 td;
 deepForce td;
@@ -50,15 +52,52 @@ let te = lazy (A (3:nil));;
 te;
 deepForce te;
 
---+ deepforcing here will fail: because lazy's closure doesn't contain badA
---- This is counterintuitive: but what environment SHOULD a lazy function enclose 
---- if it isn't that current at its point of abstraction? 
---- This underscores the potential need for a SYNTAX for deferred expressions.
---- (Of course we COULD make a "special" environment that "finally" looks in the global environment
----  when all else fails, but that wouldn't be typesafe in a world where the global enviroment can change)
+--+ Forcing here exposed a typo in the environment construction of thunks
+--+ constructed at the application of a lazy function. [Now fixed]
 let badA x = A x;;
 let tb = lazy (badA (3:nil));; 
 tb;
 deepForce tb;
+
+--+ Higher order laziness
+let pair = \\ i j -> (i, j);;
+
+let pr1 = pair (ez 1 2 3);; pr1;
+
+let pr2 = pr1 (ez 4 5 6);; pr2;
+
+deepForce p2;
+
+--+ Infinite structures, strictness, etc
+
+let delay      = \\ x->x;;
+let strict f l = f(force l);;
+
+let head   = strict (| x:xs -> x  |);
+    tail   = strict (| x:xs -> xs |);
+    isCons = strict (| x:xs -> True | other -> False |) 
+    ;;
+    
+let ident x   = x;
+    const x y = x;;
+    
+let (&&) = (| True -> ident      | False -> const False |);;
+let (||) = (| True -> const True | False -> ident |);;
+
+let map f l = if isCons l then f(head l) : delay(map f (tail l)) else nil;;
+
+let succ = prim_succ; pred = prim_pred; (=) = prim_eq; (>) = prim_gr;;
+
+let take n l = if (n>0) && isCons l then head l:take (pred n)(tail l) else nil;;
+
+let ones = 1 : (delay ones);;
+
+let nats = delay (0 : delay(map succ nats));;
+
+
+
+
+
+
 
 
