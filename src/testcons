@@ -72,36 +72,3 @@ let pr2 = pr1 (ez 4 5 6);; pr2;
 
 deepForce p2;
 
---+ Infinite structures, strictness, etc
-
-let delay      = \\ x->x;;
-let strict f l = f(force l);;
-
-let head   = strict (| x:xs -> x  |);
-    tail   = strict (| x:xs -> xs |);
-    isCons = strict (| x:xs -> True | other -> False |) 
-    ;;
-    
-let ident x   = x;
-    const x y = x;;
-    
-let (&&) = (| True -> ident      | False -> const False |);;
-let (||) = (| True -> const True | False -> ident |);;
-
-let map f l = if isCons l then f(head l) : delay(map f (tail l)) else nil;;
-
-let succ = prim_succ; pred = prim_pred; (=) = prim_eq; (>) = prim_gr;;
-
-let take n l = if (n>0) && isCons l then head l:take (pred n)(tail l) else nil;;
-
-let ones = 1 : (delay ones);;
-
-let nats = delay (0 : delay(map succ nats));;
-
-
-
-
-
-
-
-

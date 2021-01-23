@@ -1,0 +1,65 @@
+text abbrev div \u00F7 # ÷
+text abbrev ><  \u00D7 # ×
+
+text abbrev A   \u2200 # ∀
+text abbrev C   \u2201 # ∁
+text abbrev del \u2202 # ∂
+text abbrev E   \u2203 # ∃
+text abbrev /E  \u2204 # ∄
+text abbrev empty \u2205 # ∅
+text abbrev del \u2206 # ∆
+text abbrev led \u2207 # ∇
+text abbrev in  \u2208 # ∈
+text abbrev /in \u2209 # ∉
+text abbrev inn \u220A # ∊
+text abbrev ni  \u220B # ∋
+text abbrev /ni \u220C # ∌
+text abbrev /nni \u220D # ∍
+text abbrev []   \u220E # ∎
+text abbrev prod \u220F # ∏
+text abbrev dorp \u2210 # ∐
+text abbrev sum \u2211 # ∑
+text abbrev o \u2218 # ∘
+text abbrev dot \u2219 # ∙
+text abbrev tick \u221A # √
+text abbrev 8 \u221E # ∞
+text abbrev and \u2227 # ∧
+text abbrev or \u2228 # ∨
+text abbrev cap \u2229 # ∩
+text abbrev cup \u222A # ∪
+text abbrev == \u2261 # ≡
+text abbrev /== \u2262 # ≢
+text abbrev leq \u2264 # ≤
+text abbrev geq \u2265 # ≥
+text abbrev min \u2293 # ⊓
+text abbrev max \u2294 # ⊔
+text abbrev o+ \u2295 # ⊕
+text abbrev o- \u2296 # ⊖
+text abbrev ox \u2297 # ⊗
+text abbrev o/ \u2298 # ⊘
+text abbrev o. \u2299 # ⊙
+text abbrev oo \u229A # ⊚
+text abbrev :  \u2982 # ⦂ 
+text abbrev <  \u27E8 # ⟨
+text abbrev >  \u27E9 # ⟩ 
+
+text abbrev ;; \u2a3e # ⨾
+
+# outfixes
+
+text abbrev lc \u2308 #⌈
+text abbrev rc \u2309 #⌉
+
+text abbrev lf \u230A #⌊
+text abbrev rf \u230B #⌋
+
+# INSIDE
+
+text abbrev /// \u2afb # ⫻
+
+
+
+
+
+
+

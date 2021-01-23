@@ -1,0 +1,65 @@
+--+ Infinite structures, strictness, etc
+
+notation right     3 :: ; 
+         rightdata 3 :  ;
+         data      nil
+         ;;
+
+let delay      = \\ x->x  ;
+    strict f l = f(force l)
+    ;;
+
+let head   = strict (| x:xs -> x  |);
+    tail   = strict (| x:xs -> xs |);
+    isCons = strict (| x:xs -> True | other -> False |); 
+    null   = strict (| nil  -> True | other -> False |) 
+    ;;
+    
+let ident x   = x;
+    const x y = x;;
+    
+let (&&) = (| True -> ident      | False -> const False |);
+    (||) = (| True -> const True | False -> ident |)
+    ;;
+
+let map f l = if isCons l then f(head l) : delay(map f (tail l)) else nil;;
+
+let succ = prim_succ; pred = prim_pred; (=) = prim_eq; (>) = prim_gr;;
+
+let take n l = if (n>0) && isCons l then head l:take (pred n)(tail l) else nil;;
+
+let ones = 1 : delay ones;;
+
+let nats = 0 : delay(map succ nats);;
+
+--+ take 20 nats
+take 20 nats;;
+
+--+ Lazy-tailed cons, and lazy map
+
+let (::) = λ h -> \\ t -> h:t;;
+let lmap f l = if isCons l then f(head l) :: lmap f (tail l) else nil;;
+let lnats = 0::lmap succ lnats;;
+let ltake n l = if (n>0) && isCons l then head l::ltake (pred n)(tail l) else nil;;
+let length l = if isCons l then succ(length(tail l)) else 0;;
+
+--+     let l200 = ltake 200 nats -- defines l200 as 0: an unevaluated thunk
+let l200 = ltake 200 nats;;
+l200;
+
+--+     null l200 -- returns False, as does null(tail l200)
+null l200;
+null (tail l200);
+
+--+ Now l200 has been evaluated one ply further
+l200;
+
+
+
+
+
+
+
+
+
+

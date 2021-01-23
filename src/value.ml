@@ -10,7 +10,7 @@ type value  =
  | Cons    of tag * values      [@printer pp_cons pp_value]
  | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "\\ (%a) (in %a)"  pp_cases cs pp_env (shortenEnv e)] 
  | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "\\\\ %a (in %a)"  pp_case c pp_env (shortenEnv e)] 
- | Thunk   of thunk             [@printer fun fmt r       -> fprintf fmt "@@%a" pp_thunk r]
+ | Thunk   of thunk             [@printer pp_thunk]
  | Prim    of (value -> value)  [@opaque]
  | Unbound of id                [@printer fun fmt id      -> fprintf fmt "Unbound %s" (show_id id)]
  | Fail    of string            [@printer fun fmt why     -> fprintf fmt "FAIL %s" why]
@@ -21,10 +21,9 @@ and
   [@@deriving show { with_path = false }]
   
 and thunk = env * expr * value option ref 
-            [@printer fun fmt (env, expr, v)  -> fprintf fmt "%a ~> %a (%s)" 
+            [@printer fun fmt (env, expr, v)  -> fprintf fmt "%a%s" 
                                                              pp_env (shortenEnv env) 
-                                                             pp_expr expr 
-                                                             (match !v with None->""|Some v -> show_value v)]
+                                                             (match !v with None->"`("^show_expr expr^")"|Some v -> show_value v)]
   [@@deriving show { with_path = false }]
 
 and 
@@ -233,6 +232,7 @@ let rec deepForce v = match v with
 | _             -> v
 
  
+
 
 
 
