@@ -79,7 +79,7 @@ exception SyntaxError   of string
 let syntaxError: string -> 'a = fun s -> raise (SyntaxError s)
 
 
-let syntaxWarning s = Format.eprintf "Warning: %s\n" s
+let syntaxWarning s = Format.eprintf "Warning: %s\n%!" s
 
 (* Switches *)
 

@@ -19,7 +19,7 @@ type con  = Num    of int         [@printer fun fmt n -> fprintf fmt "%s" (strin
 type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show_id i)] 
           | Cid   of tag          [@printer pp_tag]
           | Con   of con          [@printer pp_con]
-          | Tuple of exprs        [@printer fun fmt es -> fprintf fmt "@[(  %a)@]" pp_exprs es]
+          | Tuple of exprs        [@printer fun fmt es -> fprintf fmt "@[(%a)@]" pp_exprs es]
           (* Retain parenthesis structure for ease of prettyprinting *)
           | Bra   of expr         [@printer fun fmt e -> fprintf fmt "(%a)" pp_expr e]
           | Construct of tag * exprs [@printer pp_cons pp_expr]
@@ -62,7 +62,7 @@ type notation = string * int option * string list
            [@@deriving show { with_path = false }]
            
 type phrase =
-     | Defs     of defs                 [@printer fun fmt defs -> fprintf fmt "@[let @[<hov 4>%a@]@];;" pp_defs defs]
+     | Defs     of defs                 [@printer fun fmt defs -> fprintf fmt "@[let @[%a@]@];;" pp_defs defs]
      | Expr     of expr                 [@printer fun fmt expr -> fprintf fmt "@[%a@];" pp_expr expr]
      | Notation of notation list        [@printer fun fmt notns -> fprintf fmt "notation %a" (pp_punct_list "; " pp_notation) notns]
      | EndFile 

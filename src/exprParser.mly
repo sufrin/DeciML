@@ -125,7 +125,7 @@
 
 %token FUN ALT NUF LAM LAZY BRA KET COMMA TO LET IN
        END SEMI EOF IF THEN ELSE DOT
-       NOTATION IMPORT
+       NOTATION IMPORT LABEL
 
 %right TO
 
@@ -258,7 +258,8 @@ let expr :=
                                                     Apply(el, op, er) 
                                                 }
 let term :=
-    | ~=app; <>    
+    | ~=app; <> 
+    | label=ID; LABEL; ~=app;           {Label(label, app)}  
 
 let app :=
     | ~=prim;                           {prim}

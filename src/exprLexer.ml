@@ -161,6 +161,7 @@ open ExprParser
     let mkOP =
     function
     |  "->"   -> TO 
+    |  ":>"   -> LABEL
     |  "\\"   -> LAM    
     |  "\\\\" -> LAZY    
     |  s      ->  mkMath s
