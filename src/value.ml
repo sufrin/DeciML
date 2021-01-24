@@ -23,7 +23,7 @@ and
 and thunk = env * expr * value option ref 
             [@printer fun fmt (env, expr, v)  -> fprintf fmt "%a%s" 
                                                              pp_env (shortenEnv env) 
-                                                             (match !v with None->"`("^show_expr expr^")"|Some v -> show_value v)]
+                                                             (match !v with None->{|⌈|}^show_expr expr^{|⌉|}|Some v -> show_value v)]
   [@@deriving show { with_path = false }]
 
 and 
