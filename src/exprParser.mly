@@ -125,7 +125,7 @@
 
 %token FUN ALT NUF LAM LAZY BRA KET COMMA TO LET IN
        END SEMI EOF IF THEN ELSE DOT
-       NOTATION IMPORT LABEL
+       NOTATION IMPORT LABEL DEF
 
 %right TO
 
@@ -296,6 +296,7 @@ bid  :
      |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
 
 let priority == value=NUM; { Some(mkPriority value)} | { None }
+
 
 
 

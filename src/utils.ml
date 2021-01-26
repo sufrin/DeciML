@@ -48,18 +48,16 @@ let num_value base first buf =
 (* Needs some hov refinement *)
 
 let pp_punct_list punct pp_item  fmt items =
-  Format.pp_open_hovbox fmt 0;
   begin match items with
   | [] -> ()
   | hd :: tl ->
       pp_item fmt hd;
       tl |> List.iter begin fun item ->
         Format.pp_print_string fmt punct;
-        pp_print_cut fmt ();
+        pp_print_space fmt ();
         pp_item fmt item
       end
-  end;
-  Format.pp_close_box fmt ()
+  end
 
 let isOp name = (* Ask the Lexer is better *)
     let c = name.[0] in not (('A' <= c && c <= 'Z')||('a' <= c && c <= 'z')||c='_')
@@ -69,6 +67,10 @@ let pp_cons pp_value fmt ((_, name), vs) =
         match getRole name with 
         | Infix _ -> pp_punct_list name pp_value fmt vs 
         | Nonfix  -> Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
+        
+let pp_th pp_expr pp_value fmt = function
+| expr, None   -> Format.fprintf fmt {|⌈%a⌉|} pp_expr expr
+| _,    Some v -> pp_value fmt v
 
 (* Semantic error exceptions *)
 
@@ -88,6 +90,7 @@ let desugarInfix = ref false
 and idLocs = ref false 
 
 and showEnv = ref false
+
 
 
 

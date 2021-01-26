@@ -64,8 +64,8 @@ let processPhrase = function
     | Expr ast -> 
            if !showAst then Format.fprintf Format.std_formatter "%a\n%!" pp_expr ast;
            let v = eval !globalEnv (fun v -> v) ast in
-               Format.fprintf Format.std_formatter "%a\n%!" pp_value v
-    | Defs defs -> Format.fprintf Format.std_formatter "%a\n%!" pp_defs defs;
+               Format.fprintf Format.std_formatter "@[%a@]\n%!" pp_value v
+    | Defs defs -> Format.fprintf Format.std_formatter "@[let @[%a@]@]\n%!" pp_defs defs;
                    let env' = elabRecDefs !globalEnv defs
                    in  
                    let ext = envDiff env' !globalEnv
@@ -79,27 +79,28 @@ let processPhrase = function
 let rec processLexbuf lexbuf =
   let lexer = ExprLexer.lexer lexbuf in begin
   try
-      match parse lexer lexbuf with
+      match parse ~resume:true lexer lexbuf with
       | OK ast         ->  
         (try processPhrase ast with
-        | SemanticError msg -> Format.fprintf Format.err_formatter "Runtime error: %s\n%!" msg
-        | Failure msg       -> Format.fprintf Format.err_formatter "Syntax error: %s\n%!" msg
-        | Stdlib.Sys.Break  -> Format.fprintf Format.err_formatter "[Interrupted]\n%!" 
+        | SemanticError msg -> Format.eprintf "Runtime error: %s\n> %!" msg
+        | Failure msg       -> Format.eprintf "Syntax error: %s\n> %!" msg
+        | Stdlib.Sys.Break  -> Format.eprintf "[Interrupted]\n> %!" 
         )
       | ERR (pos, msg) ->  
-        Format.fprintf Format.std_formatter "*** %a %s%!"   Utils.pp_fpos pos msg
+        Format.eprintf "*** %a %s%!"   Utils.pp_fpos pos msg
+      | REJECTED -> ()
   with 
   |   (* abandon the current phrase on a lexer error *)
       ExprLexer.LexError (pos, msg) ->
-         Format.fprintf Format.std_formatter "*** Lexing error: %s at %a\n%!" msg  Utils.pp_fpos pos
-  | Stdlib.Sys.Break  -> Format.fprintf Format.err_formatter "[Interrupted]\n%!" 
-  | SyntaxError   msg -> Format.fprintf Format.err_formatter "Syntax error: %s\n%!" msg
+         Format.eprintf "*** Lexing error: %s at %a\n> %!" msg  Utils.pp_fpos pos
+  | Stdlib.Sys.Break  -> Format.eprintf "[Interrupted]\n> %!" 
+  | SyntaxError   msg -> Format.eprintf "Syntax error: %s\n> %!" msg
   end;
   processLexbuf lexbuf
   
 
 let processChan path chan =
-    let istty  = Unix.isatty @@ Unix.descr_of_in_channel chan in
+    let istty  = path="/dev/stdin" || Unix.isatty @@ Unix.descr_of_in_channel chan in
     let lexbuf = Sedlexing.Utf8.from_channel ~chunk_size:(if istty then 1 else 1024) chan in
     Sedlexing.set_filename lexbuf path;
     if istty then
@@ -139,6 +140,8 @@ end
 
 
     
+
+
 
 
 

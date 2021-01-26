@@ -21,6 +21,7 @@ open ExprParser
     
     let _ = List.iter (fun (s, t) -> Hashtbl.add idMap s t)
        [       "let"      , LET
+       ;       "def"      , DEF
        ;       "in"       , IN
        ;       "end"      , END
        ;       "if"       , IF
@@ -267,6 +268,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

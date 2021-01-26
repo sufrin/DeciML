@@ -1,7 +1,9 @@
 --+ Tests of the deciML parser
 
+let (+) = prim_add; (/) = prim_div;;
+
 let x=3;
-    y=4 
+    y=4; z=5 
 in 
     x/z + y/z;
 
@@ -16,7 +18,7 @@ end
 
 let x=3; y=4 in let z = x+y in x+y+z;
 
-let x=3; y=4 in let z = x+y in (a,b,c,d,e,f,g,h,i,j,k l m,n,o,p,q,r,s,t,u,v);
+let x=3; y=4 in let z = x+y in + (a,b,c,d,e,f,g,h,i,j,k l m,n,o,p,q,r,s,t,u,v);
 
 
 let d1 = λ ( x → x+y | Z → 0 );
@@ -25,7 +27,15 @@ let d1 = λ ( x → x+y | Z → 0 );
     d4 a b c d  = d(a,b,c);
     d5 = λ a->b;
     d6 = λ (a,b) c d e -> f;;
+ 
+let d1 = λ ( x → x+y | Z → 0 );
+    d2 x y = x+y;
+    d3 y z = (y=z);
+    d4 a b c d  = d(a,b,c);
+    d5 = λ a->b;
+    d6 = λ  c d e -> f;;
     
+
 
 
 

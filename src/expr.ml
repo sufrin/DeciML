@@ -66,7 +66,7 @@ type phrase =
      | Expr     of expr                 [@printer fun fmt expr -> fprintf fmt "@[%a@];" pp_expr expr]
      | Notation of notation list        [@printer fun fmt notns -> fprintf fmt "notation %a" (pp_punct_list "; " pp_notation) notns]
      | EndFile 
-     | Nothing 
+     | Nothing
      [@@deriving show { with_path = false }]
 
 
@@ -76,6 +76,7 @@ type t   = expr [@printer pp_expr]
 
 (* For desugaring *)
 let flip = Id "prim_flip"
+
 
 
 
