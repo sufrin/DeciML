@@ -38,7 +38,7 @@ let con2con2bool f = Prim (function
     | other      -> semanticError @@ "Expecting a constant, got: "^(show_value other))
     
 
-let globalEnv = ref @@ addBindings 
+let globalEnv = ref @@ addLib 
     [ ("prim_succ",    num2num (fun n->n+1))
     ; ("prim_pred",    num2num (fun n->n-1))
     ; ("prim_add",     num2num2num  (fun n m -> n+m))
@@ -52,6 +52,7 @@ let globalEnv = ref @@ addBindings
     ; ("prim_ge",      num2num2bool (fun n m -> n>=m))
     ; ("True",         mkBool true)
     ; ("False",        mkBool false)
+    ; ("setMargin",    num2num (fun margin -> Format.set_margin margin; margin))
     ; ("force",        Prim (force (fun v->v)))
     ; ("deepForce",    Prim deepForce)
     ; ("prim_println", Prim(fun v -> Format.fprintf Format.std_formatter "%a\n%!" pp_value v; v))
@@ -60,31 +61,47 @@ let globalEnv = ref @@ addBindings
 
 let showAst = ref false
 
-let processPhrase = function 
+let relativePath current path =
+let open Filename
+in
+    if path="" then path else
+    if not @@ is_implicit path then path else
+    concat (dirname current) path
+
+
+let rec processPhrase = fun currentPath -> function 
     | Expr ast -> 
            if !showAst then Format.fprintf Format.std_formatter "%a\n%!" pp_expr ast;
-           let v = eval !globalEnv (fun v -> v) ast in
+           let v = eval None !globalEnv (fun v -> v) ast in
                Format.fprintf Format.std_formatter "@[%a@]\n%!" pp_value v
-    | Defs defs -> Format.fprintf Format.std_formatter "@[let @[%a@]@]\n%!" pp_defs defs;
-                   let env' = elabRecDefs !globalEnv defs
-                   in  
-                   let ext = envDiff env' !globalEnv
+    | Defs (defs, defs') -> 
+                   if !showAst then
+                     if defs'=[] then
+                        Format.fprintf Format.std_formatter  "@[let @[%a@]@];;\n" pp_defs defs 
+                     else
+                        Format.fprintf Format.std_formatter  "@[let @[%a@]\nwhere @[%a@]@];;\n" pp_defs defs pp_defs defs';
+                   let env' = elabRecDefs !globalEnv defs'
                    in
-                       if !showEnv then Format.fprintf Format.std_formatter "%a\n%!" pp_env ext;
-                       globalEnv := env' 
+                   let ext = elabRecDefs (env' <+> !globalEnv) defs
+                   in  
+                       if !showEnv then Format.fprintf Format.std_formatter "%a\n%!" pp_layer ext;
+                       globalEnv := ext <+> !globalEnv 
     | EndFile   -> raise EndFile
+    | Import paths -> 
+             List.iter (fun path -> processArg (relativePath currentPath path)) paths 
     | Notation notations -> ExprLexer.declareNotations notations
     | Nothing   -> ()
 
-let rec processLexbuf lexbuf =
+
+and processLexbuf currentPath lexbuf =
   let lexer = ExprLexer.lexer lexbuf in begin
   try
       match parse ~resume:true lexer lexbuf with
       | OK ast         ->  
-        (try processPhrase ast with
-        | SemanticError msg -> Format.eprintf "Runtime error: %s\n> %!" msg
-        | Failure msg       -> Format.eprintf "Syntax error: %s\n> %!" msg
-        | Stdlib.Sys.Break  -> Format.eprintf "[Interrupted]\n> %!" 
+        (try processPhrase currentPath ast with
+        | SemanticError msg -> Format.eprintf "Runtime error: %s\n %!" msg
+        | Failure msg       -> Format.eprintf "Syntax error: %s\n%!" msg
+        | Stdlib.Sys.Break  -> Format.eprintf "[Interrupted]\n%!" 
         )
       | ERR (pos, msg) ->  
         Format.eprintf "*** %a %s%!"   Utils.pp_fpos pos msg
@@ -96,21 +113,21 @@ let rec processLexbuf lexbuf =
   | Stdlib.Sys.Break  -> Format.eprintf "[Interrupted]\n> %!" 
   | SyntaxError   msg -> Format.eprintf "Syntax error: %s\n> %!" msg
   end;
-  processLexbuf lexbuf
+  processLexbuf currentPath lexbuf
   
 
-let processChan path chan =
+and processChan path chan =
     let istty  = path="/dev/stdin" || Unix.isatty @@ Unix.descr_of_in_channel chan in
     let lexbuf = Sedlexing.Utf8.from_channel ~chunk_size:(if istty then 1 else 1024) chan in
     Sedlexing.set_filename lexbuf path;
     if istty then
        Sedlexing.set_prompter lexbuf (fun () -> Format.printf "> %!");
     try 
-     processLexbuf lexbuf
+     processLexbuf path lexbuf
     with
      EndFile -> ()
      
-let processArg path = 
+and processArg path = 
     match path with
     | "+d" -> Utils.desugarInfix  := true
     | "-d" -> Utils.desugarInfix  := false
@@ -120,7 +137,10 @@ let processArg path =
     | "+e" -> Utils.showEnv := true
     | "+n" -> ExprLexer.showNotation := true
     | "+m" -> Value.debugMatch := true
-    | _ -> let chan = open_in path in processChan path chan
+    | _    -> try
+               let chan = open_in path in processChan path chan
+              with
+               Sys_error msg -> Format.eprintf "%s\n%!" msg
 
 let rec main argv =     
     match argv with
@@ -140,6 +160,7 @@ end
 
 
     
+
 
 
 

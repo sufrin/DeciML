@@ -125,7 +125,7 @@
 
 %token FUN ALT NUF LAM LAZY BRA KET COMMA TO LET IN
        END SEMI EOF IF THEN ELSE DOT
-       NOTATION IMPORT LABEL DEF
+       NOTATION IMPORT LABEL DEF WHERE
 
 %right TO
 
@@ -191,12 +191,18 @@ let infix ==    ~=BINL;                            <mkId>
                 
 
 let phrase := 
-    | LET; ~=defs; endoreof;         <Expr.Defs>
-    | ~=topexpr;   terminator;       <Expr.Expr>
-    | NOTATION; ~=notations; endoreof; <Expr.Notation>
-    | SEMI;             {Expr.Nothing}
-    | END;              {Expr.Nothing}
-    | EOF;              {Expr.EndFile}
+    | LET; ~=defs; ~=where; endoreof;    <Expr.Defs>
+    | ~=topexpr;   terminator;           <Expr.Expr>
+    | NOTATION; ~=notations; endoreof;   <Expr.Notation>
+    | IMPORT; paths=spec+ ; terminator;  <Expr.Import>
+    | SEMI;                              {Expr.Nothing}
+    | END;                               {Expr.Nothing}
+    | EOF;                               {Expr.EndFile}
+    
+let where == WHERE; ~=defs; { defs }
+          |                 { [] }
+          
+let spec == path=STRING; {path} | path=ID; {path}
 
 let endoreof == END | EOF
 let terminator == endoreof | SEMI
@@ -296,6 +302,7 @@ bid  :
      |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
 
 let priority == value=NUM; { Some(mkPriority value)} | { None }
+
 
 
 

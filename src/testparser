@@ -1,4 +1,4 @@
---+ Tests of the deciML parser
+---+ Tests of the deciML parser
 
 let (+) = prim_add; (/) = prim_div;;
 
@@ -6,6 +6,8 @@ let x=3;
     y=4; z=5 
 in 
     x/z + y/z;
+
+---{ Pragma
 
 let x=3;
     y=4 

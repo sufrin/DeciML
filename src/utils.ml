@@ -54,7 +54,7 @@ let pp_punct_list punct pp_item  fmt items =
       pp_item fmt hd;
       tl |> List.iter begin fun item ->
         Format.pp_print_string fmt punct;
-        pp_print_space fmt ();
+        pp_print_cut fmt ();
         pp_item fmt item
       end
   end
@@ -90,6 +90,7 @@ let desugarInfix = ref false
 and idLocs = ref false 
 
 and showEnv = ref false
+
 
 
 

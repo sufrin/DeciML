@@ -8,8 +8,8 @@ type value  =
  | Const   of con               [@printer fun fmt c       -> fprintf fmt "%a" pp_con c]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "@[(%a)@]" (pp_punct_list "," pp_value) vs]
  | Cons    of tag * values      [@printer pp_cons pp_value]
- | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "@[\\ (%a) (in %a)@]"  pp_cases cs pp_env (shortenEnv e)] 
- | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "@[\\\\ %a (in %a)@]"  pp_case c pp_env (shortenEnv e)] 
+ | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "@[\\ (%a)\n(in %a)@]"  pp_cases cs pp_env (shortenEnv e)] 
+ | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "@[\\\\ %a\n(in %a)@]"  pp_case c pp_env (shortenEnv e)] 
  | Thunk   of thunk             [@printer pp_thunk]
  | Prim    of (value -> value)  [@opaque]
  | Unbound of id                [@printer fun fmt id      -> fprintf fmt "Unbound %s" (show_id id)]
@@ -36,11 +36,12 @@ and env = layer list [@printer pp_punct_list "⊕" pp_layer]
  [@@deriving show { with_path = false }]
 
 and layer = 
+  | Lib      of bindings        [@printer fun fmt bs -> fprintf fmt "<library>"]
   | Bind     of bindings        [@printer pp_bindings]
   | Rec      of bindings ref    [@printer (fun fmt bs -> 
                                            let nrbs = !bs in
                                                bs := [];
-                                               fprintf fmt "@[REC %a@]" pp_bindings nrbs;
+                                               fprintf fmt "REC %a" pp_bindings nrbs;
                                                bs := nrbs
                                           )
                                 ]
@@ -51,11 +52,7 @@ and bindings = binding list [@printer pp_punct_list "," pp_binding]
   
 and binding = (id * value) [@printer fun fmt (i, v) -> fprintf fmt "@[%a=%a@]" pp_id i pp_value v]
     [@@deriving show { with_path = false }]
-    
-let envDiff layers' layers =
-       let rec dropFrom l n =if n<=0 || l==[] then l else dropFrom (List.tl l) (n-1)           
-       in dropFrom (List.rev layers') (List.length layers' - List.length layers)
-        
+            
 let lookup: location option -> id -> cont -> env -> value = fun loc i k e ->
     let rec layers = function 
         | []    -> semanticError @@ (Format.sprintf "Unbound variable: %s %s" i (match loc with None -> "" | Some l -> Utils.show_location l))
@@ -63,15 +60,20 @@ let lookup: location option -> id -> cont -> env -> value = fun loc i k e ->
         and layer = function
         |  Rec  bs -> bindings !bs
         |  Bind bs -> bindings bs
+        |  Lib bs  -> bindings bs
         and bindings = function 
         |  []                 -> None
         |  (n, v)::_ when n=i -> Some v
         |  _ :: bs'           -> bindings bs'
     in  layers e
+
+let (<+>) layer env  = layer :: env
    
 let bind: id -> value -> env -> env = fun i v e -> Bind [(i, v)]::e
 
 let addBindings: bindings -> env -> env = fun bs e -> Bind bs :: e
+
+let addLib: bindings -> env -> env = fun bs e -> Lib bs :: e
 
 let addBinding: id -> value -> bindings -> bindings = fun i v bs -> (i,v)::bs
 
@@ -85,7 +87,9 @@ let emptyBindings: bindings = []
     An environment built by extending e with a new empty environment
     layer, for later knot-tying by recFix
 *)
-let recEnv e = Rec(ref emptyBindings) :: e
+let addNewRecLayer e = Rec(ref emptyBindings) :: e
+
+let topLayer = function (l::_) -> l | _ -> assert false
 
 (*  
     recFix bs env "ties the knot" in env by making the first layer
@@ -144,68 +148,64 @@ let checkArity: int -> tag -> unit =
 
 (* Evaluation *)
 
+type loc = Utils.location option
+
    
-let rec eval: ?loc:Utils.location option -> env -> cont -> expr -> value = fun ?(loc=None) -> fun env k -> function
+let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> function
 | Id i              -> lookup loc i k env
 | Cid t             -> k(Const(Tag t))
 | Con c             -> k(Const c)
-| Label(name, body) -> eval (bind name (Prim k) env) k body
-| Tuple exs         -> evalTuple env (fun vs -> k(Tup(List.rev vs))) [] exs
-| Construct(t, exs) -> evalTuple env (fun vs -> k(Cons(t, List.rev vs))) [] exs 
-| Bra ex            -> eval env k ex         
+| Label(name, body) -> eval loc (bind name (Prim k) env) k body
+| Tuple exs         -> evalTuple loc env (fun vs -> k(Tup(List.rev vs))) [] exs
+| Construct(t, exs) -> evalTuple loc env (fun vs -> k(Cons(t, List.rev vs))) [] exs 
+| Bra ex            -> eval loc env k ex         
 | Fn defs           -> k(Fun(env, defs))
 | LazyFn case       -> k(LazyFun(env, case))
 | If (g, e1, e2) ->
-     let choose = fun v -> eval env k (if isTrue v then e1 else e2)
-     in  eval env choose g
+     let choose = fun v -> eval loc env k (if isTrue v then e1 else e2)
+     in  eval loc env choose g
 |    Ap (rator, rand) ->
         let rec apply = function
-            | Cons(t, v)         ->  checkArity (List.length v) t; eval env (fun w -> k(Cons(t, v@[w]))) rand 
-            | Const(Tag t)       ->  checkArity 0 t;               eval env (fun v -> k(Cons(t, [v]))) rand 
-            | Prim f             ->  eval env (f >> k) rand
-            | Fun(defenv, cases) ->  eval env (fun v -> evalCases defenv k v cases) rand
+            | Cons(t, v)         ->  checkArity (List.length v) t; eval loc env (fun w -> k(Cons(t, v@[w]))) rand 
+            | Const(Tag t)       ->  checkArity 0 t;               eval loc env (fun v -> k(Cons(t, [v]))) rand 
+            | Prim f             ->  eval loc env (f >> k) rand
+            | Fun(defenv, cases) ->  eval loc env (fun v -> evalCases defenv k v cases) rand
             | LazyFun(defenv, (Id i, body)) ->  
                let env' = bind i (Thunk(env, rand, ref None)) defenv 
-               in  eval env' k body
+               in  eval loc env' k body
             | (Thunk _) as op    ->  force apply op 
             | other              ->  k(Fail (show_value other))
         in  
-            eval env apply rator
+            eval loc env apply rator
 |    Apply (l, op, r) ->
-        eval env k (Ap(Ap(op, l), r)) 
         (* Runtime desugaring: for convenience in diagnostics *)
+        eval loc env k (Ap(Ap(op, l), r)) 
 |    Let (defs, body) -> 
-         let env'       = recEnv env in  
-         let evBody ext = eval (recFix ext env') k body in
-             evalDefs env' evBody [] defs 
+         let ext  = elabRecDefs env defs in
+         let env' = ext <+> env in
+             eval loc env' k body
 |    At(location, ex) ->    
-       eval ~loc:(Some(location)) env k ex         
+       eval (Some(location)) env k ex         
               
 (* |    other -> failwith (show_expr other) *)
-
-and elabRecDefs env defs =
-    let env' = recEnv env in
-        elabDefs env' (fun ext -> recFix ext env') [] defs
-
-and elabDefs e bindk bindings = function
-|   []                -> bindk bindings
-|   (pat, expr)::defs -> 
-    (* Temporary expedient awaiting generalization of continuation from values to envs *)
-    let v = eval e (fun v -> v) expr in
-            elabDefs e bindk (matchPat pat v  bindings) defs
 
 (* Evaluates in L-R order, but the order of the result is reversed.
    This preserves linear space and time (via the continuation architecture)
 *)
-and evalTuple: env -> (values -> value) ->  values -> exprs -> value = fun e k vs -> function
+and evalTuple: loc -> env -> (values -> value) ->  values -> exprs -> value = fun loc e k vs -> function
 | []       -> k vs
-| ex::exs  -> eval e (fun v -> evalTuple e k (v::vs) exs) ex 
+| ex::exs  -> eval loc e (fun v -> evalTuple loc e k (v::vs) exs) ex 
 
+and elabRecDefs: env -> defs -> layer = fun  env defs ->
+    let env' = addNewRecLayer env in
+        elabDefs env' (fun ext -> topLayer @@ recFix ext env') [] defs
 
-and evalDefs: env -> (bindings -> value) -> bindings -> defs -> value = fun e k bindings -> function
-|   []                -> k bindings
-|   (pat, expr)::defs -> eval e (fun v -> evalDefs e k (matchPat pat v  bindings) defs)  expr
-
+and elabDefs env bindk bindings = function
+|   []                -> bindk bindings
+|   (pat, expr)::defs -> 
+    (* Temporary expedient awaiting generalization of continuation from values to envs *)
+    let v = eval None env (fun v -> v) expr in
+            elabDefs env bindk (matchPat pat v  bindings) defs
 
 and evalCases: env -> cont -> value -> cases -> value = fun e k v cases -> 
    let rec evalFirst: cases -> value  = function
@@ -214,12 +214,12 @@ and evalCases: env -> cont -> value -> cases -> value = fun e k v cases ->
 in evalFirst cases
 
 and evalCase: env -> cont -> value -> def -> value = fun e k v -> function (lhs, rhs) -> 
-    let bindings = matchPat lhs v emptyBindings in eval (addBindings bindings e) k rhs 
+    let bindings = matchPat lhs v emptyBindings in eval None (addBindings bindings e) k rhs 
     
 and force k = function
 |  Thunk(env, expr, vr) ->
    (match !vr with
-   | None   -> eval env (fun v -> vr:=Some v; k v) expr 
+   | None   -> eval None env (fun v -> vr:=Some v; k v) expr 
    | Some v -> k v
    ) 
 |  v -> k v
@@ -232,6 +232,7 @@ let rec deepForce v = match v with
 | _             -> v
 
  
+
 
 
 

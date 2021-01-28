@@ -21,13 +21,13 @@ open ExprParser
     
     let _ = List.iter (fun (s, t) -> Hashtbl.add idMap s t)
        [       "let"      , LET
-       ;       "def"      , DEF
        ;       "in"       , IN
        ;       "end"      , END
        ;       "if"       , IF
        ;       "then"     , THEN
        ;       "else"     , ELSE
        ;       "import"   , IMPORT
+       ;       "where"    , WHERE
        ;       "notation" , NOTATION
        ]
 
@@ -226,14 +226,25 @@ let string buf  =
     
 let comment echo buf =
     match%sedlex buf with
-    | Star(Compl newline), newline -> if echo then Format.fprintf Format.std_formatter "--+%s%!" (Utf8.lexeme buf) else ()
+    | Star(Compl newline), newline -> if echo then Format.fprintf Format.std_formatter "---+%s%!" (Utf8.lexeme buf) else ()
+    | _  
+                              -> assert false
+                              
+let evalPragma = ref  (fun loc text -> Format.fprintf Format.std_formatter "---{%a%s%!" Utils.pp_fpos loc text)
+
+let setPragmaEval f = evalPragma := f
+
+let pragma buf =
+    match%sedlex buf with
+    | Star(Compl newline), newline -> !evalPragma (fst@@lexing_positions buf) (Utf8.lexeme buf)
     | _                            -> assert false
      
 let rec token buf =
   match%sedlex buf with
   | eof -> EOF
-  | "--+"       -> comment true  buf; token buf
-  | "---"       -> comment false buf; token buf
+  | "---+"      -> comment true   buf; token buf
+  | "---{"      -> pragma         buf; token buf
+  | "---"       -> comment false  buf; token buf
   | ';'         -> SEMI
   | ";;"        -> END
   | newline     -> token buf
@@ -268,6 +279,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

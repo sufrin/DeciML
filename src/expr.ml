@@ -24,7 +24,8 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
           | Bra   of expr         [@printer fun fmt e -> fprintf fmt "(%a)" pp_expr e]
           | Construct of tag * exprs [@printer pp_cons pp_expr]
           (* [@printer fun fmt (t,es) -> fprintf fmt "@[(%a %a)@]" pp_tag t (pp_punct_list " " pp_expr) es] *)
-          | If    of expr*expr*expr
+          | If    of expr*expr*expr [@printer fun fmt (g, e1, e2) -> 
+                                           fprintf fmt "if %a then %a else %a" pp_expr g pp_expr e1 pp_expr e2]
           | Ap    of expr*expr    [@printer fun fmt (f,e) -> fprintf fmt "%s %s" (show_expr f)(show_expr e)]
           (* Apply is for  convenience in generating diagnostic messages: it is desugared at runtime *)
           | Apply of expr*expr*expr 
@@ -62,11 +63,12 @@ type notation = string * int option * string list
            [@@deriving show { with_path = false }]
            
 type phrase =
-     | Defs     of defs                 [@printer fun fmt defs -> fprintf fmt "@[let @[%a@]@];;" pp_defs defs]
+     | Defs     of defs * defs          [@printer fun fmt (defs, defs') -> fprintf fmt "@[let @[%a@]\nwhere@[%a@]@];;" pp_defs defs pp_defs defs']
      | Expr     of expr                 [@printer fun fmt expr -> fprintf fmt "@[%a@];" pp_expr expr]
      | Notation of notation list        [@printer fun fmt notns -> fprintf fmt "notation %a" (pp_punct_list "; " pp_notation) notns]
      | EndFile 
      | Nothing
+     | Import   of string list
      [@@deriving show { with_path = false }]
 
 
@@ -76,6 +78,7 @@ type t   = expr [@printer pp_expr]
 
 (* For desugaring *)
 let flip = Id "prim_flip"
+
 
 
 
