@@ -87,20 +87,16 @@ let emptyBindings: bindings = []
     An environment built by extending e with a new empty environment
     layer, for later knot-tying by recFix
 *)
-let addNewRecLayer e = Rec(ref emptyBindings) :: e
+let newRec() = Rec(ref emptyBindings)
 
 let topLayer = function (l::_) -> l | _ -> assert false
 
 (*  
-    recFix bs env "ties the knot" in env by making the first layer
-    of env refer to bs, providing bs are bindings of variables to
-    values constructed in env. Each value will EMBED env unless it
-    is a normal form; so free variable references from it using env
-    will themselves use env.
+    recFix layer bs "ties the knot" 
 *)
-let recFix bs = function 
-(Rec r :: _ as env) -> (r:=bs; env) 
-| _                 -> failwith "recFix at invalid env"
+let recFix: layer -> bindings -> layer = fun layer bs -> match layer with
+| Rec r  -> (r:=bs; layer) 
+| _      -> failwith "recFix at invalid env"
 
 (* Continuation Composition *)
 
@@ -181,7 +177,7 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
         (* Runtime desugaring: for convenience in diagnostics *)
         eval loc env k (Ap(Ap(op, l), r)) 
 |    Let (defs, body) -> 
-         let ext  = elabRecDefs env defs in
+         let ext  = recBindings  env defs in
          let env' = ext <+> env in
              eval loc env' k body
 |    At(location, ex) ->    
@@ -196,16 +192,13 @@ and evalTuple: loc -> env -> (values -> value) ->  values -> exprs -> value = fu
 | []       -> k vs
 | ex::exs  -> eval loc e (fun v -> evalTuple loc e k (v::vs) exs) ex 
 
-and elabRecDefs: env -> defs -> layer = fun  env defs ->
-    let env' = addNewRecLayer env in
-        elabDefs env' (fun ext -> topLayer @@ recFix ext env') [] defs
-
-and elabDefs env bindk bindings = function
-|   []                -> bindk bindings
-|   (pat, expr)::defs -> 
-    (* Temporary expedient awaiting generalization of continuation from values to envs *)
-    let v = eval None env (fun v -> v) expr in
-            elabDefs env bindk (matchPat pat v  bindings) defs
+and recBindings : env -> defs -> layer = fun env defs ->
+    let new'     = newRec() in 
+    let env'     = new'<+>env in
+    let rec extend bindings = function
+    | [] -> bindings
+    | (pat, expr) :: defs -> let v = eval None env' (fun v -> v) expr in extend (matchPat pat v  bindings) defs  
+    in recFix new' @@ extend [] defs
 
 and evalCases: env -> cont -> value -> cases -> value = fun e k v cases -> 
    let rec evalFirst: cases -> value  = function

@@ -74,18 +74,16 @@ let rec processPhrase = fun currentPath -> function
            if !showAst then Format.fprintf Format.std_formatter "%a\n%!" pp_expr ast;
            let v = eval None !globalEnv (fun v -> v) ast in
                Format.fprintf Format.std_formatter "@[%a@]\n%!" pp_value v
-    | Defs (defs, defs') -> 
+    | Defs (defs, wheredefs) -> 
                    if !showAst then
-                     if defs'=[] then
+                     if wheredefs=[] then
                         Format.fprintf Format.std_formatter  "@[let @[%a@]@];;\n" pp_defs defs 
                      else
-                        Format.fprintf Format.std_formatter  "@[let @[%a@]\nwhere @[%a@]@];;\n" pp_defs defs pp_defs defs';
-                   let env' = elabRecDefs !globalEnv defs'
-                   in
-                   let ext = elabRecDefs (env' <+> !globalEnv) defs
-                   in  
+                        Format.fprintf Format.std_formatter  "@[let @[%a@]\nwhere @[%a@]@];;\n" pp_defs defs pp_defs wheredefs;
+                   let ext   = recBindings !globalEnv wheredefs in
+                   let ext'  = recBindings (ext <+> !globalEnv) defs in  
                        if !showEnv then Format.fprintf Format.std_formatter "%a\n%!" pp_layer ext;
-                       globalEnv := ext <+> !globalEnv 
+                       globalEnv := ext' <+> !globalEnv 
     | EndFile   -> raise EndFile
     | Import paths -> 
              List.iter (fun path -> processArg (relativePath currentPath path)) paths 
