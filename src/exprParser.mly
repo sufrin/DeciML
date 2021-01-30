@@ -89,6 +89,7 @@
               | Con   _
               | Cid   _
               | Construct   _
+              | Apply _ 
               | Tuple _ -> abstractFrom (Fn [(rand, expr)]) rator
               | _       -> syntaxError (Format.asprintf "Erroneous operand %a within lhs of definition at %a\n%!" pp_expr rand pp_location loc) 
             )

@@ -72,7 +72,7 @@ open ExprParser
                 | CONR9 _ | BINR9 _ -> Infix(R, 9)
                 | EQ _    -> Infix(R, 3)
                 | ID _    -> Nonfix
-                | CONID _ -> Nonfix
+                | CONID _ -> Confix
                 | _ -> failwith ("Syntax role inquiry for reserved symbol: "^id)
         in
                 role 

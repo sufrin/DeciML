@@ -22,7 +22,8 @@ let pp_punct_list punct pp_item  fmt items =  begin match items with
 
 let isOp name = (* Ask the Lexer is better *)
     let c = name.[0] in not (('A' <= c && c <= 'Z')||('a' <= c && c <= 'z')||c='_')
-    
+
+(* This has to do too much right now *)  
 
 type tag = int * string
  
@@ -31,7 +32,9 @@ let pp_cons =
     let open Syntaxrole in
         let pbra bra v = 
             if bra then Format.fprintf fmt "(%a)" pp_value v else pp_value fmt v;
-        in                
+        in   
+        let bracket_pp_value fmt v = Format.fprintf fmt "(%a)" pp_value v 
+        in            
         match getRole name, vs with 
         | Infix (assoc, bp), [v1; v2] -> 
           let t1   = getTag v1
@@ -39,9 +42,11 @@ let pp_cons =
           in pbra (bracketLeft t1 (name, assoc, bp))  v1;
              if isOp name then Format.fprintf fmt "%s" name else Format.fprintf fmt " %s " name;
              pbra (bracketRight (name, assoc, bp) t2) v2        
+        | Confix, _  ->         
+          Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
         | _, _  ->         
         let name = if isOp name then "("^name^")" else name in
-        Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
+            Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
         
 let pp_th pp_expr pp_value fmt = function
 | expr, None   -> Format.fprintf fmt {|⌈%a⌉|} pp_expr expr

@@ -78,6 +78,7 @@ let relativePath current path =
 let open Filename
 in
     if path="" then path else
+    if dirname current="/dev/" then path else
     if not @@ is_implicit path then path else
     concat (dirname current) path
 

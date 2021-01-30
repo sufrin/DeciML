@@ -19,7 +19,7 @@
     might, but I'm not inclined to deal with detail TODAY (22/1/2021)
 *)
 type assoc = L | R
-type role  = Infix of assoc*int | Nonfix
+type role  = Infix of assoc*int | Nonfix | Confix
 let  getrole: (string -> role) ref = ref (fun _ -> Nonfix)
 let  setGetRole: (string -> role) -> unit = fun getter -> getrole := getter
 let  getRole s = !getrole s
