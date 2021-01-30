@@ -167,8 +167,7 @@
 %%
 
 
-(**************************************************************************)
-
+(*******************ALL THIS INLINING IS NECESSARY TO AVOID S/R CONFLICTS ********)
 
 %inline
 BINR    :  BINR0 {$1} | BINR1 {$1} | BINR2 {$1} | BINR3 {$1} | BINR4 {$1} 
@@ -187,8 +186,11 @@ let infix ==    ~=BINL;                            <mkId>
         |       ~=BINR;                            <mkId>
         |       op=CONL;                           {mkConId(2, op)}
         |       op=CONR;                           {mkConId(2, op)}
-        |       ~=EQ;                              <mkId>
+
+let infixop ==      ~=infix;                       <>
+            |       ~=EQ;                          <mkId>
                 
+(********************************************************************************)
 
 let phrase := 
     | LET; ~=defs; ~=where; endoreof;    <Expr.Defs>
@@ -202,9 +204,9 @@ let phrase :=
 let where == WHERE; ~=defs; { defs }
           |                 { [] }
           
-let spec == path=STRING; {path} | path=ID; {path}
+let spec       == path=STRING; {path} | path=ID; {path}
 
-let endoreof == END | EOF
+let endoreof   == END | EOF
 let terminator == endoreof | SEMI
 
 let defs     ==
@@ -239,7 +241,7 @@ let eod == SEMI
 let eoc == ALT
     
 let def :=
-    | lhs=expr; EQ; body=topexpr;     { mkDef $loc (lhs, body) }
+    | lhs=lhsexpr; EQ; body=topexpr;     { mkDef $loc (lhs, body) }
 
 let revcases := 
     | ~=case;                    {[case]}
@@ -258,7 +260,14 @@ let topexpr :=
     
 let expr := 
     | ~=term;                                   {term}
-    | el=expr; op=infix; er=expr;               {if !Utils.desugarInfix then 
+    | el=expr; op=infixop; er=expr;             {if !Utils.desugarInfix then 
+                                                    mkAp $loc (mkAp $loc (op, el), er)
+                                                 else 
+                                                    Apply(el, op, er)
+                                                }
+let lhsexpr := 
+    | ~=term;                                   {term}
+    | el=lhsexpr; op=infix; er=lhsexpr;         {if !Utils.desugarInfix then 
                                                     mkAp $loc (mkAp $loc (op, el), er)
                                                  else 
                                                     Apply(el, op, er) 
@@ -275,8 +284,8 @@ let app :=
 let prim :=
     | ~=simplex;                         {simplex}
     (* Sections *)
-    | BRA; op=infix; ~=expr; KET;        {Bra(mkAp $loc (mkAp $loc (Expr.flip, Bra(op)), expr))}   
-    | BRA; ~=expr; op=infix; KET;        {Bra(mkAp $loc (Bra(op), expr))}
+    | BRA; op=infixop; ~=expr; KET;        {Bra(mkAp $loc (mkAp $loc (Expr.flip, Bra(op)), expr))}   
+    | BRA; ~=expr; op=infixop; KET;        {Bra(mkAp $loc (Bra(op), expr))}
     (* Balanced *)
     | BRA; eoc; ~=cases; eoc; KET;       <mkFun>
     | FUN; eoc?; ~=cases; NUF;           <mkFun>
@@ -288,7 +297,7 @@ let simplex ==
     | ~=NUM;                             <mkNum>
     | ~=STRING;                          <mkString>
     | BRA; ~=exprlist; KET;              <mkTuple>
-    | BRA; op=infix; KET;                {Expr.Bra(op)}
+    | BRA; op=infixop; KET;              {Expr.Bra(op)}
     
 let revexprlist :=
     | ~=expr;                       { [expr]}

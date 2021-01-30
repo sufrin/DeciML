@@ -1,10 +1,52 @@
 open Format
 
+let id x = x
 
 let rec showList punct show  = 
 function   []     -> ""
 |          [v]    -> show v
 |          v::vs  -> sprintf "%s%s%s" (show v) punct (showList punct show vs)
+
+let pp_punct_list punct pp_item  fmt items =  begin match items with
+  | [] -> ()
+  | hd :: tl ->
+      pp_item fmt hd;
+      tl |> List.iter begin fun item ->
+        Format.pp_print_string fmt punct;
+        pp_print_cut fmt ();
+        pp_item fmt item
+      end
+  end
+
+(* Needs some hov refinement *)
+
+let isOp name = (* Ask the Lexer is better *)
+    let c = name.[0] in not (('A' <= c && c <= 'Z')||('a' <= c && c <= 'z')||c='_')
+    
+
+type tag = int * string
+ 
+let pp_cons = 
+    fun getTag pp_value fmt ((_, name), vs) -> 
+    let open Syntaxrole in
+        let pbra bra v = 
+            if bra then Format.fprintf fmt "(%a)" pp_value v else pp_value fmt v;
+        in                
+        match getRole name, vs with 
+        | Infix (assoc, bp), [v1; v2] -> 
+          let t1   = getTag v1
+          and t2   = getTag v2
+          in pbra (bracketLeft t1 (name, assoc, bp))  v1;
+             if isOp name then Format.fprintf fmt "%s" name else Format.fprintf fmt " %s " name;
+             pbra (bracketRight (name, assoc, bp) t2) v2        
+        | _, _  ->         
+        let name = if isOp name then "("^name^")" else name in
+        Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
+        
+let pp_th pp_expr pp_value fmt = function
+| expr, None   -> Format.fprintf fmt {|⌈%a⌉|} pp_expr expr
+| _,    Some v -> pp_value fmt v
+
 
 let loop f = 
     let rec loop state = function [] -> state | x::xs -> loop (f state x) xs 
@@ -45,33 +87,6 @@ let num_value base first buf =
       done;
       !c
 
-(* Needs some hov refinement *)
-
-let pp_punct_list punct pp_item  fmt items =
-  begin match items with
-  | [] -> ()
-  | hd :: tl ->
-      pp_item fmt hd;
-      tl |> List.iter begin fun item ->
-        Format.pp_print_string fmt punct;
-        pp_print_cut fmt ();
-        pp_item fmt item
-      end
-  end
-
-let isOp name = (* Ask the Lexer is better *)
-    let c = name.[0] in not (('A' <= c && c <= 'Z')||('a' <= c && c <= 'z')||c='_')
- 
-let pp_cons pp_value fmt ((_, name), vs) = 
-    let open Syntaxrole in
-        match getRole name with 
-        | Infix _ -> pp_punct_list name pp_value fmt vs 
-        | Nonfix  -> Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
-        
-let pp_th pp_expr pp_value fmt = function
-| expr, None   -> Format.fprintf fmt {|⌈%a⌉|} pp_expr expr
-| _,    Some v -> pp_value fmt v
-
 (* Semantic error exceptions *)
 
 exception SemanticError of string
@@ -90,6 +105,8 @@ let desugarInfix = ref false
 and idLocs = ref false 
 
 and showEnv = ref false
+
+and showClosureEnv = ref false
 
 
 

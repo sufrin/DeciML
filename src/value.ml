@@ -2,16 +2,28 @@ open Format
 open Expr
 open Utils
 
-let shortenEnv e = if !Utils.showEnv then e else []
+let shortenEnv e = if !Utils.showClosureEnv then e else []
 
 type value  = 
  | Const   of con               [@printer fun fmt c       -> fprintf fmt "%a" pp_con c]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "@[(%a)@]" (pp_punct_list "," pp_value) vs]
- | Cons    of tag * values      [@printer pp_cons pp_value]
- | Fun     of env * cases       [@printer fun fmt (e, cs) -> fprintf fmt "@[\\ (%a)\n(in %a)@]"  pp_cases cs pp_env (shortenEnv e)] 
- | LazyFun of env * case        [@printer fun fmt (e, c)  -> fprintf fmt "@[\\\\ %a\n(in %a)@]"  pp_case c pp_env (shortenEnv e)] 
+ | Cons    of tag * values      [@printer let getTag = function 
+                                          | Cons(tag,_) -> Some tag
+                                          | _           -> None
+                                          in pp_cons getTag pp_value]
+ | Fun     of env * cases       [@printer fun fmt (e, cs) -> 
+                                          if !Utils.showClosureEnv 
+                                          then fprintf fmt {|@[<v>@[λ(%a)@]@;«@[<hov>%a@]@]»|} pp_cases cs pp_env (shortenEnv e) 
+                                          else fprintf fmt {|@[λ(%a)@]|}  pp_cases cs
+                                ] 
+ | LazyFun of env * case        [@printer fun fmt (e, c)  -> 
+                                          if !Utils.showClosureEnv 
+                                          then fprintf fmt {|@[<v>@[λλ %a@]@;«@[<v>%a@]»@]@]|}  pp_case c pp_env (shortenEnv e) 
+                                          else fprintf fmt {|@[λλ %a@]|}  pp_case c
+                                ] 
  | Thunk   of thunk             [@printer pp_thunk]
  | Prim    of (value -> value)  [@opaque]
+ | Strict  of (value -> value)  [@opaque]
  | Unbound of id                [@printer fun fmt id      -> fprintf fmt "Unbound %s" (show_id id)]
  | Fail    of string            [@printer fun fmt why     -> fprintf fmt "FAIL %s" why]
  [@@deriving show { with_path = false }]
@@ -21,9 +33,10 @@ and
   [@@deriving show { with_path = false }]
   
 and thunk = env * expr * value option ref 
-            [@printer fun fmt (env, expr, v)  -> fprintf fmt "%a%a" 
+            [@printer fun fmt (env, expr, v)  -> fprintf fmt "@[<v>%a@;%a@]" 
+                                                             (pp_th pp_expr pp_value) (expr, !v)
                                                              pp_env (shortenEnv env) 
-                                                             (pp_th pp_expr pp_value) (expr, !v)]
+            ]
   [@@deriving show { with_path = false }]
 
 and 
@@ -32,22 +45,29 @@ and
 
 (* Environments *)
 
-and env = layer list [@printer pp_punct_list "⊕" pp_layer]
+and env = layer list [@printer fun fmt ls ->
+                        let nonempty = function
+                        | Rec bs -> !bs!=[]
+                        | _      -> true
+                        in
+                        fprintf fmt "%a" (pp_punct_list "⊕" pp_layer) (List.filter nonempty ls)]
  [@@deriving show { with_path = false }]
 
 and layer = 
   | Lib      of bindings        [@printer fun fmt bs -> fprintf fmt "<library>"]
   | Bind     of bindings        [@printer pp_bindings]
-  | Rec      of bindings ref    [@printer (fun fmt bs -> 
+  | Rec      of bindings ref    [@printer  fun fmt bs -> 
                                            let nrbs = !bs in
                                                bs := [];
-                                               fprintf fmt "REC %a" pp_bindings nrbs;
+                                               if nrbs!=[] then fprintf fmt {|%a|} pp_bindings nrbs;
                                                bs := nrbs
-                                          )
                                 ]
   [@@deriving show { with_path = false }]
 
-and bindings = binding list [@printer pp_punct_list "," pp_binding]
+and bindings = binding list [@printer fun fmt bs -> 
+                                      fprintf fmt "@[<hov>%a@]" (pp_punct_list "," pp_binding) bs
+                            
+                            ]
     [@@deriving show { with_path = false }]
   
 and binding = (id * value) [@printer fun fmt (i, v) -> fprintf fmt "@[%a=%a@]" pp_id i pp_value v]
@@ -66,7 +86,16 @@ let lookup: location option -> id -> cont -> env -> value = fun loc i k e ->
         |  (n, v)::_ when n=i -> Some v
         |  _ :: bs'           -> bindings bs'
     in  layers e
+    
+(* Pattern matching generates a bindings extension *)
 
+exception NoMatch 
+let noMatch () = raise NoMatch
+
+let loop2: ('state->'a->'b->'state) ->  'state -> ('a list * 'b list) -> 'state  = fun f ->
+    let rec loop state = function ([], []) -> state | (x::xs, y::ys) -> loop (f state x y) (xs, ys) | _ -> noMatch()
+    in  loop
+    
 let (<+>) layer env  = layer :: env
    
 let bind: id -> value -> env -> env = fun i v e -> Bind [(i, v)]::e
@@ -106,14 +135,6 @@ let (>>) f g x = g(f x)
 let debugMatch = ref false
 
 
-(* Pattern matching generates a bindings extension *)
-
-exception NoMatch 
-let noMatch () = raise NoMatch
-
-let loop2: ('state->'a->'b->'state) ->  'state -> ('a list * 'b list) -> 'state  = fun f ->
-    let rec loop state = function ([], []) -> state | (x::xs, y::ys) -> loop (f state x y) (xs, ys) | _ -> noMatch()
-    in  loop
 
 let rec matchPat: pat -> value -> bindings -> bindings = fun p v bs -> 
 if !debugMatch then eprintf "match %a with %a\n%!" pp_pat p pp_value v;
@@ -154,7 +175,7 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 | Label(name, body) -> eval loc (bind name (Prim k) env) k body
 | Tuple exs         -> evalTuple loc env (fun vs -> k(Tup(List.rev vs))) [] exs
 | Construct(t, exs) -> evalTuple loc env (fun vs -> k(Cons(t, List.rev vs))) [] exs 
-| Bra ex            -> eval loc env k ex         
+| Bra ex            -> eval loc env k ex     
 | Fn defs           -> k(Fun(env, defs))
 | LazyFn case       -> k(LazyFun(env, case))
 | If (g, e1, e2) ->
@@ -165,9 +186,10 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
             | Cons(t, v)         ->  checkArity (List.length v) t; eval loc env (fun w -> k(Cons(t, v@[w]))) rand 
             | Const(Tag t)       ->  checkArity 0 t;               eval loc env (fun v -> k(Cons(t, [v]))) rand 
             | Prim f             ->  eval loc env (f >> k) rand
+            | Strict f           ->  eval loc env (force f >> k) rand
             | Fun(defenv, cases) ->  eval loc env (fun v -> evalCases defenv k v cases) rand
             | LazyFun(defenv, (Id i, body)) ->  
-               let env' = bind i (Thunk(env, rand, ref None)) defenv 
+               let env' = bind i (match rand with Con c -> Const c | _ -> Thunk(env, rand, ref None)) defenv 
                in  eval loc env' k body
             | (Thunk _) as op    ->  force apply op 
             | other              ->  k(Fail (show_value other))
@@ -219,10 +241,10 @@ and force k = function
 
 
 let rec deepForce v = match v with
-| Thunk _       -> deepForce(force (fun v->v) v)
-| Tup vs        -> Tup(List.map deepForce vs)
-| Cons(c, vs)   -> Cons(c, List.map deepForce vs)
-| _             -> v
+| Thunk (_,_,rv) -> (match !rv with None -> deepForce(force (fun v->v) v) | Some v -> v)
+| Tup vs         -> Tup(List.map deepForce vs)
+| Cons(c, vs)    -> Cons(c, List.map deepForce vs)
+| _              -> v
 
  
 

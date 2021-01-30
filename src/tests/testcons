@@ -1,9 +1,17 @@
 notation rightdata 3 :  ;
+         rightdata 3 &&  ;
+         rightdata 2 &&  ;
+         rightdata 1 &  ;
          data nil       ;
          data 1 A B     ;
          data 2 X Y     ;
          right 0 !!     
 ;;
+
+---+ Printing priorities
+1:2:3:4:5;
+
+(1:2:3):4:5:6;
 
 ---+ Some definitions
 let null  = λ ( nil -> True | (:) x xs -> False );;
@@ -71,4 +79,5 @@ let pr1 = pair (ez 1 2 3);; pr1;
 let pr2 = pr1 (ez 4 5 6);; pr2;
 
 deepForce p2;
+
 

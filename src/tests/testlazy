@@ -2,7 +2,7 @@
 
 notation right     3 :: ; 
          rightdata 3 :  ;
-         data      nil
+         data      Nil
          ;;
 
 let delay      = \\ x->x  ;
@@ -12,7 +12,7 @@ let delay      = \\ x->x  ;
 let head   = strict (| x:xs -> x  |);
     tail   = strict (| x:xs -> xs |);
     isCons = strict (| x:xs -> True | other -> False |); 
-    null   = strict (| nil  -> True | other -> False |) 
+    null   = strict (| Nil  -> True | other -> False |) 
     ;;
     
 let ident x   = x;
@@ -22,11 +22,11 @@ let (&&) = (| True -> ident      | False -> const False |);
     (||) = (| True -> const True | False -> ident |)
     ;;
 
-let map f l = if isCons l then f(head l) : delay(map f (tail l)) else nil;;
+let map f l = if isCons l then f(head l) : delay(map f (tail l)) else Nil;;
 
 let succ = prim_succ; pred = prim_pred; (=) = prim_eq; (>) = prim_gr;;
 
-let take n l = if (n>0) && isCons l then head l:take (pred n)(tail l) else nil;;
+let take n l = if (n>0) && isCons l then head l:take (pred n)(tail l) else Nil;;
 
 let ones = 1 : delay ones;;
 
@@ -38,9 +38,9 @@ take 20 nats;;
 ---+ Lazy-tailed cons, and lazy map
 
 let (::) = λ h -> \\ t -> h:t;;
-let lmap f l = if isCons l then f(head l) :: lmap f (tail l) else nil;;
+let lmap f l = if isCons l then f(head l) :: lmap f (tail l) else Nil;;
 let lnats = 0::lmap succ lnats;;
-let ltake n l = if (n>0) && isCons l then head l::ltake (pred n)(tail l) else nil;;
+let ltake n l = if (n>0) && isCons l then head l::ltake (pred n)(tail l) else Nil;;
 let length l = if isCons l then succ(length(tail l)) else 0;;
 
 ---+     let l200 = ltake 200 nats -- defines l200 as 0: an unevaluated thunk
@@ -53,6 +53,7 @@ null (tail l200);
 
 ---+ Now l200 has been evaluated one ply further
 l200;
+
 
 
 

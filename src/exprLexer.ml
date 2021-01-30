@@ -256,7 +256,8 @@ let rec token buf =
   | "}"         -> CKET
   *)
   | '|'         -> ALT
-  | 0x03bb      -> LAM  (* λ *)                             
+  | 0x03bb,0x03bb -> LAZY                           
+  | 0x03bb      -> LAM  (* λ *)
   | 0x2192      -> TO   (* → *)
   | '"'         -> STRING(string buf)
   | ','         -> COMMA

@@ -22,7 +22,10 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
           | Tuple of exprs        [@printer fun fmt es -> fprintf fmt "@[(%a)@]" pp_exprs es]
           (* Retain parenthesis structure for ease of prettyprinting *)
           | Bra   of expr         [@printer fun fmt e -> fprintf fmt "(%a)" pp_expr e]
-          | Construct of tag * exprs [@printer pp_cons pp_expr]
+          | Construct of tag * exprs [@printer let getTag = function 
+                                               | Construct(tag,_) -> Some tag
+                                               | _                -> None
+                                          in pp_cons getTag pp_expr]
           (* [@printer fun fmt (t,es) -> fprintf fmt "@[(%a %a)@]" pp_tag t (pp_punct_list " " pp_expr) es] *)
           | If    of expr*expr*expr [@printer fun fmt (g, e1, e2) -> 
                                            fprintf fmt "if %a then %a else %a" pp_expr g pp_expr e1 pp_expr e2]

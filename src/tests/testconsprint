@@ -1,0 +1,29 @@
+notation rightdata 3 &&&  ;
+         rightdata 2 &&   ;
+         rightdata 1 &    ;
+         leftdata  3 ***   ;
+         leftdata  2 **    ;
+         leftdata  1 *     ;
+         data      2 A;;
+         
+let r1 = (1&2&3&4&5);;  r1;
+let r2 = (r1&&r1&&r1);; r2;
+let r3 = (r1&r1&r1);;   r3;
+
+let l4 = (1*2*3*4*5);;  l4;
+let l5 = (l4**l4**l4);; l5;
+let l6 = (l4*l4*l4);;   l6;
+let l7 = (l5*l5*l5);;     l7;
+
+A(A 1 2) 2 &3&4&5;
+
+---+ 1*2&&3; 1*(2&&3); (1*2)&&3;
+
+1*2&&3;
+
+1*(2&&3);
+
+(1*2)&&3;
+
+
+

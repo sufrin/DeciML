@@ -24,3 +24,32 @@ let  getrole: (string -> role) ref = ref (fun _ -> Nonfix)
 let  setGetRole: (string -> role) -> unit = fun getter -> getrole := getter
 let  getRole s = !getrole s
 
+let maxBP = 1024 (* MUST BE LARGER THAN 4*the largest priority *)
+
+let getBP: string -> int = fun name ->
+match getRole name with
+| Infix(_, n) -> n
+| _           -> maxBP
+
+(* 
+    Bracketing policy for infix constructions is somewhat conservative
+    * constructions with the same constructor are bracketed if the associativity 
+      direction warrants it
+    * constructions with different infix constructors are always bracketed
+    * constructions with lower binding power are always bracketed
+*)
+
+(* Bracket the term with tag t if it appears as the left operand *)
+let bracketLeft  t (name', assoc', bp') = 
+    match t with
+    | None -> false
+    | Some (_, name) -> 
+      (name == name' && assoc'=R) || getBP name < bp' (* || name !=name' *)
+
+(* Bracket the term with tag t if it appears as the right operand *)
+let bracketRight (name, assoc, bp) t  = 
+    match t with
+    | None -> false
+    | Some (_, name') -> 
+      (name == name' && assoc=L) ||  getBP name' < bp  (* || name !=name' *)
+
