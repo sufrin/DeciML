@@ -163,6 +163,7 @@ open ExprParser
     function
     |  "->"   -> TO 
     |  ":>"   -> LABEL
+    |  ">>"   -> ANDTHEN
     |  "\\"   -> LAM    
     |  "\\\\" -> LAZY    
     |  s      ->  mkMath s
@@ -280,6 +281,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

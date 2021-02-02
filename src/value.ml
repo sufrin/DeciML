@@ -5,6 +5,7 @@ open Utils
 let shortenEnv e = if !Utils.showClosureEnv then e else []
 
 type value  = 
+ | Ref     of value ref         [@printer fun fmt v       -> fprintf fmt "ref %a" pp_value !v]
  | Const   of con               [@printer fun fmt c       -> fprintf fmt "%a" pp_con c]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "@[(%a)@]" (pp_punct_list "," pp_value) vs]
  | Cons    of tag * values      [@printer let getTag = function 
@@ -198,6 +199,8 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 |    Apply (l, op, r) ->
         (* Runtime desugaring: for convenience in diagnostics *)
         eval loc env k (Ap(Ap(op, l), r)) 
+|    AndThen (e1, e2) ->
+        eval loc env (fun _ -> eval loc env k e2) e1
 |    Let (defs, body) -> 
          let ext  = recBindings  env defs in
          let env' = ext <+> env in
@@ -247,6 +250,7 @@ let rec deepForce v = match v with
 | _              -> v
 
  
+
 
 
 

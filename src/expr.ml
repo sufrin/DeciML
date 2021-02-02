@@ -28,18 +28,19 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
                                           in pp_cons getTag pp_expr]
           (* [@printer fun fmt (t,es) -> fprintf fmt "@[(%a %a)@]" pp_tag t (pp_punct_list " " pp_expr) es] *)
           | If    of expr*expr*expr [@printer fun fmt (g, e1, e2) -> 
-                                           fprintf fmt "if %a then %a else %a" pp_expr g pp_expr e1 pp_expr e2]
+                                           fprintf fmt "@[if %a @,@[@[then %a @]@,@[else %a@]@]@]" pp_expr g pp_expr e1 pp_expr e2]
           | Ap    of expr*expr    [@printer fun fmt (f,e) -> fprintf fmt "%s %s" (show_expr f)(show_expr e)]
           (* Apply is for  convenience in generating diagnostic messages: it is desugared at runtime *)
           | Apply of expr*expr*expr 
                                   [@printer fun fmt (l,op,r) -> fprintf fmt "%a %a %a" pp_expr l pp_expr op pp_expr r]
           (***********************)
           | Fn    of cases        (* a multi-case function abstraction *)
-                                  [@printer fun fmt cs -> fprintf fmt "(| %a |)" pp_cases cs]
+                                  [@printer fun fmt cs -> fprintf fmt "@[⟨ %a ⟩@]" pp_cases cs]
           | LazyFn of case        (* a lazy function abstraction *)
                                   [@printer fun fmt c -> fprintf fmt "\\\\ %a" pp_case c]
           | Label of id * expr  (* id names the continuation, in scope e *)  
-                                  [@printer fun fmt (l,b) -> fprintf fmt "%a: %a" pp_id l pp_expr b]      
+                                  [@printer fun fmt (l,b) -> fprintf fmt "%a: %a" pp_id l pp_expr b] 
+          | AndThen of (expr*expr)  [@printer fun fmt (e1, e2) -> fprintf fmt "%a >> %a" pp_expr e1 pp_expr e2]    
           | Let   of defs * expr  [@printer fun fmt  (defs, body) -> fprintf fmt "@[let @[%a@]@ in @[%a@]" pp_defs defs pp_expr body]
           | At    of Utils.location * expr   [@printer fun fmt  (loc, body)  -> fprintf fmt "%a %a" pp_location loc pp_expr body]
           [@@deriving show { with_path = false }]
@@ -53,10 +54,10 @@ and def  = pat * expr  [@printer fun fmt (p, e) -> fprintf fmt "@[%a = %a@]" pp_
 and defs = def list [@printer pp_punct_list "; " pp_def]
            [@@deriving show { with_path = false }]
 
-and case  = pat * expr  [@printer fun fmt (p, e) -> fprintf fmt "@[%a -> %a@]" pp_pat p pp_expr e]
+and case  = pat * expr  [@printer fun fmt (p, e) -> fprintf fmt "@[%a -> @[<hv>%a@]@]" pp_pat p pp_expr e]
            [@@deriving show { with_path = false }]
            
-and cases = case list  [@printer pp_punct_list " | " pp_case]
+and cases = case list  [@printer fun fmt cases -> fprintf fmt "@[<hv>%a@]" (pp_punct_list "|" pp_case) cases]
             [@@deriving show { with_path = false }]
 
 and pat  = expr        
@@ -81,6 +82,8 @@ type t   = expr [@printer pp_expr]
 
 (* For desugaring *)
 let flip = Id "prim_flip"
+
+
 
 
 

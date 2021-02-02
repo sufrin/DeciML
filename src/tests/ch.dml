@@ -1,0 +1,47 @@
+--- Coroutines
+
+--- A continuation a expects an a and returns that a from its scope
+--- chan a == ref (state a)
+--- state a = Empty (continuation a) | Full (continuation()) | New (chan a -> a)
+
+ 
+
+notation data 1 Empty Full New;; 
+
+let print = prim_println;;
+
+let write chan v = 
+      ⟨ Empty there -> (here:> (set chan (Full here) >>
+                                print ("written",v)  >> there v))
+      ⟩ (get chan)
+      ;;
+      
+let read chan =
+    ⟨ Full there  -> here :> (set chan (Empty here) >> there())
+    | New  writer -> here :> (set chan (Empty here) >> writer chan)
+    ⟩ (get chan)
+    ;;
+      
+let chan writer = ref (New writer) ;;    
+
+
+--- Some business to do
+
+let incrementer n = 
+    let r = ref 0 in
+        ⟨ () ->  set r (prim_succ (get r)) ⟩ ;;
+
+let source = incrementer 0;;
+let writer chan = write chan (source());;
+let ch = chan writer;;
+
+
+let nats () = 
+    let source = incrementer 0 in
+    let writer chan = 
+        print "writer"          >>
+        write chan (source())   >>
+        print "1 written"       >>
+        write chan (source())   >>
+        print "2 written"
+    in  chan writer;;

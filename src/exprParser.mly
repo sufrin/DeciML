@@ -126,7 +126,7 @@
 
 %token FUN ALT NUF LAM LAZY BRA KET COMMA TO LET IN
        END SEMI EOF IF THEN ELSE DOT
-       NOTATION IMPORT LABEL DEF WHERE
+       NOTATION IMPORT LABEL DEF WHERE ANDTHEN
 
 %right TO
 
@@ -137,7 +137,9 @@
 %left         DOT
 *)
 
+
 (* Infix symbols *)
+%right ANDTHEN
 
 %right BINR0, CONR0
 %left  BINL0, CONL0
@@ -261,6 +263,7 @@ let topexpr :=
     
 let expr := 
     | ~=term;                                   {term}
+    | el=expr; op=ANDTHEN; er=expr;             {AndThen(el, er)}
     | el=expr; op=infixop; er=expr;             {if !Utils.desugarInfix then 
                                                     mkAp $loc (mkAp $loc (op, el), er)
                                                  else 
@@ -301,8 +304,8 @@ let simplex ==
     | BRA; op=infixop; KET;              {Expr.Bra(op)}
     
 let revexprlist :=
-    | ~=expr;                       { [expr]}
-    | ~=revexprlist; COMMA; ~=expr; { expr::revexprlist }
+    | expr=topexpr;                       { [expr]}
+    | ~=revexprlist; COMMA; expr=topexpr; { expr::revexprlist }
 
 id  : 
     |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
@@ -312,6 +315,7 @@ bid  :
      |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
 
 let priority == value=NUM; { Some(mkPriority value)} | { None }
+
 
 
 

@@ -65,10 +65,15 @@ let globalEnv = ref @@ addLib
     ; ("prim_ge",         num2num2bool (fun n m -> n>=m))
     ; ("True",            mkBool true)
     ; ("False",           mkBool false)
+    ; ("ref",             Prim(fun v -> Ref(ref v)))
+    ; ("set",              Prim (function (Ref r) -> Prim (fun v -> r:=v; v) 
+                               |           other -> semanticError @@ "Expecting a reference, got: "^(show_value other)))
+    ; ("get",              Prim (function (Ref r) -> !r
+                               |           other -> semanticError @@ "Expecting a reference, got: "^(show_value other)))
     ; ("setMargin",       num2num (fun margin -> Format.set_margin margin; margin))
     ; ("force",           Prim (force (fun v->v)))
     ; ("deepForce",       Prim deepForce)
-    ; ("prim_println",    Prim(fun v -> Format.fprintf Format.std_formatter "%a\n%!" pp_value v; v))
+    ; ("prim_println",    Prim(fun v -> Format.fprintf Format.std_formatter "%a@.%!" pp_value v; v))
     ] 
     emptyEnv
 
@@ -91,12 +96,12 @@ let rec processPhrase = fun currentPath -> function
     | Defs (defs, wheredefs) -> 
                    if !showAst then
                      if wheredefs=[] then
-                        Format.fprintf Format.std_formatter  "@[let @[%a@]@];;\n" pp_defs defs 
+                        Format.fprintf Format.std_formatter  "@[let @[%a@]@];;@." pp_defs defs 
                      else
-                        Format.fprintf Format.std_formatter  "@[let @[%a@]\nwhere @[%a@]@];;\n" pp_defs defs pp_defs wheredefs;
+                        Format.fprintf Format.std_formatter  "@[let @[%a@]\nwhere @[%a@]@];;@." pp_defs defs pp_defs wheredefs;
                    let ext   = recBindings !globalEnv wheredefs in
                    let ext'  = recBindings (ext <+> !globalEnv) defs in  
-                       if !showEnv then Format.fprintf Format.std_formatter "%a\n%!"  pp_layer ext';
+                       if !showEnv then Format.fprintf Format.std_formatter "%a@."  pp_layer ext';
                        globalEnv := ext' <+> !globalEnv 
     | EndFile   -> raise EndFile
     | Import paths -> 
@@ -190,6 +195,7 @@ end
 
 
     
+
 
 
 
