@@ -1,6 +1,8 @@
 PARSER=exprParser
 STEM=$(PARSER)Messages
 
+
+default:: $(STEM).default;  cp  $(STEM).default $(STEM).ml
 diff::  $(STEM).new $(STEM);  diff $(STEM).new $(STEM)
 ml::    $(STEM).ml
 new::   $(STEM).new
@@ -25,6 +27,7 @@ $(STEM): $(PARSER).mly; @\
 .PHONY: new raw diff ml
 
 listing: ; listing -c -p expr.ml value.ml main.ml parsing.ml utils.ml exprParser.mly exprLexer.ml syntaxrole.ml
+
 
 
 

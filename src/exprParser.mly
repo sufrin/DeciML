@@ -126,11 +126,11 @@
 
 %token FUN ALT NUF LAM LAZY BRA KET COMMA TO LET IN
        END SEMI EOF IF THEN ELSE DOT
-       NOTATION IMPORT LABEL DEF WHERE ANDTHEN
+       NOTATION IMPORT LABEL DEF WHERE ANDTHEN LOOP
 
-%right TO
 
 (* Increasing priorities: operators 
+%right        TO
 %right        WHERE
 %right        WITH
 %right        AT
@@ -247,7 +247,7 @@ let def :=
     | lhs=lhsexpr; EQ; body=topexpr;     { mkDef $loc (lhs, body) }
 
 let revcases := 
-    | ~=case;                    {[case]}
+    | ~=case;                   {[case]}
     | ~=revcases; eoc; ~=case;  { case::revcases }
     
 let case :=
@@ -255,15 +255,17 @@ let case :=
 
 let topexpr :=
     | LET; ~=defs; IN; ~=topexpr;                  { Let(defs, topexpr) }
-    | IF; g=expr; THEN; e1=expr; ELSE; e2=topexpr; { If(g, e1, e2)}
+    | IF; g=topexpr; THEN; e1=topexpr; ELSE; e2=topexpr; { If(g, e1, e2)}
     | LAZY; bvs=bid+; TO; body=topexpr;         <mkLazy>
     | LAM;  bvs=bid+; TO; body=topexpr;         <mkLambda>
     | LAM; BRA; ~=cases; KET;                   <mkFun>
-    | ~=expr; <>
+    | el=expr; ANDTHEN; er=topexpr;             {AndThen(el, er)}
+    | label=ID; LABEL; ~=topexpr;               <Label> 
+    | LOOP; ~=topexpr; <Loop> 
+    | ~=expr;                                   <>
     
 let expr := 
     | ~=term;                                   {term}
-    | el=expr; op=ANDTHEN; er=expr;             {AndThen(el, er)}
     | el=expr; op=infixop; er=expr;             {if !Utils.desugarInfix then 
                                                     mkAp $loc (mkAp $loc (op, el), er)
                                                  else 
@@ -278,7 +280,6 @@ let lhsexpr :=
                                                 }
 let term :=
     | ~=app; <> 
-    | label=ID; LABEL; ~=app;           {Label(label, app)}  
 
 let app :=
     | ~=prim;                           {prim}

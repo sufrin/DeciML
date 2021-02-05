@@ -1,47 +1,76 @@
---- Coroutines
+--- Coroutines from Continuations
 
---- A continuation a expects an a and returns that a from its scope
---- chan a == ref (state a)
---- state a = Empty (continuation a) | Full (continuation()) | New (chan a -> a)
+---  A continuation 'a expects an 'a and when invoked returns that 'a from the expression where it was constructed
+---  The construct label:>(expression) binds label, with scope expression, to the continuation of expression
+---  Typing rules require consistent typing between a continuation and its scope, and
+---- allow a continuation to be invoked anywhere (rather like the typing of exception-raising expressions in ML).
+---
+---          ρ ⊕ label: continuation τ ⊢ expression: τ              ρ ⊢ k: continuation τ   ρ ⊢ e: τ
+---         --------------------------------------------           --------------------------------------
+---               ρ ⊢ (label :> expression): τ                      ρ ⊢ k e: β  
 
- 
+--- types
+---  chan a  == ref (state a)
+---  state a == Empty (continuation a) | Full (continuation()) | New (chan a -> b)
 
 notation data 1 Empty Full New;; 
 
 let print = prim_println;;
+let (<)   = prim_ls;;
+let succ  = prim_succ;;
+let (:=)  = set;;
 
 let write chan v = 
-      ⟨ Empty there -> (here:> (set chan (Full here) >>
-                                print ("written",v)  >> there v))
+      ⟨ Empty reader -> (here :> (set chan (Full here) >> reader v))
+      | other        -> print ("error writing", other)
       ⟩ (get chan)
       ;;
       
 let read chan =
-    ⟨ Full there  -> here :> (set chan (Empty here) >> there())
+    ⟨ Full writer -> here :> (set chan (Empty here) >> writer())
     | New  writer -> here :> (set chan (Empty here) >> writer chan)
+    | other       -> print ("error reading", other)
     ⟩ (get chan)
     ;;
       
 let chan writer = ref (New writer) ;;    
 
 
---- Some business to do
+--- Counters
 
 let incrementer n = 
-    let r = ref 0 in
-        ⟨ () ->  set r (prim_succ (get r)) ⟩ ;;
+    let r = ref 0 in ⟨ () ->  set r (succ (get r)) ⟩ ;;
 
 let source = incrementer 0;;
-let writer chan = write chan (source());;
-let ch = chan writer;;
+    
+let readloop  n ch = loop let r = read ch in print("read", r) >> r<n;;
+let readrec   n ch = let r = read ch in print("read", r) >> if r<n then readrec n ch else ();;
+let readreq   n ch = if print(read ch)<n then readreq n ch else ();;
+
+let writerec  ch = write ch (source()) >> writerec ch;;
+let writeloop ch = let source = incrementer 0 in loop (write ch (source()) >> True);;
+
+--- -----------------------------------------------------------------------------------------
+--- Typical tests are of the form reader n (chan writer)
+--- Readloop is very resilient: the following succeed without stack overflow
+---   readloop 10000000 (chan writeloop)
+---   readloop 10000000 (chan writerec)    --- a surprise, since there's no reason for the writerec tail call not to cost space   
+--- but readrec is not very stack-conserving:
+---   readrec 10000000 (chan writerec)   --- stack overflows after 87296 
+---   readrec 10000000 (chan writeloop)  --- stack overflows after 87297
+--- and, surprisingly, since I thought it is the let ... in readrec that was problematic
+---   readreq 10000000 (chan writeloop)  --- stack overflows after 21824
 
 
-let nats () = 
-    let source = incrementer 0 in
-    let writer chan = 
-        print "writer"          >>
-        write chan (source())   >>
-        print "1 written"       >>
-        write chan (source())   >>
-        print "2 written"
-    in  chan writer;;
+--- This writer demonstrates that the return from a read happens in the right sequence
+let writer    ch = let r = source() in write ch r >> print ("wr", r) >> writer ch;;
+
+--- Interestingly, the readrecs are a bit more stack-conserving with it 
+---    readrec ... (chan writer) --- stack overflows at 296417
+---    readreq ... (chan writer) --- stack overflows at 318242
+
+--- Experiments with all reasonable configurations of up show stack overflow happening when x is 174690
+--- This is a mystery to me in light of the earlier results
+let t = ref 0;;
+let up x = up(t:=succ x) ;;
+

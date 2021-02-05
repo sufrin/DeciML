@@ -24,6 +24,7 @@ type value  =
                                 ] 
  | Thunk   of thunk             [@printer pp_thunk]
  | Prim    of (value -> value)  [@opaque]
+ | Cont    of (value -> value)  [@opaque]
  | Strict  of (value -> value)  [@opaque]
  | Unbound of id                [@printer fun fmt id      -> fprintf fmt "Unbound %s" (show_id id)]
  | Fail    of string            [@printer fun fmt why     -> fprintf fmt "FAIL %s" why]
@@ -157,58 +158,55 @@ match p, v with
 
 (* Utilities that throw errors that will eventually be detected by a type checker *)
 
-let isTrue: value -> bool = 
-    function Const(Tag(_, "True")) -> true | Const(Tag(_, "False")) -> false |   other -> semanticError @@  (Format.sprintf "Type error in guard: %s" (show_value other))
+let isTrue: value -> bool = function 
+    | Const(Tag(_, "True"))  -> true 
+    | Const(Tag(_, "False")) -> false 
+    | other                  -> semanticError @@  (Format.sprintf "Type error in guard: %s" (show_value other))
 
 let checkArity: int -> tag -> unit = 
-    fun arity -> function ((required, s)) -> if arity < required then () else semanticError @@  (Format.sprintf "Arity error applying %s [arity %d]" s required)
+    fun arity -> function ((required, s)) -> 
+        if arity < required then () else semanticError @@  (Format.sprintf "Arity error applying %s [arity %d]" s required)
 
 
 (* Evaluation *)
 
 type loc = Utils.location option
 
-   
+let unitValue = Tup[]
+let trueValue = Const(Tag(0, "True"))
+  
 let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> function
 | Id i              -> lookup loc i k env
 | Cid t             -> k(Const(Tag t))
 | Con c             -> k(Const c)
-| Label(name, body) -> eval loc (bind name (Prim k) env) k body
+| Label(name, body) -> eval loc (bind name (Cont k) env) k body
 | Tuple exs         -> evalTuple loc env (fun vs -> k(Tup(List.rev vs))) [] exs
 | Construct(t, exs) -> evalTuple loc env (fun vs -> k(Cons(t, List.rev vs))) [] exs 
 | Bra ex            -> eval loc env k ex     
 | Fn defs           -> k(Fun(env, defs))
 | LazyFn case       -> k(LazyFun(env, case))
-| If (g, e1, e2) ->
-     let choose = fun v -> eval loc env k (if isTrue v then e1 else e2)
-     in  eval loc env choose g
-|    Ap (rator, rand) ->
-        let rec apply = function
-            | Cons(t, v)         ->  checkArity (List.length v) t; eval loc env (fun w -> k(Cons(t, v@[w]))) rand 
-            | Const(Tag t)       ->  checkArity 0 t;               eval loc env (fun v -> k(Cons(t, [v]))) rand 
-            | Prim f             ->  eval loc env (f >> k) rand
-            | Strict f           ->  eval loc env (force f >> k) rand
-            | Fun(defenv, cases) ->  eval loc env (fun v -> evalCases defenv k v cases) rand
-            | LazyFun(defenv, (Id i, body)) ->  
-               let env' = bind i (match rand with Con c -> Const c | _ -> Thunk(env, rand, ref None)) defenv 
-               in  eval loc env' k body
-            | (Thunk _) as op    ->  force apply op 
-            | other              ->  k(Fail (show_value other))
-        in  
-            eval loc env apply rator
-|    Apply (l, op, r) ->
-        (* Runtime desugaring: for convenience in diagnostics *)
-        eval loc env k (Ap(Ap(op, l), r)) 
-|    AndThen (e1, e2) ->
-        eval loc env (fun _ -> eval loc env k e2) e1
-|    Let (defs, body) -> 
-         let ext  = recBindings  env defs in
-         let env' = ext <+> env in
-             eval loc env' k body
-|    At(location, ex) ->    
-       eval (Some(location)) env k ex         
+| If (g, e1, e2)    -> eval loc env (fun v -> eval loc env k (if isTrue v then e1 else e2)) g
+| Ap (rator, rand)  -> eval loc env (applyTo loc env k rand) rator
+| Apply (l, op, r)  -> eval loc env k (Ap(Ap(op, l), r)) (* Runtime desugaring: for convenience in diagnostics *)
+| AndThen (e1, e2)  -> eval loc env (fun _ -> eval loc env k e2) e1
+| Loop e            -> let rec loop = fun b -> if isTrue b then eval loc env loop e else k unitValue
+                       in  loop (trueValue)
+| Let (defs, body)  -> let ext  = recBindings  env defs in let env' = ext <+> env in eval loc env' k body 
+| At(location, ex)  -> eval (Some(location)) env k ex         
               
-(* |    other -> failwith (show_expr other) *)
+and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -> function
+| Cons(t, v)         ->  checkArity (List.length v) t; eval loc env (fun w -> k(Cons(t, v@[w]))) rand 
+| Const(Tag t)       ->  checkArity 0 t;               eval loc env (fun v -> k(Cons(t, [v]))) rand 
+| Cont f             ->  eval loc env f rand
+| Prim f             ->  eval loc env (f >> k) rand
+| Strict f           ->  eval loc env (force f >> k) rand
+| Fun(defenv, cases) ->  eval loc env (fun v -> evalCases defenv k v cases) rand
+| LazyFun(defenv, (Id i, body)) ->  
+   let env' = bind i (match rand with Con c -> Const c | _ -> Thunk(env, rand, ref None)) defenv 
+   in  eval loc env' k body
+| (Thunk _) as op    ->  force (applyTo loc env k rand) op 
+| other              ->  k(Fail ("Applying non-function value: " ^ show_value other))
+
 
 (* Evaluates in L-R order, but the order of the result is reversed.
    This preserves linear space and time (via the continuation architecture)

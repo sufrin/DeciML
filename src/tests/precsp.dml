@@ -1,0 +1,80 @@
+--- Pre-CSP with continuations
+
+notation rightdata 3 : ; 
+         data      2 Q ;
+         data      0 Nil ;
+         id        //;;
+
+let rev  = let f xs = ⟨ Nil → xs | y:ys → f (y:xs) ys⟩ in f Nil; 
+    len  = let f xs = ⟨ Nil → xs | y:ys → f (prim_succ xs) ys⟩ in f 0;
+    fold c (⊕) = let f r = ⟨ Nil → r | x:xs → f (x⊕r) xs⟩ in f c;
+    foldr (⊕) c = let f = ⟨ Nil → c | x:xs → x ⊕ f xs⟩ in f;
+    map f = foldr (λ x ys -> f x : ys) Nil;
+    do  f = foldr (λ x any → f x>>()) ();
+    // (⊕) xs = let h:t = xs in foldr ⊕ h t;;
+    
+let dec r = set r (prim_pred(get r));;
+let (>)   = prim_gr;;
+
+let refQ() =
+    let q         = ref(mkQ()) in
+    let canDeq()  = candeq(get q);
+        enqueue c = set q (enq c (get q));
+        dequeue() = ⟨ ()      → set q (mkQ())
+                    | (nq, r) → set q nq >> r
+                    ⟩ (deq (get q))
+    in (enqueue, dequeue, canDeq, ⟨s → prim_println(s, get q)>>()⟩)
+where
+    mkQ()    = Q Nil Nil;
+    enq c    = ⟨ Q l     r   → Q l (c:r)⟩;
+    candeq   = ⟨ Q Nil   Nil → False | other -> True ⟩;
+    deq      = ⟨ Q Nil   Nil → ()
+               | Q Nil   r   → deq (Q (rev r) Nil)
+               | Q (c:l) r   → (Q l r, c)
+               ⟩
+;;
+    
+let (enq, deq, can, show) = refQ();;      --- queue of runnable continuations
+
+let reschedule()  =                       --- ≡ run the first runnable continuation 
+    if can() then deq()() else prim_println "Terminated";        
+    
+    pause() = here:>(enq here >> reschedule()); --- Allow another runnable to run.
+    
+    process continue proc =  --- Construct a schedulable process from proc. It will continue() on termination of proc().
+            resultis:>                       
+            ( (here :> (resultis here)) >>  --- here() resumes on the next line [*]
+              continue(proc())              --- [*] call proc then continue. The latter is always a join point                  
+            );;                             --- the result of process is the schedulable continuation at [*]
+
+--- binary parallel composition of unit-functions: runs immediately     
+let l || r =
+    let count = ref 2 in 
+    (join:> 
+           ( enq (process join l) >>             
+             enq (process join r) >>             
+             reschedule()                        
+           )
+     --- join() 
+    ) >>                                 
+    (if dec count > 0 then reschedule() else ());;
+
+--- generalized parallel composition of unit-functions: runs immediately     
+let par procs = 
+    let count = ref (len procs) in
+    ( join :> ( do enq (map (process join) procs) >> reschedule())) --- schedule the processes
+    >> --- terminating processes join here
+    if dec count > 0 then reschedule() else ();;
+    
+    
+let pr s  = prim_println s >> pause();;
+
+let l n () = let c = ref n in loop (pr ("L1",c) >> pr ("L2", c)  >> dec c>0);
+    r n () = let c = ref n in loop (pr ("R1", c) >> pr ("R2", c) >> dec c>0);
+    m () = pr "M1" >> pause() >> pr "M2" >> ();
+    n () = pr "N1" >> pr "N2" >> ();;
+    
+    
+
+
+

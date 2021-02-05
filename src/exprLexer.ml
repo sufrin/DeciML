@@ -29,6 +29,7 @@ open ExprParser
        ;       "import"   , IMPORT
        ;       "where"    , WHERE
        ;       "notation" , NOTATION
+       ;       "loop"     , LOOP
        ]
 
 (* Syntactic roles of identifier strings are looked up by the scanner using mkXXXX 

@@ -40,7 +40,8 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
                                   [@printer fun fmt c -> fprintf fmt "\\\\ %a" pp_case c]
           | Label of id * expr  (* id names the continuation, in scope e *)  
                                   [@printer fun fmt (l,b) -> fprintf fmt "%a: %a" pp_id l pp_expr b] 
-          | AndThen of (expr*expr)  [@printer fun fmt (e1, e2) -> fprintf fmt "%a >> %a" pp_expr e1 pp_expr e2]    
+          | AndThen of (expr*expr)  [@printer fun fmt (e1, e2) -> fprintf fmt "%a >> %a" pp_expr e1 pp_expr e2] 
+          | Loop  of expr         [@printer fun fmt e -> fprintf fmt "loop %a" pp_expr e]
           | Let   of defs * expr  [@printer fun fmt  (defs, body) -> fprintf fmt "@[let @[%a@]@ in @[%a@]" pp_defs defs pp_expr body]
           | At    of Utils.location * expr   [@printer fun fmt  (loc, body)  -> fprintf fmt "%a %a" pp_location loc pp_expr body]
           [@@deriving show { with_path = false }]
