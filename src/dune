@@ -1,6 +1,6 @@
 (executable
  (name main)
- (libraries core unix menhirLib sedlex ppxlib ppx_deriving)
+ (libraries str core unix menhirLib sedlex ppxlib ppx_deriving)
  (preprocess (pps sedlex.ppx ppx_deriving.std))
 
  ;;;(preprocess (pps ppx_jane ppx_sexp_conv sedlex.ppx ppx_base ppx_deriving.std))
@@ -9,4 +9,5 @@
 (menhir (flags --table --canonical --explain) (modules exprParser))
 
  (env (dev (flags (:standard -warn-error -A))))
+
 

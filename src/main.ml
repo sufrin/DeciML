@@ -114,6 +114,7 @@ let rec processPhrase = fun currentPath -> function
 
 
 and processLexbuf currentPath lexbuf =
+  ExprLexer.setPragmaEval (fun _ text -> processArgs (Str.split (Str.regexp "[ ]+") text));
   let lexer = ExprLexer.lexer lexbuf in begin
   try
       match parse ~resume:true lexer lexbuf with
@@ -150,6 +151,8 @@ and processChan path chan =
     with
      EndFile -> ()
      
+and processArgs = function [] -> () | p::ps -> processArg p; processArgs ps
+
 and processArg path = 
     match path with
     | "+d" -> Utils.desugarInfix  := true
@@ -195,6 +198,7 @@ end
 
 
     
+
 
 
 

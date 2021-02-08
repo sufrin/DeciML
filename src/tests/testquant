@@ -1,6 +1,11 @@
---- There's a case here for having a "quantifier" data notation
---- and (perhaps) a macro notation and perhaps a way of saying that (eg) Λ
---- (if a data constructor) can be treated as an id for prettyprinting purposes. 
+{- 
+   There's a case here for having a "quantifier" data notation and
+   (perhaps) a macro notation and perhaps a way of saying that (eg)
+   Λ (if a data constructor) can be treated as an id for prettyprinting
+   purposes.
+-}
+
+--$+n +e
 
 
 notation data 2 Λ All Ex;
@@ -14,9 +19,9 @@ notation data 2 Λ All Ex;
 let ∀ bvs body = All bvs body;
     ∃ bvs body = Ex  bvs body;;
          
-let p1 = ∀   (x,y,z)  ((P x ∧ Q x));;
-let p2 = ∃   (x,y,z)  ((P x ∧ Q x));;
-let p3 = Λ   (x,y,z)  ((P x ∧ Q x));;
+let p1 = ∀   (x,y,z)  ((P x ∧ Q x));; -- indirect construction
+let p2 = ∃   (x,y,z)  ((P x ∧ Q x));; -- indirect construction
+let p3 = Λ   (x,y,z)  ((P x ∧ Q x));; -- direct construction
 
 p1;
 p2;
@@ -25,3 +30,4 @@ p3;
 let bvs  (All bvs bd) = bvs;
     body (All bvs bd) = bd;;
          
+

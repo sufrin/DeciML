@@ -8,37 +8,37 @@ notation rightdata 3 :  ;
          right 0 !!     
 ;;
 
----+ Printing priorities
+--+ Printing priorities
 1:2:3:4:5;
 
 (1:2:3):4:5:6;
 
----+ Some definitions
+--+ Some definitions
 let null  = λ ( nil -> True | (:) x xs -> False );;
 let nullz = λ ( nil -> True | x : xs -> False );;
 let isA   = λ ( A x -> True | B x -> False );;
 let eX    = (| X x y -> (x,y) |);;
-let eY    = λ ( Y x y -> (x,y,z) );;
+let eY    = λ ( Y x y -> (x,y,z) ); z=0;;
 let ez    = λ x y z -> (x,y,z);;
 
-notation right 0 >>;;
-let (x>>f)=f x;;
+notation right 0 |>;;
+let (x|>f)=f x;;
 
 let (a !! b) = let c=prim_println a in b;;
 
 
----+ null nil = True; null (3:nil)=False; ditto for nullz
+--+ null nil = True; null (3:nil)=False; ditto for nullz
 null    nil;;
 null    (3:nil);;
 nullz   nil;;
 nullz   (3:nil);;
 
----+ Deconstructions
+--+ Deconstructions
 eX(X 1 2);;
 eY(Y 1 2);;
 ez 1 2 3;;
 
----+ Call by need within the body of a lazy function
+--+ Call by need within the body of a lazy function
 let mkA   = \\ x -> A x;;
 let lazy  = \\ x -> (x,x);;
 
@@ -55,7 +55,7 @@ force(p1 lez);
 
 lez;;
 
----+ Deep forcing
+--+ Deep forcing
 let td = lazy (mkA (3:nil));;
 td;
 deepForce td;
@@ -64,14 +64,14 @@ let te = lazy (A (3:nil));;
 te;
 deepForce te;
 
----+ Forcing here exposed a typo in the environment construction of thunks
----+ constructed at the application of a lazy function. [Now fixed]
+--+ Forcing here exposed a typo in the environment construction of thunks
+--+ constructed at the application of a lazy function. [Now fixed]
 let badA x = A x;;
 let tb = lazy (badA (3:nil));; 
 tb;
 deepForce tb;
 
----+ Higher order laziness
+--+ Higher order laziness
 let pair = \\ i j -> (i, j);;
 
 let pr1 = pair (ez 1 2 3);; pr1;
@@ -79,5 +79,6 @@ let pr1 = pair (ez 1 2 3);; pr1;
 let pr2 = pr1 (ez 4 5 6);; pr2;
 
 deepForce p2;
+
 
 

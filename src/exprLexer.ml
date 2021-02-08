@@ -197,13 +197,20 @@ let mathop        = [%sedlex.regexp? (0x27f0 .. 0x27ff | 0x2900 .. 0x297x |
                                       0x2200 .. 0x22ff | 0x2190 .. 0x21ff |
                                       0x2a00 .. 0x2aff | 0x2300 .. 0x23ff)]
 
-let aop           = [%sedlex.regexp? Chars ":+-=#&*/~\\!@<>?|" | 0x00d7 (* × *)]
+let aop           = [%sedlex.regexp? Chars ":+=#&*/~\\!@<>?|" | 0x00d7 (* × *)]
+let mop           = [%sedlex.regexp? Chars "-"]
 
 
 let rec skipWhitespace buf =
   match%sedlex buf with
   | Plus whitespace -> skipWhitespace buf
   | _               -> ()
+  
+
+let err s buf = raise @@ LexError (fst @@ lexing_positions buf,  s)
+
+let errAt loc s  = raise @@ LexError (loc,  s)
+
 
 let string buf  =
   let buffer = Buffer.create 10 in
@@ -221,32 +228,44 @@ let string buf  =
     | '"'                 -> Buffer.contents buffer
     | stringChunk         -> ins (Utf8.lexeme buf) buf
     | _                   -> assert false
-    and err s buf = raise @@ LexError (fst @@ lexing_positions buf,  s)
     and ins s buf = Buffer.add_string buffer s; read_string buf
   in
     read_string buf
     
-let comment echo buf =
+let linecomment echo buf =
     match%sedlex buf with
-    | Star(Compl newline), newline -> if echo then Format.fprintf Format.std_formatter "---+%s%!" (Utf8.lexeme buf) else ()
-    | _  
-                              -> assert false
-                              
-let evalPragma = ref  (fun loc text -> Format.fprintf Format.std_formatter "---{%a%s%!" Utils.pp_fpos loc text)
+    | Star(Compl newline), newline -> 
+          if echo then Format.fprintf Format.std_formatter "--+%s%!" (Utf8.lexeme buf) 
+          else ()
+    | _   -> assert false
+
+let rec comment loc n buf =
+    let open Format in
+    match%sedlex buf with
+    | "{-"  -> comment loc (n+1) buf 
+    | "-}"  -> if n==0 then () else comment loc (n-1) buf
+    | eof   -> errAt loc (sprintf "End of file in comment%s starting " (if n=0 then "" else (sprintf " (nest %d deep)" n))) 
+    | _     -> ignore @@ Sedlexing.next buf; comment loc n                               buf
+    
+and nestedComment n buf = 
+    comment (fst @@ lexing_positions buf) n buf
+                                   
+let evalPragma = ref  (fun loc text -> Format.fprintf Format.std_formatter "--{%a%s%!" Utils.pp_fpos loc text)
 
 let setPragmaEval f = evalPragma := f
 
 let pragma buf =
     match%sedlex buf with
-    | Star(Compl newline), newline -> !evalPragma (fst@@lexing_positions buf) (Utf8.lexeme buf)
-    | _                            -> assert false
+    | Star(Compl newline) -> !evalPragma (fst@@lexing_positions buf) (Utf8.lexeme buf)
+    | _                   -> assert false
      
 let rec token buf =
   match%sedlex buf with
   | eof -> EOF
-  | "---+"      -> comment true   buf; token buf
-  | "---{"      -> pragma         buf; token buf
-  | "---"       -> comment false  buf; token buf
+  | "--+"       -> linecomment true   buf; token buf
+  | "--$"       -> pragma         buf; token buf
+  | "--"        -> linecomment false  buf; token buf
+  | "{-"        -> nestedComment 0 buf; token buf
   | ';'         -> SEMI
   | ";;"        -> END
   | newline     -> token buf
@@ -270,7 +289,8 @@ let rec token buf =
   | cident      -> mkCONID      (Utf8.lexeme buf)
   | greek       -> mkID         (Utf8.lexeme buf)
   | mathop      -> mkMath       (Utf8.lexeme buf)
-  | aop, Star aop -> mkOP       (Utf8.lexeme buf)
+  | aop, Star (aop | mop) -> mkOP       (Utf8.lexeme buf)
+  | mop, Opt (aop, Star (aop | mop)) -> mkOP       (Utf8.lexeme buf)
   | decimal_ascii -> NUM(10, 0, Utf8.lexeme buf) 
   | octal_ascii   -> NUM(8,  2, Utf8.lexeme buf) 
   | hex_ascii     -> NUM(16, 2, Utf8.lexeme buf) 
@@ -282,6 +302,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

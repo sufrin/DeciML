@@ -1,4 +1,4 @@
----+ Standard library notation
+--+ Standard library notation
 
 
 
@@ -18,5 +18,6 @@ let x + y = prim_add x y;
     (/) = prim_div;
     (×) = prim_mul;
     (=) = prim_eq;;
+
 
 

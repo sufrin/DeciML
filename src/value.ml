@@ -22,7 +22,7 @@ type value  =
                                           then fprintf fmt {|@[<v>@[λλ %a@]@;«@[<v>%a@]»@]@]|}  pp_case c pp_env (shortenEnv e) 
                                           else fprintf fmt {|@[λλ %a@]|}  pp_case c
                                 ] 
- | Thunk   of thunk             [@printer pp_thunk]
+ | Delay   of delayed           [@printer pp_delayed]
  | Prim    of (value -> value)  [@opaque]
  | Cont    of (value -> value)  [@opaque]
  | Strict  of (value -> value)  [@opaque]
@@ -34,9 +34,9 @@ and
   cont = value -> value        [@opaque]
   [@@deriving show { with_path = false }]
   
-and thunk = env * expr * value option ref 
-            [@printer fun fmt (env, expr, v)  -> fprintf fmt "@[<v>%a@;%a@]" 
-                                                             (pp_th pp_expr pp_value) (expr, !v)
+and delayed = env * expr * value option ref 
+            [@printer fun fmt (env, expr, v)  -> fprintf fmt "%a%a" 
+                                                             (Utils.pp_delayed pp_expr pp_value) (expr, !v)
                                                              pp_env (shortenEnv env) 
             ]
   [@@deriving show { with_path = false }]
@@ -55,8 +55,12 @@ and env = layer list [@printer fun fmt ls ->
                         fprintf fmt "%a" (pp_punct_list "⊕" pp_layer) (List.filter nonempty ls)]
  [@@deriving show { with_path = false }]
 
+(* TODO: this is where to add a call marker if we ever decide to support
+   tail call optimization. Right now tail calls cause the environment to 
+   grow unnecessarily. 
+*)
 and layer = 
-  | Lib      of bindings        [@printer fun fmt bs -> fprintf fmt "<library>"]
+  | Lib      of bindings        [@printer fun fmt _ -> fprintf fmt "<library>"]
   | Bind     of bindings        [@printer pp_bindings]
   | Rec      of bindings ref    [@printer  fun fmt bs -> 
                                            let nrbs = !bs in
@@ -174,12 +178,15 @@ type loc = Utils.location option
 
 let unitValue = Tup[]
 let trueValue = Const(Tag(0, "True"))
+
   
 let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> function
-| Id i              -> lookup loc i k env
-| Cid t             -> k(Const(Tag t))
-| Con c             -> k(Const c)
-| Label(name, body) -> eval loc (bind name (Cont k) env) k body
+| Id i              -> lookup loc i k env       
+| Cid t             -> k(Const(Tag t))          
+| Con c             -> k(Const c)               
+
+| Label(name, body) -> eval loc (bind name (Cont k) env) k body   (* reify and bind the continuation *)
+  
 | Tuple exs         -> evalTuple loc env (fun vs -> k(Tup(List.rev vs))) [] exs
 | Construct(t, exs) -> evalTuple loc env (fun vs -> k(Cons(t, List.rev vs))) [] exs 
 | Bra ex            -> eval loc env k ex     
@@ -191,7 +198,9 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 | AndThen (e1, e2)  -> eval loc env (fun _ -> eval loc env k e2) e1
 | Loop e            -> let rec loop = fun b -> if isTrue b then eval loc env loop e else k unitValue
                        in  loop (trueValue)
-| Let (defs, body)  -> let ext  = recBindings  env defs in let env' = ext <+> env in eval loc env' k body 
+| Let (defs, body)  -> let ext  = recBindings env defs in 
+                       let env' = ext <+> env in 
+                           eval loc env' k body 
 | At(location, ex)  -> eval (Some(location)) env k ex         
               
 and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -> function
@@ -202,27 +211,37 @@ and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -
 | Strict f           ->  eval loc env (force f >> k) rand
 | Fun(defenv, cases) ->  eval loc env (fun v -> evalCases defenv k v cases) rand
 | LazyFun(defenv, (Id i, body)) ->  
-   let env' = bind i (match rand with Con c -> Const c | _ -> Thunk(env, rand, ref None)) defenv 
+   let env' = bind i (match rand with Con c -> Const c | _ -> Delay(env, rand, ref None)) defenv 
    in  eval loc env' k body
-| (Thunk _) as op    ->  force (applyTo loc env k rand) op 
+| (Delay _) as op    ->  force (applyTo loc env k rand) op 
 | other              ->  k(Fail ("Applying non-function value: " ^ show_value other))
 
 
-(* Evaluates in L-R order, but the order of the result is reversed.
-   This preserves linear space and time (via the continuation architecture)
+(* 
+   Evaluates in L-R order, but the order of the result is reversed.
+   This preserves linear space and time (via the continuation
+   architecture).  It would be more elegant and efficient to keep
+   the ast expr list in reverse order in the first place. But most
+   tuples are little. (* TODO *)
 *)
 and evalTuple: loc -> env -> (values -> value) ->  values -> exprs -> value = fun loc e k vs -> function
 | []       -> k vs
 | ex::exs  -> eval loc e (fun v -> evalTuple loc e k (v::vs) exs) ex 
 
 and recBindings : env -> defs -> layer = fun env defs ->
-    let new'     = newRec() in 
+    (* closures made during defs elaboration all embody new',  an empty Rec layer *)
+    let new'     = newRec()   in 
     let env'     = new'<+>env in
-    let rec extend bindings = function
+    (* augment bindings layer as specified by defs *)
+    let rec elaborate : bindings -> defs -> bindings = fun bindings -> function 
     | [] -> bindings
-    | (pat, expr) :: defs -> let v = eval None env' (fun v -> v) expr in extend (matchPat pat v  bindings) defs  
-    in recFix new' @@ extend [] defs
+    | (pat, expr) :: defs -> 
+       let v = eval None env' (fun v -> v) expr 
+       in  elaborate (matchPat pat v  bindings) defs   
+       (* elaborate the definitions and tie the knot *)
+    in recFix new' @@ elaborate [] defs
 
+(* Find the first case whose lhs pattern matches the value, then evaluate its rhs *)
 and evalCases: env -> cont -> value -> cases -> value = fun e k v cases -> 
    let rec evalFirst: cases -> value  = function
    |   c::cs         -> (try evalCase e k v c with  NoMatch -> evalFirst cs)
@@ -233,7 +252,7 @@ and evalCase: env -> cont -> value -> def -> value = fun e k v -> function (lhs,
     let bindings = matchPat lhs v emptyBindings in eval None (addBindings bindings e) k rhs 
     
 and force k = function
-|  Thunk(env, expr, vr) ->
+|  Delay(env, expr, vr) ->
    (match !vr with
    | None   -> eval None env (fun v -> vr:=Some v; k v) expr 
    | Some v -> k v
@@ -242,12 +261,13 @@ and force k = function
 
 
 let rec deepForce v = match v with
-| Thunk (_,_,rv) -> (match !rv with None -> deepForce(force (fun v->v) v) | Some v -> v)
-| Tup vs         -> Tup(List.map deepForce vs)
-| Cons(c, vs)    -> Cons(c, List.map deepForce vs)
-| _              -> v
+| Delay (_,_,rv)   -> (match !rv with None -> deepForce(force (fun v->v) v) | Some v -> v)
+| Tup vs           -> Tup(List.map deepForce vs)
+| Cons(c, vs)      -> Cons(c, List.map deepForce vs)
+| _                -> v
 
  
+
 
 
 

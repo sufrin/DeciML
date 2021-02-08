@@ -1,4 +1,5 @@
----+ Tests of the deciML parser
+--+ Tests of the deciML parser
+--$ +a
 
 let (+) = prim_add; (/) = prim_div;;
 
@@ -7,7 +8,9 @@ let x=3;
 in 
     x/z + y/z;
 
----{ Pragma
+--
+
+let z=999;;
 
 let x=3;
     y=4 
@@ -20,6 +23,8 @@ end
 
 let x=3; y=4 in let z = x+y in x+y+z;
 
+--+ Expecting parse error at 28:31 (the spurious +)
+
 let x=3; y=4 in let z = x+y in + (a,b,c,d,e,f,g,h,i,j,k l m,n,o,p,q,r,s,t,u,v);
 
 
@@ -28,8 +33,11 @@ let d1 = λ ( x → x+y | Z → 0 );
     d3 y z = (y=z);
     d4 a b c d  = d(a,b,c);
     d5 = λ a->b;
+    --+ Parse error here at the spurious , and ), and -> 
     d6 = λ (a,b) c d e -> f;;
- 
+    --+ The recovery causes f to be parsed as an expression: this could be improved
+
+--+ Corrected declaration
 let d1 = λ ( x → x+y | Z → 0 );
     d2 x y = x+y;
     d3 y z = (y=z);
@@ -37,6 +45,7 @@ let d1 = λ ( x → x+y | Z → 0 );
     d5 = λ a->b;
     d6 = λ  c d e -> f;;
     
+
 
 
 

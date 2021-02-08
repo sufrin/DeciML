@@ -14,14 +14,18 @@ let rev  = let f xs = ⟨ Nil → xs | y:ys → f (y:xs) ys⟩ in f Nil;
     // (⊕) xs = let h:t = xs in foldr ⊕ h t;;
     
 let dec r = set r (prim_pred(get r));;
+let inc r = set r (prim_succ(get r));;
 let (>)   = prim_gr;;
+
+let qc  = ref 0;;
+let dqc = ref 0;;
 
 let refQ() =
     let q         = ref(mkQ()) in
     let canDeq()  = candeq(get q);
-        enqueue c = set q (enq c (get q));
+        enqueue c = inc qc >> set q (enq c (get q));
         dequeue() = ⟨ ()      → set q (mkQ())
-                    | (nq, r) → set q nq >> r
+                    | (nq, r) → inc dqc >> set q nq >> r
                     ⟩ (deq (get q))
     in (enqueue, dequeue, canDeq, ⟨s → prim_println(s, get q)>>()⟩)
 where
@@ -37,44 +41,46 @@ where
 let (enq, deq, can, show) = refQ();;      --- queue of runnable continuations
 
 let reschedule()  =                       --- ≡ run the first runnable continuation 
-    if can() then deq()() else prim_println "Terminated";        
+    if can() then deq()() else prim_println "System Terminated";        
     
-    pause() = here:>(enq here >> reschedule()); --- Allow another runnable to run.
+    pause() = pause :> (enq pause >> reschedule()); --- Allow another runnable to run.
     
     process continue proc =  --- Construct a schedulable process from proc. It will continue() on termination of proc().
-            resultis:>                       
-            ( (here :> (resultis here)) >>  --- here() resumes on the next line [*]
+            resultis :>                       
+            ( (resume :> (resultis resume)) >>  --- resume() resumes on the next line [*]
               continue(proc())              --- [*] call proc then continue. The latter is always a join point                  
             );;                             --- the result of process is the schedulable continuation at [*]
 
 --- binary parallel composition of unit-functions: runs immediately     
 let l || r =
     let count = ref 2 in 
-    (join:> 
+    (join :> 
            ( enq (process join l) >>             
              enq (process join r) >>             
              reschedule()                        
            )
      --- join() 
     ) >>                                 
-    (if dec count > 0 then reschedule() else ());;
+    if dec count > 0 then reschedule() else ();;
 
 --- generalized parallel composition of unit-functions: runs immediately     
 let par procs = 
     let count = ref (len procs) in
-    ( join :> ( do enq (map (process join) procs) >> reschedule())) --- schedule the processes
+    ( join :> ( do enq (map (process join) procs) >> reschedule() )) --- schedule the processes
     >> --- terminating processes join here
     if dec count > 0 then reschedule() else ();;
     
-    
-let pr s  = prim_println s >> pause();;
 
-let l n () = let c = ref n in loop (pr ("L1",c) >> pr ("L2", c)  >> dec c>0);
-    r n () = let c = ref n in loop (pr ("R1", c) >> pr ("R2", c) >> dec c>0);
-    m () = pr "M1" >> pause() >> pr "M2" >> ();
+--- Tests
+let pr s  = prim_println s ;;
+
+let l n () = let c = ref 0 in loop (pr ("L1", c) >> pr ("L2", c) >> pause()>> n>inc c);
+    r n () = let c = ref 0 in loop (pr ("R1", c) >> pr ("R2", c) >> pause()>> n>inc c);
+    m () = pr "M1" >> pr "M2" >> ();
     n () = pr "N1" >> pr "N2" >> ();;
     
     
+
 
 
 

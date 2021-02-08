@@ -1,8 +1,25 @@
+--+ Pure notation declarations 
+--$+n
 notation id 9 ∅ ;;      
 notation id 9 ⋿ ;;      
-notation id ⨀;;        
+notation left 4  ⨀;;        
+notation right 5 ∙;;        
 notation id α β γ ω;;   
-notation id ⇿ ;;        
-notation id ←  ∀ ∃ ∐ ;;      
-notation id 9 ∑ ;; --- different to the greek capital sigma
+notation leftdata ← ; leftdata 9 ↔ ;;        
+notation id ∀ ∃ ∐ ;;      
+notation id 9 ∑ ;; --+ ∑ different to the greek capital sigma (Σ)
+
+--$+a 
+let ϕ x=x;
+    ⋿ y=y;
+    a  ⨀ b = (a,b);
+    a  ∙ b = (a,b);;
+
+1⨀2⨀3;
+1⨀(2⨀3);
+1∙2∙3;
+1∙(2∙3);
+1⨀2∙3⨀4;
+44←1⨀2∙3⨀4;
+44↔1⨀2∙3⨀4;
 

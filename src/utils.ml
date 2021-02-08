@@ -48,7 +48,7 @@ let pp_cons =
         let name = if isOp name then "("^name^")" else name in
             Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
         
-let pp_th pp_expr pp_value fmt = function
+let pp_delayed pp_expr pp_value fmt = function
 | expr, None   -> Format.fprintf fmt {|⌈%a⌉|} pp_expr expr
 | _,    Some v -> pp_value fmt v
 
@@ -112,6 +112,7 @@ and idLocs = ref false
 and showEnv = ref false
 
 and showClosureEnv = ref false
+
 
 
 
