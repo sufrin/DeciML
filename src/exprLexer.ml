@@ -278,8 +278,9 @@ let rec token buf =
   *)
   | '|'         -> ALT
   | 0x03bb,0x03bb -> LAZY                           
-  | 0x03bb      -> LAM  (* λ *)
-  | 0x2192      -> TO   (* → *)
+  | 0x03bb      -> LAM    (* λ *)
+  | 0x2192      -> TO     (* → *)
+  | 0x03bd      -> BYNAME (* ν *)
   | '"'         -> STRING(string buf)
   | ','         -> COMMA
   | '='         -> EQ           (Utf8.lexeme buf)
@@ -302,6 +303,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

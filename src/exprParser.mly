@@ -25,7 +25,8 @@
         let mkConId tag = Cid tag
         
         (* Transform unsaturated applications of proper constructors into Constructs. *)
-        let rec mkAp loc (rator, rand) = 
+        
+        let rec  mkAp loc (rator, rand) = 
         match rator with
         |  Bra rator -> mkAp loc (rator, rand)
         |  Cid tag ->     
@@ -41,7 +42,7 @@
                if arity <= List.length exs then 
                   syntaxWarning @@ Format.asprintf "Constructor of arity %d used in construction %a %a" arity pp_expr res pp_location loc;
                res
-        | _ -> Ap(rator, rand)
+        | _ -> if !idLocs then At(loc, Ap(rator, rand)) else Ap(rator, rand)
         
         (* Expose the name of an operator -- for notation declarations *)
         let rec opToString = function
@@ -69,6 +70,12 @@
             match bvs with 
             | [pat]     -> LazyFn(rawExpr pat, body)
             | pat::pats -> LazyFn(rawExpr pat, mkLazy(pats, body))
+            | _         -> assert false
+        
+        let rec mkByName(bvs, body) = 
+            match bvs with 
+            | [pat]     -> ByNameFn(rawExpr pat, body)
+            | pat::pats -> ByNameFn(rawExpr pat, mkByName(pats, body))
             | _         -> assert false
                 
         let mkDef loc (pattern, body) = 
@@ -124,7 +131,7 @@
 %token <string> STRING (* a string encoded in utf8 *)
                 
 
-%token FUN ALT NUF LAM LAZY BRA KET COMMA TO LET IN
+%token FUN ALT NUF LAM LAZY BYNAME BRA KET COMMA TO LET IN
        END SEMI EOF IF THEN ELSE DOT
        NOTATION IMPORT LABEL DEF WHERE ANDTHEN LOOP
 
@@ -257,8 +264,9 @@ let topexpr :=
     | LET; ~=defs; IN; ~=topexpr;                  { Let(defs, topexpr) }
     | IF; g=topexpr; THEN; e1=topexpr; ELSE; e2=topexpr; { If(g, e1, e2)}
     | LAZY; bvs=bid+; TO; body=topexpr;         <mkLazy>
+    | BYNAME; bvs=bid+; TO; body=topexpr;       <mkByName>
     | LAM;  bvs=bid+; TO; body=topexpr;         <mkLambda>
-    | LAM; BRA; ~=cases; KET;                   <mkFun>
+    | LAM; BRA; ~=cases; KET;                   {mkFun cases}
     | el=expr; ANDTHEN; er=topexpr;             {AndThen(el, er)}
     | label=ID; LABEL; ~=topexpr;               <Label> 
     | LOOP; ~=topexpr; <Loop> 
@@ -292,8 +300,8 @@ let prim :=
     | BRA; op=infixop; ~=expr; KET;        {Bra(mkAp $loc (mkAp $loc (Expr.flip, Bra(op)), expr))}   
     | BRA; ~=expr; op=infixop; KET;        {Bra(mkAp $loc (Bra(op), expr))}
     (* Balanced *)
-    | BRA; eoc; ~=cases; eoc; KET;       <mkFun>
-    | FUN; eoc?; ~=cases; NUF;           <mkFun>
+    | BRA; eoc; ~=cases; eoc; KET;       {mkFun cases}
+    | FUN; eoc?; ~=cases; NUF;           {mkFun cases}
     
 let pattern == ~=simplex;               {[simplex]}
 
@@ -316,6 +324,7 @@ bid  :
      |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
 
 let priority == value=NUM; { Some(mkPriority value)} | { None }
+
 
 
 

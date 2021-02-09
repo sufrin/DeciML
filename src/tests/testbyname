@@ -1,0 +1,35 @@
+let dec r = set r (prim_pred (get r));;
+let inc r = set r (prim_succ (get r));;
+
+let print x = prim_println(force x);;
+let (+) = prim_add;;
+let (<) = prim_ls;;
+
+
+{- 
+   A call-by-name abstraction is introduced by ν (not λ). Actual
+   parameters are substituted as thunks and need to be evaluated
+   (using force) at their use. 
+   
+   An alternative to the programmer invoking force, would be to
+   "auto-force" a thunk whenever it's the result of an evaluation.
+   This would (in general) make a "pure" interpreter slower everywhere;
+   but can be done by program transformation at the typechecking
+   phase.
+-}
+
+let while = 
+    ν guard body → 
+            if force guard then 
+               loop (force body >> force guard) 
+            else 
+               ();;
+            
+let r=ref 0;;
+
+let testwhile () = 
+    set r 0 >> 
+    while (get r<4) 
+          (inc r >> print (get r))
+
+            

@@ -38,6 +38,8 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
                                   [@printer fun fmt cs -> fprintf fmt "@[⟨ %a ⟩@]" pp_cases cs]
           | LazyFn of case        (* a lazy function abstraction *)
                                   [@printer fun fmt c -> fprintf fmt "\\\\ %a" pp_case c]
+          | ByNameFn of case      (* a call-by-name function abstraction *)
+                                  [@printer fun fmt c -> fprintf fmt {|ν %a|} pp_case c]
           | Label of id * expr  (* id names the continuation, in scope e *)  
                                   [@printer fun fmt (l,b) -> fprintf fmt "%a: %a" pp_id l pp_expr b] 
           | AndThen of (expr*expr)  [@printer fun fmt (e1, e2) -> fprintf fmt "%a >> %a" pp_expr e1 pp_expr e2] 
@@ -83,6 +85,7 @@ type t   = expr [@printer pp_expr]
 
 (* For desugaring *)
 let flip = Id "prim_flip"
+
 
 
 

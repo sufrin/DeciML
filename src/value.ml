@@ -23,11 +23,15 @@ type value  =
                                           else fprintf fmt {|@[λλ %a@]|}  pp_case c
                                 ] 
  | Delay   of delayed           [@printer pp_delayed]
+ | ByNameFun of env * case      [@printer fun fmt (e, c)  -> 
+                                          if !Utils.showClosureEnv 
+                                          then fprintf fmt {|@[<v>@[ν %a@]@;«@[<v>%a@]»@]@]|}  pp_case c pp_env (shortenEnv e) 
+                                          else fprintf fmt {|@[ν %a@]|}  pp_case c
+                                ] 
+ | Thunk   of env * expr        [@printer fun fmt (_, e) -> fprintf fmt {|⌈%a⌉|} pp_expr e]
  | Prim    of (value -> value)  [@opaque]
  | Cont    of (value -> value)  [@opaque]
  | Strict  of (value -> value)  [@opaque]
- | Unbound of id                [@printer fun fmt id      -> fprintf fmt "Unbound %s" (show_id id)]
- | Fail    of string            [@printer fun fmt why     -> fprintf fmt "FAIL %s" why]
  [@@deriving show { with_path = false }]
 
 and 
@@ -145,8 +149,8 @@ let debugMatch = ref false
 let rec matchPat: pat -> value -> bindings -> bindings = fun p v bs -> 
 if !debugMatch then eprintf "match %a with %a\n%!" pp_pat p pp_value v;
 match p, v with 
-| At(_, p),     v                              -> matchPat p v bs  (* just in case we left a location in *)
-| Bra(p),       v                              -> matchPat p v bs  
+| At(_, p),     v                              -> (matchPat [@tailcall]) p v bs  (* just in case we left a location in *)
+| Bra(p),       v                              -> (matchPat [@tailcall]) p v bs  
 | Id i,          _                             -> addBinding i v bs
 | Tuple ps,     Tup vs'                        -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
 | Con c,        Const c' when c=c'             -> emptyBindings
@@ -175,6 +179,9 @@ let checkArity: int -> tag -> unit =
 (* Evaluation *)
 
 type loc = Utils.location option
+let pp_loc fmt = function 
+| None          -> ()
+| Some location -> pp_location fmt location
 
 let unitValue = Tup[]
 let trueValue = Const(Tag(0, "True"))
@@ -192,6 +199,7 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 | Bra ex            -> eval loc env k ex     
 | Fn defs           -> k(Fun(env, defs))
 | LazyFn case       -> k(LazyFun(env, case))
+| ByNameFn case     -> k(ByNameFun(env, case))
 | If (g, e1, e2)    -> eval loc env (fun v -> eval loc env k (if isTrue v then e1 else e2)) g
 | Ap (rator, rand)  -> eval loc env (applyTo loc env k rand) rator
 | Apply (l, op, r)  -> eval loc env k (Ap(Ap(op, l), r)) (* Runtime desugaring: for convenience in diagnostics *)
@@ -209,12 +217,16 @@ and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -
 | Cont f             ->  eval loc env f rand
 | Prim f             ->  eval loc env (f >> k) rand
 | Strict f           ->  eval loc env (force f >> k) rand
-| Fun(defenv, cases) ->  eval loc env (fun v -> evalCases defenv k v cases) rand
+| Fun(defenv, cases) ->  eval loc env (fun v -> evalCases loc defenv k v cases) rand
 | LazyFun(defenv, (Id i, body)) ->  
    let env' = bind i (match rand with Con c -> Const c | _ -> Delay(env, rand, ref None)) defenv 
    in  eval loc env' k body
+| ByNameFun(defenv, (Id i, body)) ->  
+   let env' = bind i (match rand with Con c -> Const c | _ -> Thunk(env, rand)) defenv 
+   in  eval loc env' k body
 | (Delay _) as op    ->  force (applyTo loc env k rand) op 
-| other              ->  k(Fail ("Applying non-function value: " ^ show_value other))
+| (Thunk _) as op    ->  force (applyTo loc env k rand) op 
+| other              ->  semanticError @@ (asprintf "applying non-function value: %a %s" pp_value other (match loc with None -> "" | Some l -> Utils.show_location l))
 
 
 (* 
@@ -228,7 +240,7 @@ and evalTuple: loc -> env -> (values -> value) ->  values -> exprs -> value = fu
 | []       -> k vs
 | ex::exs  -> eval loc e (fun v -> evalTuple loc e k (v::vs) exs) ex 
 
-and recBindings : env -> defs -> layer = fun env defs ->
+and recBindings: env -> defs -> layer = fun env defs ->
     (* closures made during defs elaboration all embody new',  an empty Rec layer *)
     let new'     = newRec()   in 
     let env'     = new'<+>env in
@@ -242,10 +254,10 @@ and recBindings : env -> defs -> layer = fun env defs ->
     in recFix new' @@ elaborate [] defs
 
 (* Find the first case whose lhs pattern matches the value, then evaluate its rhs *)
-and evalCases: env -> cont -> value -> cases -> value = fun e k v cases -> 
+and evalCases: loc -> env -> cont -> value -> cases -> value = fun loc e k v cases -> 
    let rec evalFirst: cases -> value  = function
    |   c::cs         -> (try evalCase e k v c with  NoMatch -> evalFirst cs)
-   |   []            -> k(Fail (sprintf "Ran out of cases: %s" (show_value v)))
+   |   []            -> semanticError @@  (asprintf "No case matches: %s in application at %a" (show_value v) pp_loc loc)
 in evalFirst cases
 
 and evalCase: env -> cont -> value -> def -> value = fun e k v -> function (lhs, rhs) -> 
@@ -257,6 +269,7 @@ and force k = function
    | None   -> eval None env (fun v -> vr:=Some v; k v) expr 
    | Some v -> k v
    ) 
+|  Thunk (env, expr) -> eval None env k expr
 |  v -> k v
 
 
@@ -267,6 +280,7 @@ let rec deepForce v = match v with
 | _                -> v
 
  
+
 
 
 
