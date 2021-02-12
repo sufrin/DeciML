@@ -45,10 +45,10 @@ open ExprParser
     let bars = "||||||||||||||||||||||||||||"
     
     let mkLEFT id right isData = 
-        if String.length id == 2 then 
-         LEFT(id, right, isData) 
-        else 
-         try Hashtbl.find idMap id with Not_found -> ret id @@ LEFT(id, (String.sub bars 0 (String.length id-2))^right, isData)
+        if String.length id >= 2 then 
+           (try Hashtbl.find idMap id with Not_found -> ret id @@ LEFT(id, (String.sub bars 0 (String.length id-2))^right, isData))
+        else
+           assert false
        
     
     (* External interface for pretty-printing *)
@@ -344,6 +344,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

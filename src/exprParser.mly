@@ -107,6 +107,11 @@
              if   right=right' 
              then Bra(if isData then Cid(1, id) else Id id)
              else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
+         
+         let quoteLeftfix loc (id, right, isData) (right') =
+             if   right=right' 
+             then Bra(if isData then Cid(2, id) else Id id)
+             else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
           
          let mkOutfix loc (id, right, isData) expr (right') =
              if   right=right' 
@@ -259,6 +264,12 @@ let symbols :=
     | { [] }
     | op=infix; ~=symbols; { opToString op :: symbols }
     | op=id;    ~=symbols; { opToString op :: symbols }
+    | op=xfix;  ~=symbols; { op :: symbols }
+    
+let xfix := op=LEFT;   {let (id, _, _) = op in id}
+    |       op=QLEFT;  {let (id, _, _) = op in id}
+    |       op=QMID;   <>
+    |       op=RIGHT;  <>
       
 let revdefs := 
     | ~=def;                  {[def]}
@@ -329,9 +340,10 @@ let simplex ==
     | ~=STRING;                          <mkString>
     | BRA; ~=exprlist; KET;              <mkTuple>
     | openb=LEFT; ~=expr; closeb=RIGHT;  {mkOutfix $loc openb expr closeb}
-    | openb=LEFT; closeb=RIGHT;          {quoteOutfix $loc openb closeb}
-    | openb=QLEFT; closeb=QMID;          {quoteOutfix $loc openb closeb}
-    | BRA; op=infixop; KET;              {Expr.Bra(op)}
+    (* quotation of infixes, leftfixes, outfixes, etc *)
+    | BRA; openb=LEFT; closeb=RIGHT;  KET;        {quoteOutfix $loc openb closeb}
+    | BRA; openb=QLEFT; closeb=QMID;  KET;        {quoteLeftfix $loc openb closeb}
+    | BRA; op=infixop; KET;                       {Expr.Bra(op)}
     
 let revexprlist :=
     | expr=topexpr;                       { [expr]}
@@ -345,6 +357,7 @@ bid  :
      |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
 
 let priority == value=NUM; { Some(mkPriority value)} | { None }
+
 
 
 
