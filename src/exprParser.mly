@@ -50,6 +50,9 @@
             | Cid(_,s)       -> s
             | At(_, op)      -> opToString op
             | _              -> assert false
+            
+        let negateOp  = Id "-"
+        let negateFun = Id "prim_neg"
         
         (* Distinguish proper tuples from bracketed expressions *)
         (* We keep the bracket in the ast to simplifiy prettyprinting during diagnostivs *)    
@@ -158,17 +161,10 @@
        NOTATION IMPORT LABEL DEF WHERE ANDTHEN LOOP
 
 
-(* Increasing priorities: operators 
-%right        TO
-%right        WHERE
-%right        WITH
-%right        AT
-%left         DOT
-*)
+
 
 
 (* Infix symbols *)
-%right ANDTHEN
 
 %right BINR0, CONR0
 %left  BINL0, CONL0
@@ -214,149 +210,159 @@ CONR    :  CONR0 {$1} | CONR1 {$1} | CONR2 {$1} | CONR3 {$1} | CONR4 {$1}
 CONL    :  CONL0 {$1} | CONL1 {$1} | CONL2 {$1} | CONL3 {$1} | CONL4 {$1} 
         |  CONL5 {$1} | CONL6 {$1} | CONL7 {$1} | CONL8 {$1} | CONL9 {$1}
 
-let infix ==    ~=BINL;                            <mkId>
-        |       ~=BINR;                            <mkId>
-        |       op=CONL;                           {mkConId(2, op)}
-        |       op=CONR;                           {mkConId(2, op)}
+let infix   ==  ~=BINL;                 < mkId >
+            |   ~=BINR;                 < mkId >
+            |   op=CONL;                { mkConId(2, op) }
+            |   op=CONR;                { mkConId(2, op) }
 
-let infixop ==      ~=infix;                       <>
-            |       ~=EQ;                          <mkId>
+let infixop ==  ~=infix;                <>
+            |   ~=EQ;                   < mkId >
                 
 (********************************************************************************)
 
 let phrase := 
-    | LET; ~=defs; ~=where; endoreof;    <Expr.Defs>
-    | ~=topexpr;   terminator;           <Expr.Expr>
-    | NOTATION; ~=notations; endoreof;   <Expr.Notation>
-    | IMPORT; paths=spec+ ; terminator;  <Expr.Import>
-    | SEMI;                              {Expr.Nothing}
-    | END;                               {Expr.Nothing}
-    | EOF;                               {Expr.EndFile}
+    | LET; ~=defs; ~=where; endoreof;                   < Expr.Defs >
+    | ~=topexpr;   terminator;                          < Expr.Expr >
+    | NOTATION; ~=notations; endoreof;                  < Expr.Notation >
+    | IMPORT; paths=spec+ ; terminator;                 < Expr.Import >
+    | SEMI;                                             { Expr.Nothing }
+    | END;                                              { Expr.Nothing }
+    | EOF;                                              { Expr.EndFile }
     
-let where == WHERE; ~=defs; { defs }
-          |                 { [] }
+let where == WHERE; ~=defs;                             { defs }
+          |                                             { [] }
           
-let spec       == path=STRING; {path} | path=ID; {path}
+let spec  == path=STRING;                               { path } 
+          |  path=ID;                                   { path }
 
-let endoreof   == END | EOF
+let endoreof   == END      | EOF
 let terminator == endoreof | SEMI
 
 let defs     ==
-    | { [] }
-    |  ~=revdefs;              <List.rev>
+    |                                                   { [] }
+    |  ~=revdefs;                                       <List.rev>
 
 let cases    == 
-    | { [] }
-    | ~=revcases;             <List.rev>
+    |                                                   { [] }
+    | ~=revcases;                                       < List.rev >
     
 let exprlist == 
-    | { [] }
-    | ~=revexprlist;          <List.rev>
+    |                                                   { [] }
+    | ~=revexprlist;                                    < List.rev >
 
 let notations :=
-    | ~=notation;                       {[notation]}
-    | ~=notation; SEMI; ~=notations;    {notation :: notations}
+    | ~=notation;                                       { [notation] }
+    | ~=notation; SEMI; ~=notations;                    { notation :: notations }
     
 let notation := 
-    | lr=ID; bp=priority; ~=symbols;         { (lr, bp, symbols) }    
+    | lr=ID; bp=priority; ~=symbols;                    { (lr, bp, symbols) } 
+    
+let priority == value=NUM;                              { Some(mkPriority value)} 
+             |                                          { None }
+
+   
     
 let symbols := 
     | { [] }
-    | op=infix; ~=symbols; { opToString op :: symbols }
-    | op=id;    ~=symbols; { opToString op :: symbols }
-    | op=xfix;  ~=symbols; { op :: symbols }
+    | op=infix; ~=symbols;                              { opToString op :: symbols }
+    | op=id;    ~=symbols;                              { opToString op :: symbols }
+    | op=xfix;  ~=symbols;                              { op :: symbols }
     
-let xfix := op=LEFT;   {let (id, _, _) = op in id}
-    |       op=QLEFT;  {let (id, _, _) = op in id}
-    |       op=QMID;   <>
-    |       op=RIGHT;  <>
+let xfix := op=LEFT;                                    { let (id, _, _) = op in id }
+    |       op=QLEFT;                                   { let (id, _, _) = op in id }
+    |       op=QMID;                                    <>
+    |       op=RIGHT;                                   <>
       
 let revdefs := 
-    | ~=def;                  {[def]}
-    | ~=revdefs; eod; ~=def;  {def::revdefs}
+    | ~=def;                                            { [def] }
+    | ~=revdefs; eod; ~=def;                            { def::revdefs }
     
 let eod == SEMI
 let eoc == ALT
     
 let def :=
-    | lhs=lhsexpr; EQ; body=topexpr;     { mkDef $loc (lhs, body) }
+    | lhs=lhsexpr; EQ; body=topexpr;                     { mkDef $loc (lhs, body) }
 
 let revcases := 
-    | ~=case;                   {[case]}
-    | ~=revcases; eoc; ~=case;  { case::revcases }
+    | ~=case;                                            {[case]}
+    | ~=revcases; eoc; ~=case;                           { case::revcases }
     
 let case :=
-    | ~=expr; TO; ~=topexpr;      { (expr, topexpr) }
+    | ~=expr; TO; ~=topexpr;                             { (expr, topexpr) }
 
 let topexpr :=
-    | LET; ~=defs; IN; ~=topexpr;                  { Let(defs, topexpr) }
-    | IF; g=topexpr; THEN; e1=topexpr; ELSE; e2=topexpr; { If(g, e1, e2)}
-    | LAZY; bvs=bid+; TO; body=topexpr;         <mkLazy>
-    | BYNAME; bvs=bid+; TO; body=topexpr;       <mkByName>
-    | LAM;  bvs=bid+; TO; body=topexpr;         <mkLambda>
-    | q=QLEFT;  ~=expr; m=QMID; body=topexpr;   {mkQuant $loc q expr m body}
-    | LAM; BRA; ~=cases; KET;                   {mkFun cases}
-    | el=expr; ANDTHEN; er=topexpr;             {AndThen(el, er)}
-    | label=ID; LABEL; ~=topexpr;               <Label> 
-    | LOOP; ~=topexpr; <Loop> 
-    | ~=expr;                                   <>
+    | LET; ~=defs; IN; ~=topexpr;                        { Let(defs, topexpr) }
+    | IF; g=topexpr; THEN; e1=topexpr; ELSE; e2=topexpr; { If(g, e1, e2) }
+    | LAZY; bvs=bid+; TO; body=topexpr;                  < mkLazy >
+    | BYNAME; bvs=bid+; TO; body=topexpr;                < mkByName >
+    | LAM;  bvs=bid+; TO; body=topexpr;                  < mkLambda >
+    | q=QLEFT;  ~=expr; m=QMID; body=topexpr;            { mkQuant $loc q expr m body }
+    | LAM; BRA; ~=cases; KET;                            { mkFun cases }
+    | el=expr; ANDTHEN; er=topexpr;                      { AndThen(el, er) }
+    | label=ID; LABEL; ~=topexpr;                        < Label > 
+    | LOOP; ~=topexpr;                                   < Loop > 
+    | ~=expr;                                            <>
     
 let expr := 
-    | ~=term;                                   {term}
-    | el=expr; op=infixop; er=expr;             {if !Utils.desugarInfix then 
-                                                    mkAp $loc (mkAp $loc (op, el), er)
-                                                 else 
-                                                    Apply(el, op, er)
-                                                }
+    | ~=term;                                            { term }
+    | el=expr; op=infixop; er=expr;                      { if !Utils.desugarInfix then 
+                                                             mkAp $loc (mkAp $loc (op, el), er)
+                                                           else 
+                                                             Apply(el, op, er)
+                                                         }
 let lhsexpr := 
-    | ~=term;                                   {term}
-    | el=lhsexpr; op=infix; er=lhsexpr;         {if !Utils.desugarInfix then 
-                                                    mkAp $loc (mkAp $loc (op, el), er)
-                                                 else 
-                                                    Apply(el, op, er) 
-                                                }
+    | ~=term;                                            { term }
+    | el=lhsexpr; op=infix; er=lhsexpr;                  { if !Utils.desugarInfix then 
+                                                             mkAp $loc (mkAp $loc (op, el), er)
+                                                           else 
+                                                             Apply(el, op, er) 
+                                                         }
 let term :=
-    | ~=app; <> 
+    | ~=app;                                             <> 
 
 let app :=
-    | ~=prim;                           {prim}
-    | ~=app; ~=prim;                    {mkAp $loc (app,prim)}
+    | ~=prim;                                            { prim }
+    | ~=app; ~=prim;                                     { mkAp $loc (app,prim) }
     
     
 let prim :=
-    | ~=simplex;                         {simplex}
-    (* Sections *)
-    | BRA; op=infixop; ~=expr; KET;        {Bra(mkAp $loc (mkAp $loc (Expr.flip, Bra(op)), expr))}   
-    | BRA; ~=expr; op=infixop; KET;        {Bra(mkAp $loc (Bra(op), expr))}
-    (* Balanced *)
-    | BRA; eoc; ~=cases; eoc; KET;       {mkFun cases}
-    | FUN; eoc?; ~=cases; NUF;           {mkFun cases}
+    | ~=simplex;                                         { simplex }
     
-let pattern == ~=simplex;               {[simplex]}
+    (* Sections *)
+    | BRA; op=infixop; ~=expr; KET;                      {if op=negateOp then 
+                                                             Bra(mkAp $loc (negateFun, expr)) 
+                                                          else 
+                                                             Bra(mkAp $loc (mkAp $loc (Expr.flip, Bra(op)), expr))
+                                                         }   
+    | BRA; ~=expr; op=infixop; KET;                      { Bra(mkAp $loc (Bra(op), expr)) }
+    
+    (* Balanced *)
+    | BRA; eoc; ~=cases; eoc; KET;                       { mkFun cases }
+    | FUN; eoc?; ~=cases; NUF;                           { mkFun cases }
+    
 
 let simplex == 
-    | ~=id;                              {id}
-    | ~=NUM;                             <mkNum>
-    | ~=STRING;                          <mkString>
-    | BRA; ~=exprlist; KET;              <mkTuple>
-    | openb=LEFT; ~=expr; closeb=RIGHT;  {mkOutfix $loc openb expr closeb}
+    | ~=id;                                              { id }
+    | ~=NUM;                                             < mkNum >
+    | ~=STRING;                                          < mkString >
+    | BRA; ~=exprlist; KET;                              < mkTuple >
+    | openb=LEFT; ~=expr; closeb=RIGHT;                  { mkOutfix $loc openb expr closeb }
     (* quotation of infixes, leftfixes, outfixes, etc *)
-    | BRA; openb=LEFT; closeb=RIGHT;  KET;        {quoteOutfix $loc openb closeb}
-    | BRA; openb=QLEFT; closeb=QMID;  KET;        {quoteLeftfix $loc openb closeb}
-    | BRA; op=infixop; KET;                       {Expr.Bra(op)}
+    | BRA; openb=LEFT; closeb=RIGHT;  KET;               { quoteOutfix $loc openb closeb }
+    | BRA; openb=QLEFT; closeb=QMID;  KET;               { quoteLeftfix $loc openb closeb }
+    | BRA; op=infixop; KET;                              { Expr.Bra(op) }
     
 let revexprlist :=
-    | expr=topexpr;                       { [expr]}
-    | ~=revexprlist; COMMA; expr=topexpr; { expr::revexprlist }
+    | expr=topexpr;                                      { [expr]}
+    | ~=revexprlist; COMMA; expr=topexpr;                { expr::revexprlist }
 
 id  : 
-    |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
-    |  name=CONID                   { mkConId name }
+    |  name=ID                                           { if !idLocs then At($loc, mkId name) else mkId name }
+    |  name=CONID                                        { mkConId name }
 
 bid  : 
-     |  name=ID                      { if !idLocs then At($loc, mkId name) else mkId name }
+     |  name=ID                                          { if !idLocs then At($loc, mkId name) else mkId name }
 
-let priority == value=NUM; { Some(mkPriority value)} | { None }
 
 
 

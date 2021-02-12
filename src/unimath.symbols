@@ -45,6 +45,7 @@ text abbrev >  \u27E9 # ⟩
 
 text abbrev ;; \u2a3e # ⨾
 
+
 # outfixes
 
 text abbrev lc \u2308 #⌈
@@ -57,7 +58,7 @@ text abbrev rf \u230B #⌋
 
 text abbrev /// \u2afb # ⫻
 
-
+test abbrev -- \u2212  # —
 
 
 

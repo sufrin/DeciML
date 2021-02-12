@@ -53,6 +53,7 @@ let rec val_eq: value -> value -> bool = fun l r -> match force id l, force id r
 let globalEnv = ref @@ addLib 
     [ ("prim_succ",       num2num (fun n->n+1))
     ; ("prim_pred",       num2num (fun n->n-1))
+    ; ("prim_neg",        num2num (fun n-> -n))
     ; ("prim_add",        num2num2num  (fun n m -> n+m))
     ; ("prim_sub",        num2num2num  (fun n m -> n-m))
     ; ("prim_mul",        num2num2num  (fun n m -> n+m))
@@ -198,6 +199,7 @@ end
 
 
     
+
 
 
 
