@@ -102,8 +102,22 @@
             )
             | _  -> syntaxError (Format.asprintf "Erroneous pattern %a within lhs of definition at %a\n%!" pp_expr pat pp_location loc)
          in abstractFrom body pattern
-             
 
+         let quoteOutfix loc (id, right, isData) (right') =
+             if   right=right' 
+             then Bra(if isData then Cid(1, id) else Id id)
+             else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
+          
+         let mkOutfix loc (id, right, isData) expr (right') =
+             if   right=right' 
+             then Ap(Bra(if isData then Cid(1, id) else Id id), expr) 
+             else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
+
+         let mkQuant loc (id, right, isData) expr right' body =
+             if   right=right' 
+             then Ap(Ap(Bra(if isData then Cid(2, id) else Id id), expr), body)
+             else syntaxError (Format.asprintf "quantifier %s should be followed %s (not %s) at %a\n%!" id right right' pp_location loc)
+             
 %}
 
 %token <int*int*string> NUM (* base, start, rep *)
@@ -126,12 +140,15 @@
         BINR8 BINL8 CONR8 CONL8
         BINR9 BINL9 CONR9 CONL9
                 
-%token <string*string*string> LEFT RIGHT
+%token <string*string*bool> LEFT QLEFT (* the boolean controls whether it's a data symbol or an id *)
+
+%token <string> RIGHT QMID
+ 
                 
 %token <string> STRING (* a string encoded in utf8 *)
                 
 
-%token FUN ALT NUF LAM LAZY BYNAME BRA KET COMMA TO LET IN
+%token FUN ALT NUF LAM LAZY BYNAME BRA KET CBRA CKET SBRA SKET COMMA TO LET IN
        END SEMI EOF IF THEN ELSE DOT
        NOTATION IMPORT LABEL DEF WHERE ANDTHEN LOOP
 
@@ -266,6 +283,7 @@ let topexpr :=
     | LAZY; bvs=bid+; TO; body=topexpr;         <mkLazy>
     | BYNAME; bvs=bid+; TO; body=topexpr;       <mkByName>
     | LAM;  bvs=bid+; TO; body=topexpr;         <mkLambda>
+    | q=QLEFT;  ~=expr; m=QMID; body=topexpr;   {mkQuant $loc q expr m body}
     | LAM; BRA; ~=cases; KET;                   {mkFun cases}
     | el=expr; ANDTHEN; er=topexpr;             {AndThen(el, er)}
     | label=ID; LABEL; ~=topexpr;               <Label> 
@@ -310,6 +328,9 @@ let simplex ==
     | ~=NUM;                             <mkNum>
     | ~=STRING;                          <mkString>
     | BRA; ~=exprlist; KET;              <mkTuple>
+    | openb=LEFT; ~=expr; closeb=RIGHT;  {mkOutfix $loc openb expr closeb}
+    | openb=LEFT; closeb=RIGHT;          {quoteOutfix $loc openb closeb}
+    | openb=QLEFT; closeb=QMID;          {quoteOutfix $loc openb closeb}
     | BRA; op=infixop; KET;              {Expr.Bra(op)}
     
 let revexprlist :=

@@ -42,7 +42,14 @@ open ExprParser
     let mkCONID   id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONID(0, id) (* Default arity is 0 *)
     let mkMath    id = try Hashtbl.find idMap id with Not_found -> ret id @@ BINL9 id
     let mkMathCon id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONL9 id
+    let bars = "||||||||||||||||||||||||||||"
     
+    let mkLEFT id right isData = 
+        if String.length id == 2 then 
+         LEFT(id, right, isData) 
+        else 
+         try Hashtbl.find idMap id with Not_found -> ret id @@ LEFT(id, (String.sub bars 0 (String.length id-2))^right, isData)
+       
     
     (* External interface for pretty-printing *)
     let getRole id =
@@ -73,7 +80,7 @@ open ExprParser
                 | CONR9 _ | BINR9 _ -> Infix(R, 9)
                 | EQ _    -> Infix(R, 3)
                 | ID _    -> Nonfix
-                | CONID _ -> Confix
+                | CONID _ | LEFT _ | QLEFT _ -> Confix
                 | _ -> failwith ("Syntax role inquiry for reserved symbol: "^id)
         in
                 role 
@@ -135,25 +142,36 @@ open ExprParser
     ; (fun x -> CONR9(x))
     ]
 
+
    (* Experimental notation declarations *)
     
     let showNotation = ref false   
  
     let declareNotations declns =
-        let declareFixity (associativity, num, symbols) =
+        let declareFixity (notationclass, num, symbols) =
+            match notationclass, symbols with
+            | "outfix",     [l;r] -> Hashtbl.add idMap l (LEFT(l,r, true)); Hashtbl.add idMap r (RIGHT(r)) 
+            | "leftfix",    [l;r] -> Hashtbl.add idMap l (QLEFT(l,r, true)); Hashtbl.add idMap r (QMID(r)) 
+            | "outfixid",   [l;r] -> Hashtbl.add idMap l (LEFT(l,r, false)); Hashtbl.add idMap r (RIGHT(r)) 
+            | "leftfixid",  [l;r] -> Hashtbl.add idMap l (QLEFT(l,r, false)); Hashtbl.add idMap r (QMID(r)) 
+            | "outfix",     _
+            | "leftfix",    _ 
+            | "outfixid",   _ 
+            | "leftfixid",  _ -> failwith (notationclass^" declaration requires exactly two symbols")
+            | _ -> 
             let num = match num with Some p->p | None -> 0 in
             if (0<=num && num<=9) then
-               let mkTok = match associativity with
+               let mkTok = match notationclass with
                   "left"      -> leftOpSymbol.(num)
                 | "right"     -> rightOpSymbol.(num)
                 | "leftdata"  -> leftConSymbol.(num)
                 | "rightdata" -> rightConSymbol.(num)
                 | "id"        -> (fun x -> ID x)
                 | "data"      -> (fun x -> CONID(num, x))  (* num is the arity of the (curried if nonzero) constructor *)
-                | _           -> failwith ("fixity misdeclared as: "^associativity^", but should be one of: left, right, leftdata, rightdata, data, id) ")
+                | _           -> failwith ("notation misdeclared as: "^notationclass^", but should be one of: left, right, leftdata, rightdata, data, id, outfix, leftfix, outfixid, leftfixid) ")
                in 
                let addSymbol str = Hashtbl.add idMap str (mkTok str);
-                                   if !showNotation then Format.fprintf Format.std_formatter "notation %s %d %s\n%!" associativity num str
+                                   if !showNotation then Format.fprintf Format.std_formatter "notation %s %d %s\n%!" notationclass num str
                in 
                   List.iter addSymbol symbols           
             else failwith ("priority or arity out of bounds: " ^ string_of_int num)
@@ -199,6 +217,8 @@ let mathop        = [%sedlex.regexp? (0x27f0 .. 0x27ff | 0x2900 .. 0x297x |
 
 let aop           = [%sedlex.regexp? Chars ":+=#&*/~\\!@<>?|" | 0x00d7 (* × *)]
 let mop           = [%sedlex.regexp? Chars "-"]
+
+let bars          = [%sedlex.regexp? Rep('|', 0 .. 4)]
 
 
 let rec skipWhitespace buf =
@@ -270,17 +290,38 @@ let rec token buf =
   | ";;"        -> END
   | newline     -> token buf
   | blank       -> token buf
+  
   | 0x27e8      -> FUN  (* ⟨ *)
   | 0x27e9      -> NUF  (* ⟩⟩ *)
-  (*
+  
   | "{"         -> CBRA
   | "}"         -> CKET
-  *)
+  | "["         -> SBRA
+  | "]"         -> SKET
+  
+  (* User-defined outfix functions *)
+  
+  | "{|", bars        -> mkLEFT  (Utf8.lexeme buf) "|}" false
+  | bars,  "|}"       -> RIGHT (Utf8.lexeme buf)
+  | "[|", bars        -> mkLEFT  (Utf8.lexeme buf) "|]" false
+  | bars , "|]"       -> RIGHT (Utf8.lexeme buf)
+  | "<|", bars        -> mkLEFT  (Utf8.lexeme buf) "|>" false
+  | bars , "|>"       -> RIGHT (Utf8.lexeme buf)
+  
+  | 0x2985      -> LEFT({|⦅|}, {|⦆|}, false)
+  | 0x2986      -> RIGHT {|⦆|}
+  | 0x301a      -> LEFT({|〚|}, {|〛|}, false)
+  | 0x301b      -> RIGHT {|〛|}
+  
+  (* ************************ *)
+  
   | '|'         -> ALT
+  
   | 0x03bb,0x03bb -> LAZY                           
   | 0x03bb      -> LAM    (* λ *)
   | 0x2192      -> TO     (* → *)
   | 0x03bd      -> BYNAME (* ν *)
+  
   | '"'         -> STRING(string buf)
   | ','         -> COMMA
   | '='         -> EQ           (Utf8.lexeme buf)
