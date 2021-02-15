@@ -1,0 +1,96 @@
+notation
+     right 0 @          ;
+     left  6 && ||      ; id ¬; 
+     left  7 + -        ;
+     left  8 * /        ;
+     right 9 **         ;
+     data  0 Nil        ;
+     rightdata 5 ::     ;
+     right     5 :::    ;;
+
+let id     x   = x
+  ; const  x y = x
+  ; flip f x y = f y x
+  ; delay      = λλ x → x
+  ; f @ x      = f x
+  ; (f ∘ g) x  = f (g x)
+  ; (f ⨾ g) x  = g (f x)
+ ;; 
+ 
+let (+)  = prim_add
+  ; (-)  = prim_sub
+  ; (*)  = prim_mul
+  ; (/)  = prim_div
+  ; (=)  = prim_struct_eq
+  ; (<)  = prim_ls
+  ; (≤)  = prim_le
+  ; (>)  = prim_gr
+  ; (≥)  = prim_ge
+  ; x=/=y= if x=y then False else True
+  ; pred = prim_pred
+  ; succ = prim_succ
+ ;;
+ 
+let pr = prim_println;;
+
+let (&&) = ⟨ True → id | False → const False ⟩
+  ; (||) = ⟨ True → const True | False → id ⟩
+  ; ¬    = ⟨ True → False | False → True ⟩
+ ;;
+ 
+  
+-- Streams (lists lazy in their tails)
+let null  xs      = ⟨ Nil → True    | _ → False ⟩ (force xs)
+  ; isCons xs     = ⟨ _ :: _ → True | _ → False ⟩ (force xs)
+  ; hd    xs      = ⟨ x :: _  → x  | other → failWith("hd", other)⟩ (force xs)
+  ; tl    xs      = ⟨ _ :: xs → xs | other → failWith("tl", other)⟩ (force xs)
+  ; (:::)         = λ x → λλ xs → x::xs
+  ; ((⊗) <** res) = let f xs = if null xs then res else hd xs ⊗ f (tl xs) in f
+  ; (#)           = λ n → λ xs → if n>0 && isCons xs then  hd xs :: (pred n # tl xs) else Nil
+  ; (##)          = λ n → λ xs → if null xs || n=0 then xs else pred n  ## tl xs
+  ; f *** xs      = let map xs = if null xs then Nil else (f @ hd xs) ::: map (tl xs) in map xs
+  ; (||||)        = λλ xs ys → if null xs || null ys then Nil else (hd xs, hd ys) ::: (tl xs |||| tl ys)
+ ;;
+
+
+let ((⊗) <* res)  = let f = ⟨ Nil →  res | x::xs →  x ⊗ f xs ⟩ in f
+  ; foldr (⊗) res = ((⊗) <* res)
+  ; ((⊗) <* res)  = let f = ⟨ Nil →  res | x::xs →  x ⊗ f xs ⟩ in f
+  ; foldr (⊗) res = ((⊗) <* res)
+  ; rev           = let f xs = ⟨ Nil → xs | y::ys → f (y::xs) ys⟩ in f Nil
+  ; map f = ⟨  Nil   →  Nil 
+            |  x::xs →  f x :: map f xs
+            ⟩
+  ; len   = ⟨ Nil     →  0 
+            | _ :: xs →  1+len xs 
+            ⟩
+  ; (|||) = ⟨ (Nil, _) → Nil
+            | (_, Nil) → Nil
+            | (x::xs, y::ys) → (x,y)::(xs|||ys)
+            ⟩
+            
+  ; takeWhile p = λ
+    ( Nil   → Nil
+    | x::xs → if p x then x::takeWhile p xs else Nil
+    )
+    
+  ; dropWhile p = 
+    ⟨ Nil   → Nil
+    | x::xs → if p x then dropWhile p xs else xs
+    ⟩
+    
+  ; filter p =
+    ⟨ Nil    -> Nil
+    | x::xs -> if p x then x::filter p xs else filter p xs
+    ⟩
+
+
+  ; m `upto`   n = if m ≥ n then Nil else m :: succ m `upto` n
+  ; m `downto` n = if m ≤ n then Nil else m :: pred m `downto` n
+  ; upfrom     n =  n ::: (upfrom   @ succ n)
+  ; downfrom   n =  n ::: (downfrom @ pred n)
+ ;;
+
+
+
+        

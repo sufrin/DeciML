@@ -206,7 +206,7 @@ let hex_ascii     = [%sedlex.regexp? "0x", Plus (('0' .. '9' | 'a' .. 'f' | 'A' 
 let alpha         = [%sedlex.regexp?  ('a' .. 'z' | 'A' .. 'Z' | '_') ] 
 let greek         = [%sedlex.regexp?  (0x0391 .. 0x03ff) ]  
 let digit         = [%sedlex.regexp?  ('0' .. '9') ] 
-let ident         = [%sedlex.regexp?  ('a' .. 'z'), Star(alpha|digit) ]
+let ident         = [%sedlex.regexp?  ('a' .. 'z'), Star(alpha|digit), Star '\'' ]
 let cident        = [%sedlex.regexp?  ('A' .. 'Z'), Star(alpha|digit) ]
 
 let stringChunk   = [%sedlex.regexp? Star (Compl ('"' | '\\' | '\n'))]
@@ -215,7 +215,7 @@ let mathop        = [%sedlex.regexp? (0x27f0 .. 0x27ff | 0x2900 .. 0x297x |
                                       0x2200 .. 0x22ff | 0x2190 .. 0x21ff |
                                       0x2a00 .. 0x2aff | 0x2300 .. 0x23ff)]
 
-let aop           = [%sedlex.regexp? Chars ":+=#&*/~\\!@<>?|" | 0x00d7 (* × *)]
+let aop           = [%sedlex.regexp? Chars "¬⨾∘×⦂:+=#&*/~\\!@<>?|" ]
 let mop           = [%sedlex.regexp? Chars "-"]
 
 let bars          = [%sedlex.regexp? Rep('|', 0 .. 4)]
@@ -318,20 +318,22 @@ let rec token buf =
   | '|'         -> ALT
   
   | 0x03bb,0x03bb -> LAZY                           
-  | 0x03bb      -> LAM    (* λ *)
-  | 0x2192      -> TO     (* → *)
-  | 0x03bd      -> BYNAME (* ν *)
+  | 0x03bb        -> LAM    (* λ *)
+  | 0x2192        -> TO     (* → *)
+  | 0x03bd        -> BYNAME (* ν *)
   
-  | '"'         -> STRING(string buf)
-  | ','         -> COMMA
-  | '='         -> EQ           (Utf8.lexeme buf)
-  | '('         -> BRA
-  | ')'         -> KET
-  | ident       -> mkID         (Utf8.lexeme buf)
-  | cident      -> mkCONID      (Utf8.lexeme buf)
-  | greek       -> mkID         (Utf8.lexeme buf)
-  | mathop      -> mkMath       (Utf8.lexeme buf)
-  | aop, Star (aop | mop) -> mkOP       (Utf8.lexeme buf)
+  | '"'           -> STRING(string buf)
+  | ','           -> COMMA
+  | '='           -> EQ           (Utf8.lexeme buf)
+  | '('           -> BRA
+  | ')'           -> KET
+  | '_',Opt ident -> mkID         (Utf8.lexeme buf)
+  | ident         -> mkID         (Utf8.lexeme buf)
+  | '`',ident,'`' -> mkMath       (Utf8.lexeme buf)
+  | cident        -> mkCONID      (Utf8.lexeme buf)
+  | greek         -> mkID         (Utf8.lexeme buf)
+  | mathop        -> mkMath       (Utf8.lexeme buf)
+  | aop, Star (aop | mop) -> mkOP (Utf8.lexeme buf)
   | mop, Opt (aop, Star (aop | mop)) -> mkOP       (Utf8.lexeme buf)
   | decimal_ascii -> NUM(10, 0, Utf8.lexeme buf) 
   | octal_ascii   -> NUM(8,  2, Utf8.lexeme buf) 
@@ -344,6 +346,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

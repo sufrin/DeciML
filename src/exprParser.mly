@@ -259,8 +259,6 @@ let notation :=
     
 let priority == value=NUM;                              { Some(mkPriority value)} 
              |                                          { None }
-
-   
     
 let symbols := 
     | { [] }

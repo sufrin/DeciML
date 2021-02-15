@@ -85,13 +85,3 @@ type t   = expr [@printer pp_expr]
 
 (* For desugaring *)
 let flip = Id "prim_flip"
-
-
-
-
-
-
-
-
-
-

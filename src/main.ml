@@ -56,7 +56,7 @@ let globalEnv = ref @@ addLib
     ; ("prim_neg",        num2num (fun n-> -n))
     ; ("prim_add",        num2num2num  (fun n m -> n+m))
     ; ("prim_sub",        num2num2num  (fun n m -> n-m))
-    ; ("prim_mul",        num2num2num  (fun n m -> n+m))
+    ; ("prim_mul",        num2num2num  (fun n m -> n*m))
     ; ("prim_div",        num2num2num  (fun n m -> n/m))
     ; ("prim_eq",         num2num2bool (fun n m -> n=m))
     ; ("prim_struct_eq",  Prim (fun l -> Prim (fun r -> mkBool(val_eq l r))))
@@ -64,6 +64,7 @@ let globalEnv = ref @@ addLib
     ; ("prim_le",         num2num2bool (fun n m -> n<=m))
     ; ("prim_gr",         num2num2bool (fun n m -> n>m))
     ; ("prim_ge",         num2num2bool (fun n m -> n>=m))
+    ; ("failWith",        Prim (fun msg -> semanticError @@ ("failWith "^show_value msg)))
     ; ("True",            mkBool true)
     ; ("False",           mkBool false)
     ; ("ref",             Prim(fun v -> Ref(ref v)))
@@ -172,18 +173,25 @@ and processArg path =
     | "-m" -> Value.debugMatch := false
     | _    -> 
            if isPath path then 
-           try
-               let chan = open_in path in processChan path chan
-              with
-               Sys_error msg -> Format.eprintf "[[%s]]\n%!" msg
+           let open Filename in
+           (* This is where to differentiate compiled module files from source files (eventually) *)
+           let path = (try chop_extension path with Invalid_argument _ -> path)^ ".dml" in
+               processPath path
            else
                Format.eprintf "[[Unknown switch: %s]]\n%!" path
                
 and isPath s = s!="" && s.[0]!='+' && s.[0]!='-'
 
+and processPath path =
+    try
+        let chan = open_in path in processChan path chan
+    with
+        Sys_error msg -> Format.eprintf "[[%s]]\n%!" msg
+
+
 let rec main argv =     
     match argv with
-    | []        -> processArg "/dev/stdin"
+    | []        -> processPath "/dev/stdin"
     | "--"::ps  -> main ps
     | p   ::ps  -> processArg p; main ps
 
@@ -199,6 +207,7 @@ end
 
 
     
+
 
 
 
