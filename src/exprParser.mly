@@ -135,6 +135,7 @@
        CONID 
        
 %token <string> 
+        PREFIX
         ID 
         EQ 
         BINR0 BINL0 CONR0 CONL0
@@ -262,9 +263,10 @@ let priority == value=NUM;                              { Some(mkPriority value)
     
 let symbols := 
     | { [] }
-    | op=infix; ~=symbols;                              { opToString op :: symbols }
-    | op=id;    ~=symbols;                              { opToString op :: symbols }
-    | op=xfix;  ~=symbols;                              { op :: symbols }
+    | op=infix;    ~=symbols;                           { opToString op :: symbols }
+    | op=id;       ~=symbols;                           { opToString op :: symbols }
+    | op=prefixop; ~=symbols;                           { opToString op :: symbols }
+    | op=xfix;     ~=symbols;                           { op :: symbols }
     
 let xfix := op=LEFT;                                    { let (id, _, _) = op in id }
     |       op=QLEFT;                                   { let (id, _, _) = op in id }
@@ -339,16 +341,18 @@ let prim :=
     | FUN; eoc?; ~=cases; NUF;                           { mkFun cases }
     
 
-let simplex == 
+let simplex := 
     | ~=id;                                              { id }
     | ~=NUM;                                             < mkNum >
     | ~=STRING;                                          < mkString >
+    | ~=prefixop; ~=simplex;                             { mkAp $loc (prefixop,simplex) }  
     | BRA; ~=exprlist; KET;                              < mkTuple >
     | openb=LEFT; ~=expr; closeb=RIGHT;                  { mkOutfix $loc openb expr closeb }
     (* quotation of infixes, leftfixes, outfixes, etc *)
     | BRA; openb=LEFT; closeb=RIGHT;  KET;               { quoteOutfix $loc openb closeb }
     | BRA; openb=QLEFT; closeb=QMID;  KET;               { quoteLeftfix $loc openb closeb }
     | BRA; op=infixop; KET;                              { Expr.Bra(op) }
+    | BRA; op=prefixop; KET;                             { Expr.Bra(op) }
     
 let revexprlist :=
     | expr=topexpr;                                      { [expr]}
@@ -360,6 +364,10 @@ id  :
 
 bid  : 
      |  name=ID                                          { if !idLocs then At($loc, mkId name) else mkId name }
+
+prefixop : 
+     |  name=PREFIX                                      { if !idLocs then At($loc, mkId name) else mkId name }
+
 
 
 

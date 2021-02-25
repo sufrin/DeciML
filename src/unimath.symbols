@@ -39,6 +39,7 @@ text abbrev ox \u2297 # ⊗
 text abbrev o/ \u2298 # ⊘
 text abbrev o. \u2299 # ⊙
 text abbrev oo \u229A # ⊚
+text abbrev ** \u229B # ⊛
 text abbrev :  \u2982 # ⦂ 
 text abbrev <  \u27E8 # ⟨
 text abbrev >  \u27E9 # ⟩ 
@@ -59,6 +60,7 @@ text abbrev rf \u230B #⌋
 text abbrev /// \u2afb # ⫻
 
 test abbrev -- \u2212  # —
+
 
 
 

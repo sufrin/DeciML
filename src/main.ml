@@ -68,14 +68,15 @@ let globalEnv = ref @@ addLib
     ; ("True",            mkBool true)
     ; ("False",           mkBool false)
     ; ("ref",             Prim(fun v -> Ref(ref v)))
-    ; ("set",              Prim (function (Ref r) -> Prim (fun v -> r:=v; v) 
-                               |           other -> semanticError @@ "Expecting a reference, got: "^(show_value other)))
-    ; ("get",              Prim (function (Ref r) -> !r
-                               |           other -> semanticError @@ "Expecting a reference, got: "^(show_value other)))
+    ; ("set",             Prim (function (Ref r) -> Prim (fun v -> r:=v; v) 
+                              |           other -> semanticError @@ "Expecting a reference, got: "^(show_value other)))
+    ; ("get",             Prim (function (Ref r) -> !r
+                              |           other -> semanticError @@ "Expecting a reference, got: "^(show_value other)))
     ; ("setMargin",       num2num (fun margin -> Format.set_margin margin; margin))
     ; ("force",           Prim (force (fun v->v)))
     ; ("deepForce",       Prim deepForce)
     ; ("prim_println",    Prim(fun v -> Format.fprintf Format.std_formatter "%a@.%!" pp_value v; v))
+    ; ("prim_print",      Prim(fun v -> Format.fprintf Format.std_formatter "%a%!" pp_value v; v))
     ] 
     emptyEnv
 
@@ -207,6 +208,7 @@ end
 
 
     
+
 
 
 

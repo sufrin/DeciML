@@ -1,5 +1,136 @@
 {- 
-   The entire DeciML library 
+   The entire DeciML library.
+   
+   This library includes provision for streams: effectively
+   lists constructed with a cons that is strict in its first
+   argument and lazy in its tail. This laziness isn't strictly
+   needed, but it demonstrates the intended use of lazy lambda
+   abstraction. 
+      
 -}
 import "notation";
+
+let id     x   = x
+  ; const  x   = λλ y → x       -- lazy const function; doesn't evaluate its second argument
+  ; flip f x y = f y x
+  ; f @ x      = f x
+  ; (f ∘ g) x  = f (g x)
+  ; (f ⨾ g) x  = g (f x)
+ ;; 
+ 
+let (+)  = prim_add
+  ; (-)  = prim_sub
+  ; (*)  = prim_mul
+  ; (/)  = prim_div
+  ; (<)  = prim_ls
+  ; (≤)  = prim_le
+  ; (>)  = prim_gr
+  ; (≥)  = prim_ge
+  ; (≡)  = prim_struct_eq
+  ; (=)  = prim_eq
+  ; x≠y  = if x=y then False else True 
+  ; x≢y  = if x≡y then False else True 
+  ; pred = prim_pred
+  ; succ = prim_succ
+  ; prim_flip f x y = f y x   
+  {- Post-section implementation
+     For all infixes, ⊕
+         (⊕ e) is syntactic sugar for prim_flip (⊕) e    
+     So, as required,
+         (⊕ e₁) e₂ = prim_flip (⊕) e₁ e₂ = (⊕) e₂ e₁ = e₂ ⊕ e₁
+  -}
+ ;;
+
+{- 
+        Changing the following few definitions makes the library completely strict
+-}
+
+let strict f x  = f(force x)             -- strict = id
+  ; (~)         = force                  -- (~)    = id
+  ; (:::)       = λ x → λλ xs → x::xs    -- (:::)  = (::)
+  ; curry f x y = f (~x,~y)              -- curry f x y =  f x y
+ ;;
+
+{-
+        ---------------------------------------------------------------------------
+-}
+
+let pr = prim_println;;
+
+let (&&) = strict ⟨ True → id         | False → const False ⟩
+  ; (||) = strict ⟨ True → const True | False → id           ⟩
+  ; (¬)  = strict ⟨ True → False      | False → True         ⟩
+ ;;
+ 
+
+
+--
+-- Streams (lists lazy in their tails)
+--
+let null          = strict ⟨ Nil → True    | _ → False ⟩ 
+  ; isCons        = strict ⟨ _ :: _ → True | _ → False ⟩ 
+  ; hd            = strict ⟨ x :: _  → x  | other → failWith("hd", other)⟩ 
+  ; tl            = strict ⟨ _ :: xs → xs | other → failWith("tl", other)⟩ 
+  ; ((⊗) <** res) = let f xs = if null xs then res else hd xs ⊗ f (tl xs) in f
+  ; (#)           = λ n → λ xs → if n>0 && isCons xs then  hd xs :: (pred n # tl xs) else Nil
+  ; (##)          = λ n → λ xs → if null xs || n=0 then xs else pred n  ## tl xs
+  ; f ⊛ xs        = let map xs = if null xs then Nil else (f @ hd xs) ::: map (tl xs) in map xs
+  ; ⟦ x ⟧         = x::Nil
+  ; (||||)        = λλ xs ys → if null xs || null ys then Nil else (hd xs, hd ys) ::: (tl xs |||| tl ys)
+  ; delay         = λλ x → x
+ ;;
+
+
+let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x ⊗ f xs ⟩ in f
+  ; foldl start (⊗) = let f state = strict ⟨ Nil →  state | x::xs →  f (x ⊗ state) xs⟩ in f start
+  ; rev             = let f xs    = strict ⟨ Nil → xs     | y::ys →  f (y::xs) ys⟩ in f Nil
+  
+  ; map f = ⟨  Nil   →  Nil 
+            |  x::xs →  f x :: map f xs
+            ⟩
+  
+  
+  ; (|||) = curry
+            ⟨ (Nil, _) → Nil
+            | (_, Nil) → Nil
+            | (x::xs, y::ys) → (x,y):::(xs|||ys)
+            ⟩
+            
+  ; takeWhile p =
+    let f = strict
+    ⟨ Nil   → Nil
+    | x::xs → if p x then x :: f ~xs else Nil
+    ⟩
+    in f
+    
+  ; dropWhile p = 
+    let f = strict
+    ⟨ Nil   → Nil
+    | x::xs → if p x then f ~xs else ~xs
+    ⟩
+    in f
+    
+  ; filter p = 
+    let f = strict
+    ⟨ Nil   → Nil
+    | x::xs → if p x then x :: f ~xs else f ~xs    
+    ⟩
+    in f
+
+  ; (∀ p ∙ xs)   = null xs || (p (hd xs) && (∀ p ∙ tl xs))
+  ; (∃ p ∙ xs)   = isCons xs &&  (p (hd xs) || (∃ p ∙ tl xs))
+  
+  ; m `upto`   n = if m ≥ n then Nil else m :: succ m `upto` n
+  ; m `downto` n = if m ≤ n then Nil else m :: pred m `downto` n
+  ; upfrom     n = let l = n ::: succ ⊛ l in l
+  ; downfrom   n = let l = n ::: pred ⊛ l in l 
+ ;;
+ 
+ let len  = foldl 0 (\ _ n -> succ n)
+  ;;
+
+
+
+
+        
 

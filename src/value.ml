@@ -147,22 +147,22 @@ let debugMatch = ref false
 
 
 let rec matchPat: pat -> value -> bindings -> bindings = fun p v bs -> 
-if !debugMatch then eprintf "match %a with %a\n%!" pp_pat p pp_value v;
+(* if !debugMatch then eprintf "match %a with %a\n%!" pp_pat p pp_value v; let b' = *)
 match p, v with 
-| At(_, p),     v                              -> (matchPat [@tailcall]) p v bs  (* just in case we left a location in *)
-| Bra(p),       v                              -> (matchPat [@tailcall]) p v bs  
-| Id i,          _                             -> addBinding i v bs
-| Tuple ps,     Tup vs'                        -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
-| Con c,        Const c' when c=c'             -> emptyBindings
-| Cid t,        Const(Tag t') when t=t'        -> emptyBindings
-| Construct (c, ps), Cons (c', vs') when c=c'  -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings (ps, vs')
-(* This is for when we don't desugar infixes *)
-| Apply(pl, Cid c, pr), Cons (c', vs') when c=c' -> loop2 (fun bs' p v -> matchPat p v bs') emptyBindings ([pl;pr], vs')
-(*********************************************)
-(* Non-matching *)
-| Construct (c, _), Cons (c', _)               -> if !debugMatch then eprintf "-- Constructors %a -- %a\n%!" pp_full_tag c pp_full_tag c'; noMatch()                                           
-| _,        _                                  -> if !debugMatch then eprintf "@." else (); noMatch()
- 
+         | At(_, p),     v                              -> (matchPat ) p v bs  (* just in case we left a location in *)
+         | Bra(p),       v                              -> (matchPat ) p v bs  
+         | Id i,          _                             -> addBinding i v bs
+         | Tuple ps,     Tup vs'                        -> loop2 (fun bs' p v -> matchPat p v bs') bs (ps, vs')
+         | Con c,        Const c' when c=c'             -> bs
+         | Cid t,        Const(Tag t') when t=t'        -> bs
+         | Construct (c, ps), Cons (c', vs') when c=c'  -> loop2 (fun bs' p v -> matchPat p v bs') bs (ps, vs')
+         (* This is for when we don't desugar infixes *)
+         | Apply(pl, Cid c, pr), Cons (c', vs') when c=c' -> loop2 (fun bs' p v -> matchPat p v bs') bs ([pl;pr], vs')
+         (*********************************************)
+         (* Non-matching *)
+         | Construct (c, _), Cons (c', _)               -> (* if !debugMatch then eprintf "-- Constructors %a -- %a\n%!" pp_full_tag c pp_full_tag c'; *) noMatch()                                           
+         | _,        _                                  -> (* if !debugMatch then eprintf "@." else (); *) noMatch()
+(* in if !debugMatch then eprintf "match %a with %a = %a\n%!" pp_pat p pp_value v pp_bindings b'; b' *)
 
 (* Utilities that throw errors that will eventually be detected by a type checker *)
 
@@ -280,6 +280,7 @@ let rec deepForce v = match v with
 | _                -> v
 
  
+
 
 
 

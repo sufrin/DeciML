@@ -167,6 +167,7 @@ open ExprParser
                 | "leftdata"  -> leftConSymbol.(num)
                 | "rightdata" -> rightConSymbol.(num)
                 | "id"        -> (fun x -> ID x)
+                | "prefix"    -> (fun x -> PREFIX x)
                 | "data"      -> (fun x -> CONID(num, x))  (* num is the arity of the (curried if nonzero) constructor *)
                 | _           -> failwith ("notation misdeclared as: "^notationclass^", but should be one of: left, right, leftdata, rightdata, data, id, outfix, leftfix, outfixid, leftfixid) ")
                in 
@@ -346,6 +347,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 
