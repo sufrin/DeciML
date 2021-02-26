@@ -167,6 +167,7 @@ open ExprParser
                 | "leftdata"  -> leftConSymbol.(num)
                 | "rightdata" -> rightConSymbol.(num)
                 | "id"        -> (fun x -> ID x)
+                | "bind"      -> (fun x -> BIND x)
                 | "prefix"    -> (fun x -> PREFIX x)
                 | "data"      -> (fun x -> CONID(num, x))  (* num is the arity of the (curried if nonzero) constructor *)
                 | _           -> failwith ("notation misdeclared as: "^notationclass^", but should be one of: left, right, leftdata, rightdata, data, id, outfix, leftfix, outfixid, leftfixid) ")
@@ -181,12 +182,13 @@ open ExprParser
     
     let mkOP =
     function
-    |  "->"   -> TO 
-    |  ":>"   -> LABEL
-    |  ">>"   -> ANDTHEN
-    |  "\\"   -> LAM    
-    |  "\\\\" -> LAZY    
-    |  s      ->  mkMath s
+    |  "->"     -> TO 
+    |  ":>"     -> LABEL
+    |  ">>"     -> ANDTHEN
+    |  "\\"     -> LAM    
+    |  "\\\\"   -> LAZY    
+    |  "\\\\\\" -> BYNAME    
+    |  s        ->  mkMath s
 
 (******************************************************)       
 
@@ -214,7 +216,8 @@ let stringChunk   = [%sedlex.regexp? Star (Compl ('"' | '\\' | '\n'))]
 
 let mathop        = [%sedlex.regexp? (0x27f0 .. 0x27ff | 0x2900 .. 0x297x |
                                       0x2200 .. 0x22ff | 0x2190 .. 0x21ff |
-                                      0x2a00 .. 0x2aff | 0x2300 .. 0x23ff)]
+                                      0x2a00 .. 0x2aff | 0x2300 .. 0x23ff)|
+                                      0x2b00 .. 0x2bff ]
 
 let aop           = [%sedlex.regexp? Chars "¬⨾∘×⦂:+=#&*/~\\!@<>?|" ]
 let mop           = [%sedlex.regexp? Chars "-"]
@@ -293,7 +296,7 @@ let rec token buf =
   | blank       -> token buf
   
   | 0x27e8      -> FUN  (* ⟨ *)
-  | 0x27e9      -> NUF  (* ⟩⟩ *)
+  | 0x27e9      -> NUF  (* ⟩ *)
   
   | "{"         -> CBRA
   | "}"         -> CKET
@@ -318,10 +321,10 @@ let rec token buf =
   
   | '|'         -> ALT
   
-  | 0x03bb,0x03bb -> LAZY                           
-  | 0x03bb        -> LAM    (* λ *)
-  | 0x2192        -> TO     (* → *)
-  | 0x03bd        -> BYNAME (* ν *)
+  | 0x03bb,0x03bb,0x3bb -> BYNAME                           
+  | 0x03bb,0x03bb       -> LAZY                           
+  | 0x03bb              -> LAM    (* λ *)
+  | 0x2192              -> TO     (* → *)
   
   | '"'           -> STRING(string buf)
   | ','           -> COMMA

@@ -5,13 +5,13 @@
    lists constructed with a cons that is strict in its first
    argument and lazy in its tail. This laziness isn't strictly
    needed, but it demonstrates the intended use of lazy lambda
-   abstraction. 
+   abstraction (λλ v → E). 
       
 -}
 import "notation";
 
 let id     x   = x
-  ; const  x   = λλ y → x       -- lazy const function; doesn't evaluate its second argument
+  ; const  x   = λλ y → x       -- lazy const (see && ||)
   ; flip f x y = f y x
   ; f @ x      = f x
   ; (f ∘ g) x  = f (g x)
@@ -42,7 +42,7 @@ let (+)  = prim_add
  ;;
 
 {- 
-        Changing the following few definitions makes the library completely strict
+        Changing the following few definitions to those in the right column makes the library strict
 -}
 
 let strict f x  = f(force x)             -- strict = id
@@ -67,29 +67,27 @@ let (&&) = strict ⟨ True → id         | False → const False ⟩
 --
 -- Streams (lists lazy in their tails)
 --
-let null          = strict ⟨ Nil → True    | _ → False ⟩ 
+let isNil         = strict ⟨ Nil → True    | _ → False ⟩ 
   ; isCons        = strict ⟨ _ :: _ → True | _ → False ⟩ 
   ; hd            = strict ⟨ x :: _  → x  | other → failWith("hd", other)⟩ 
   ; tl            = strict ⟨ _ :: xs → xs | other → failWith("tl", other)⟩ 
-  ; ((⊗) <** res) = let f xs = if null xs then res else hd xs ⊗ f (tl xs) in f
-  ; (#)           = λ n → λ xs → if n>0 && isCons xs then  hd xs :: (pred n # tl xs) else Nil
-  ; (##)          = λ n → λ xs → if null xs || n=0 then xs else pred n  ## tl xs
-  ; f ⊛ xs        = let map xs = if null xs then Nil else (f @ hd xs) ::: map (tl xs) in map xs
-  ; ⟦ x ⟧         = x::Nil
-  ; (||||)        = λλ xs ys → if null xs || null ys then Nil else (hd xs, hd ys) ::: (tl xs |||| tl ys)
-  ; delay         = λλ x → x
+
+  ; (n↑xs)      = if n>0 && isCons xs then  hd xs :: (pred n ↑ tl xs) else Nil
+  ; (n↓xs)      = if isNil xs || n=0 then xs else pred n ↓ tl xs
+
+  ; f ⊛ xs      = let map xs = if isNil xs then Nil else (f @ hd xs) ::: map (tl xs) in map xs
+  ; ⟦ x ⟧       = x::Nil
+  ; delay       = λλ x → x
+  ; fix         = λλ f x → f (fix f) x
  ;;
 
 
-let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x ⊗ f xs ⟩ in f
+let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x ⊗ f xs ⟩        in f
   ; foldl start (⊗) = let f state = strict ⟨ Nil →  state | x::xs →  f (x ⊗ state) xs⟩ in f start
-  ; rev             = let f xs    = strict ⟨ Nil → xs     | y::ys →  f (y::xs) ys⟩ in f Nil
+  ; rev             = let f xs    = strict ⟨ Nil → xs     | y::ys →  f (y::xs) ys⟩     in f Nil
   
-  ; map f = ⟨  Nil   →  Nil 
-            |  x::xs →  f x :: map f xs
-            ⟩
-  
-  
+  ; map   = (⊛)
+   
   ; (|||) = curry
             ⟨ (Nil, _) → Nil
             | (_, Nil) → Nil
@@ -117,20 +115,14 @@ let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x �
     ⟩
     in f
 
-  ; (∀ p ∙ xs)   = null xs || (p (hd xs) && (∀ p ∙ tl xs))
+  ; (∀ p ∙ xs)   = isNil xs || (p (hd xs) && (∀ p ∙ tl xs))
   ; (∃ p ∙ xs)   = isCons xs &&  (p (hd xs) || (∃ p ∙ tl xs))
   
-  ; m `upto`   n = if m ≥ n then Nil else m :: succ m `upto` n
+  ; m `upto`   n = if m ≥ n then Nil else m :: succ m `upto`   n
   ; m `downto` n = if m ≤ n then Nil else m :: pred m `downto` n
-  ; upfrom     n = let l = n ::: succ ⊛ l in l
-  ; downfrom   n = let l = n ::: pred ⊛ l in l 
  ;;
  
  let len  = foldl 0 (\ _ n -> succ n)
   ;;
 
-
-
-
-        
 

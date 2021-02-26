@@ -1,0 +1,35 @@
+{-
+
+        If a symbol (eg μ) is declared as a bind, then
+        the expression μ x ... → E is syntactic sugar for
+        the function application (μ) (λλ x ... → E). The 
+        function (μ) must be defined independently. 
+
+-}
+import "lib";
+
+--
+-- Fixpoints 
+--
+notation bind μ η;;
+
+let (μ) = λλ f -> f((μ) f);;
+let (η) = map;;
+
+--
+-- Binders
+--
+let from n = μ l → n ::: succ ⊛ l;;
+let fact   = μ f → λ n → if n=0 then 1 else n*f(n-1);;
+
+let succs = (η x → succ x) (from 50);;
+
+3↑succs;
+
+let upfrom     n = let l = n ::: succ ⊛ l in l
+  ; downfrom   n = let l = n ::: pred ⊛ l in l 
+ ;;
+
+
+        
+

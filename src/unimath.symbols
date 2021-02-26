@@ -46,6 +46,8 @@ text abbrev >  \u27E9 # ⟩
 
 text abbrev ;; \u2a3e # ⨾
 
+text abbrev ^^ \u2191 # ↑ 
+text abbrev !! \u2193 # ↓
 
 # outfixes
 

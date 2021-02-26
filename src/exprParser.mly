@@ -64,10 +64,11 @@
         
         
         let rec mkLambda(bvs, body) = 
-            match bvs with 
-            | [pat]     -> Fn[(rawExpr pat, body)]
-            | pat::pats -> Fn[(rawExpr pat, mkLambda(pats, body))]
-            | _         -> assert false
+        match bvs with 
+        | [pat]     -> Fn[(rawExpr pat, body)]
+        | pat::pats -> Fn[(rawExpr pat, mkLambda(pats, body))]
+        | _         -> assert false
+           
         
         let rec mkLazy(bvs, body) = 
             match bvs with 
@@ -81,6 +82,9 @@
             | pat::pats -> ByNameFn(rawExpr pat, mkByName(pats, body))
             | _         -> assert false
                 
+        let mkBind loc (id, bvs, body) = 
+            let lambda = mkLazy(bvs, body) in mkAp loc (id, lambda)
+        
         let mkDef loc (pattern, body) = 
             let rec abstractFrom expr pat = 
             (* Format.eprintf "Abstractfrom (%a) %a\n%!" pp_expr expr pp_expr pat; *)
@@ -151,7 +155,7 @@
                 
 %token <string*string*bool> LEFT QLEFT (* the boolean controls whether it's a data symbol or an id *)
 
-%token <string> RIGHT QMID
+%token <string> RIGHT QMID BIND 
  
                 
 %token <string> STRING (* a string encoded in utf8 *)
@@ -296,6 +300,7 @@ let topexpr :=
     | LAZY; bvs=bid+; TO; body=topexpr;                  < mkLazy >
     | BYNAME; bvs=bid+; TO; body=topexpr;                < mkByName >
     | LAM;  bvs=bid+; TO; body=topexpr;                  < mkLambda >
+    | ~=bindop;  bvs=bid+; TO; body=topexpr;             { mkBind $loc (bindop, bvs, body) }
     | q=QLEFT;  ~=expr; m=QMID; body=topexpr;            { mkQuant $loc q expr m body }
     | LAM; BRA; ~=cases; KET;                            { mkFun cases }
     | el=expr; ANDTHEN; er=topexpr;                      { AndThen(el, er) }
@@ -353,6 +358,7 @@ let simplex :=
     | BRA; openb=QLEFT; closeb=QMID;  KET;               { quoteLeftfix $loc openb closeb }
     | BRA; op=infixop; KET;                              { Expr.Bra(op) }
     | BRA; op=prefixop; KET;                             { Expr.Bra(op) }
+    | BRA; op=bindop; KET;                               { Expr.Bra(op) }
     
 let revexprlist :=
     | expr=topexpr;                                      { [expr]}
@@ -367,6 +373,9 @@ bid  :
 
 prefixop : 
      |  name=PREFIX                                      { if !idLocs then At($loc, mkId name) else mkId name }
+
+bindop : 
+     |  name=BIND                                        { if !idLocs then At($loc, mkId name) else mkId name }
 
 
 
