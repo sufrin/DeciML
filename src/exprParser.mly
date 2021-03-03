@@ -23,7 +23,7 @@
         
         let mkId          s = Id s
         let mkConId tag = Cid tag
-        
+                
         (* Transform unsaturated applications of proper constructors into Constructs. *)
         
         let rec  mkAp loc (rator, rand) = 
@@ -67,7 +67,7 @@
         match bvs with 
         | [pat]     -> Fn[(rawExpr pat, body)]
         | pat::pats -> Fn[(rawExpr pat, mkLambda(pats, body))]
-        | _         -> assert false
+        | []        -> Fn[(Tuple[], body)]
            
         
         let rec mkLazy(bvs, body) = 
@@ -300,9 +300,9 @@ let topexpr :=
     | LAZY; bvs=bid+; TO; body=topexpr;                  < mkLazy >
     | BYNAME; bvs=bid+; TO; body=topexpr;                < mkByName >
     | LAM;  bvs=bid+; TO; body=topexpr;                  < mkLambda >
+    | LAM; BRA; KET;  TO; body=topexpr;                  { mkLambda([], body) }
     | ~=bindop;  bvs=bid+; TO; body=topexpr;             { mkBind $loc (bindop, bvs, body) }
     | q=QLEFT;  ~=expr; m=QMID; body=topexpr;            { mkQuant $loc q expr m body }
-    | LAM; BRA; ~=cases; KET;                            { mkFun cases }
     | el=expr; ANDTHEN; er=topexpr;                      { AndThen(el, er) }
     | label=ID; LABEL; ~=topexpr;                        < Label > 
     | LOOP; ~=topexpr;                                   < Loop > 
@@ -311,7 +311,7 @@ let topexpr :=
 let expr := 
     | ~=term;                                            { term }
     | el=expr; op=infixop; er=expr;                      { if !Utils.desugarInfix then 
-                                                             mkAp $loc (mkAp $loc (op, el), er)
+                                                              mkAp $loc (mkAp $loc (op, el), er) 
                                                            else 
                                                              Apply(el, op, er)
                                                          }
@@ -376,6 +376,8 @@ prefixop :
 
 bindop : 
      |  name=BIND                                        { if !idLocs then At($loc, mkId name) else mkId name }
+
+
 
 
 

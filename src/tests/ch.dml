@@ -1,24 +1,64 @@
---- Coroutines from Continuations
+{-
+ 
+ Coroutines from Continuations
 
----  A continuation 'a expects an 'a and when invoked returns that 'a from the expression where it was constructed
----  The construct label:>(expression) binds label, with scope expression, to the continuation of expression
----  Typing rules require consistent typing between a continuation and its scope, and
----- allow a continuation to be invoked anywhere (rather like the typing of exception-raising expressions in ML).
----
----          ρ ⊕ label: continuation τ ⊢ expression: τ              ρ ⊢ k: continuation τ   ρ ⊢ e: τ
----         --------------------------------------------           --------------------------------------
----               ρ ⊢ (label :> expression): τ                      ρ ⊢ k e: β  
+ A continuation α expects an α and when invoked returns that α from the expression that was its (static) scope.
+ 
+ The construct label:>(expression) binds label, with scope expression, to the continuation at the point at
+ which the construct appears, namely ``just after'' expression.
+ 
+ Typing rules and informal semantics
+ 
+ (1) require consistent typing between a continuation and the
+     expression that is its scope.
 
---- types
----  chan a  == ref (state a)
----  state a == Empty (continuation a) | Full (continuation()) | New (chan a -> b)
+ (2) allow a continuation to be invoked anywhere.
 
+         ρ ⊕ label: continuation τ ⊢ expression: τ              ρ ⊢ k: continuation τ   ρ ⊢ e: τ
+        --------------------------------------------           --------------------------------------
+              ρ ⊢ (label :> expression): τ                      ρ ⊢ k e: β  
+
+ (3) The intended effect of invoking a continuation is something
+     like the raising of an exception in SML: the invocation
+     expression (k e) has any type the context demands, and the
+     invocation iself returns its (evaluated) argument /as if from/
+     the expression that was its scope.
+-}
+
+{- 
+
+ A pair of coroutines communicate by reading and writing chans.
+ 
+ types
+  chan a  == ref (state a)
+  state a == Empty (continuation a) | Full (continuation()) | New (chan a -> b)
+
+ The protocol is that a new channel is initialized with a "virgin" writer
+ --  a function that given a channel (continually) writes to it
+-}
+
+--
+-- In the untyped language, the type state has 3 data constructors of arity 1
+--
 notation data 1 Empty Full New;; 
 
+--
+-- Library names
+--
 let print = prim_println;;
 let (<)   = prim_ls;;
 let succ  = prim_succ;;
-let (:=)  = set;;
+let (:=)  = set;; -- also yields the rhs value
+
+{- Language constructs: sequential composition and iteration -- both built-in (the latter for space-efficiency)
+
+   e1 >> e2 evaluates e1 (for its side-effects) then evaluates e2
+   e1>>e2 ≡ let _ = e1 in e2
+  
+   loop e repeatedly evaluates e (for its side effects) until e yields false
+   loop e ≡ let f() = if e then f() else () in f()
+-}
+
 
 let write chan v = 
       ⟨ Empty reader -> (here :> (set chan (Full here) >> reader v))
@@ -44,22 +84,24 @@ let incrementer n =
 let source = incrementer 0;;
     
 let readloop  n ch = loop let r = read ch in print("read", r) >> r<n;;
-let readrec   n ch = let r = read ch in print("read", r) >> if r<n then readrec n ch else ();;
-let readreq   n ch = if print(read ch)<n then readreq n ch else ();;
+let readrec   n ch = let f() = let r = read ch in print("read", r) >> if r<n then f() else () in f();;
+let readreq   n ch = let f() = if print(read ch)<n then f() else () in f();;
 
-let writerec  ch = write ch (source()) >> writerec ch;;
+let writerec  ch = let source = incrementer 0 in let f () = write ch (source()) >> f() in f();;
 let writeloop ch = let source = incrementer 0 in loop (write ch (source()) >> True);;
 
 --- -----------------------------------------------------------------------------------------
 --- Typical tests are of the form reader n (chan writer)
---- Readloop is very resilient: the following succeed without stack overflow
----   readloop 10000000 (chan writeloop)
----   readloop 10000000 (chan writerec)    --- a surprise, since there's no reason for the writerec tail call not to cost space   
+--- Readloop is very resilient: the following terminate without stack overflow
+---   readloop 50000000 (chan writeloop)
+---   readloop 50000000 (chan writerec)    --- a surprise, since there's no reason for the writerec tail call not to cost space   
+
 --- but readrec is not very stack-conserving:
----   readrec 10000000 (chan writerec)   --- stack overflows after 87296 
----   readrec 10000000 (chan writeloop)  --- stack overflows after 87297
---- and, surprisingly, since I thought it is the let ... in readrec that was problematic
----   readreq 10000000 (chan writeloop)  --- stack overflows after 21824
+---   readrec 10000000 (chan writerec)   --- stack overflows after 130942 
+---   readrec 10000000 (chan writeloop)  --- stack overflows after 130941
+
+--- nor is readreq
+---   readreq 10000000 (chan writeloop)  --- stack overflows after 18706
 
 
 --- This writer demonstrates that the return from a read happens in the right sequence
@@ -73,4 +115,5 @@ let writer    ch = let r = source() in write ch r >> print ("wr", r) >> writer c
 --- This is a mystery to me in light of the earlier results
 let t = ref 0;;
 let up x = up(t:=succ x) ;;
+
 
