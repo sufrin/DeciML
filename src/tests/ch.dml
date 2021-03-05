@@ -27,20 +27,23 @@
 
 {- 
 
- A pair of coroutines communicate by reading and writing chans.
+ A pair of reader/writer coroutines communicate by reading and writing a connector.
  
  types
-  chan a  == ref (state a)
-  state a == Empty (continuation a) | Full (continuation()) | New (chan a -> b)
+  connector a  == ref (state a)
+  state     a  == Running (continuation a) | WriteRunning (continuation()) | Fresh (connector a -> b)
 
- The protocol is that a new channel is initialized with a "virgin" writer
- --  a function that given a channel (continually) writes to it
+ The protocol is that a new connector is initialized with a "virgin" writer
+ --  a function that given a connector (repeatedly) writes to it
 -}
 
 --
 -- In the untyped language, the type state has 3 data constructors of arity 1
 --
-notation data 1 Empty Full New;; 
+notation data  1 ReadRunning WriteRunning Fresh
+       ; right 1 match
+       ; prefix !
+      ;; 
 
 --
 -- Library names
@@ -48,72 +51,149 @@ notation data 1 Empty Full New;;
 let print = prim_println;;
 let (<)   = prim_ls;;
 let succ  = prim_succ;;
-let (:=)  = set;; -- also yields the rhs value
+
+--
+-- Sugar
+--
+let v match f = f v;;
+let run f = f();;
+let (:=)  = set;;
+let (!)   = get;;
 
 {- Language constructs: sequential composition and iteration -- both built-in (the latter for space-efficiency)
 
    e1 >> e2 evaluates e1 (for its side-effects) then evaluates e2
-   e1>>e2 ≡ let _ = e1 in e2
+   e1 >> e2 ≡ let _ = e1 in e2
+   
+   label :> expression binds label to the current continuation with scope expression, and evaluates expression
   
    loop e repeatedly evaluates e (for its side effects) until e yields false
    loop e ≡ let f() = if e then f() else () in f()
 -}
 
 
-let write chan v = 
-      ⟨ Empty reader -> (here :> (set chan (Full here) >> reader v))
-      | other        -> print ("error writing", other)
-      ⟩ (get chan)
-      ;;
-      
-let read chan =
-    ⟨ Full writer -> here :> (set chan (Empty here) >> writer())
-    | New  writer -> here :> (set chan (Empty here) >> writer chan)
-    | other       -> print ("error reading", other)
-    ⟩ (get chan)
+let write connector v =
+    endWrite :>
+    ( !connector match
+      ⟨ ReadRunning endRead -> connector := WriteRunning endWrite >> endRead v          -- return v from the most recent read
+      | other               -> print ("error writing", other)
+      ⟩ 
+    )
     ;;
       
-let chan writer = ref (New writer) ;;    
+let read connector =
+    endRead :> 
+    ( !connector match
+      ⟨ WriteRunning endWrite -> connector := ReadRunning endRead >> endWrite()          -- return () from the most recent write
+      | Fresh        writer   -> connector := ReadRunning endRead >> writer connector    -- start the writer
+      | other                 -> print ("error reading", other)
+      ⟩ 
+    ) 
+    ;;
+      
+let connector writer = ref (Fresh writer) ;;    
+
+{-
+        Some tests
+-} 
 
 
---- Counters
+let counter n = 
+    let r = ref 0 in λ () ->  r := succ !r ;;
 
-let incrementer n = 
-    let r = ref 0 in ⟨ () ->  set r (succ (get r)) ⟩ ;;
-
-let source = incrementer 0;;
     
-let readloop  n ch = loop let r = read ch in print("read", r) >> r<n;;
-let readrec   n ch = let f() = let r = read ch in print("read", r) >> if r<n then f() else () in f();;
-let readreq   n ch = let f() = if print(read ch)<n then f() else () in f();;
+let readloop  n con = loop let r = read con in print("read", r) >> r<n;;
+let readrec   n con = let f() = let r = read con in print("read", r) >> if r<n then f() else () in f();;
+let readreq   n con = let f() = if print(read con)<n then f() else () in f();;
 
-let writerec  ch = let source = incrementer 0 in let f () = write ch (source()) >> f() in f();;
-let writeloop ch = let source = incrementer 0 in loop (write ch (source()) >> True);;
+let writerec  con = let source = counter 0 in let f () = write con (source()) >> f() in f();;
+let writeloop con = let source = counter 0 in loop (write con (source()) >> True);;
 
 --- -----------------------------------------------------------------------------------------
---- Typical tests are of the form reader n (chan writer)
---- Readloop is very resilient: the following terminate without stack overflow
----   readloop 50000000 (chan writeloop)
----   readloop 50000000 (chan writerec)    --- a surprise, since there's no reason for the writerec tail call not to cost space   
+--- Typical tests are of the form reader n (connector writer)
+--- Readloop is very resilient/stack conservative: the following terminate without stack overflow
+---   readloop 50000000 (connector writeloop)
+---   readloop 50000000 (connector writerec)    --- a surprise, since there's no reason for the writerec tail call not to cost space   
 
 --- but readrec is not very stack-conserving:
----   readrec 10000000 (chan writerec)   --- stack overflows after 130942 
----   readrec 10000000 (chan writeloop)  --- stack overflows after 130941
+---   readrec 10000000 (connector writerec)   --- stack overflows after 130942 
+---   readrec 10000000 (connector writeloop)  --- stack overflows after 130941
 
 --- nor is readreq
----   readreq 10000000 (chan writeloop)  --- stack overflows after 18706
+---   readreq 10000000 (connector writeloop)  --- stack overflows after ~18k
 
 
---- This writer demonstrates that the return from a read happens in the right sequence
-let writer    ch = let r = source() in write ch r >> print ("wr", r) >> writer ch;;
+--- The following writer', writer demonstrate that the return from a read happens in the right sequence
+--- The definitions are functionally the same, and for both of them the typical test reports stack overflow at 130939
+---
 
---- Interestingly, the readrecs are a bit more stack-conserving with it 
----    readrec ... (chan writer) --- stack overflows at 296417
----    readreq ... (chan writer) --- stack overflows at 318242
+let writer' con = 
+    let source = counter 0 
+    in  let f _ = let r = source() in print ("write", r) >> write con r  >> f() 
+        in f();;
 
---- Experiments with all reasonable configurations of up show stack overflow happening when x is 174690
+{- 
+   This is, incidentally, a test of lazy binder notation declaration and  use.
+   Because μ is a syntactically lazy binder, μ x y z ... -> E is translated into (μ) (λλ x y z ... -> E)
+-}
+notation bind μ;;
+let (μ) = λ f  -> f ((μ) f);;
+
+let writer con = 
+    let source = counter 0 
+    in  run (μ f _ -> let r = source() in print ("write", r) >> write con r >> f());;
+
+--- Experiments with all reasonable configurations of up, below, show stack overflow happening when x is 174690
 --- This is a mystery to me in light of the earlier results
 let t = ref 0;;
 let up x = up(t:=succ x) ;;
 
 
+
+{- 
+        Can this be made symmetric, so that (exch connector value) returns the value sent by the last exch? 
+-}
+
+notation data 1 Exch;;
+
+let depth = ref 0;;
+let incr () = depth := succ(!depth);;
+let decr () = depth := prim_pred(!depth);;
+
+let exch connector v =
+    incr () >> 
+    let v = 
+    endExch :> 
+    ( !connector match
+      ⟨ Exch  last      -> connector := Exch endExch >> last v               -- return v from the most recent exch
+      | Fresh exchanger -> connector := Exch endExch >> exchanger connector  -- start the fresh exchanger
+      | other           -> print ("error exchanging with", other)
+      ⟩ 
+    ) 
+    in 
+    decr () >> v
+    ;;
+    
+let exch connector v =
+    endExch :> 
+    ( !connector match
+      ⟨ Exch  last      -> connector := Exch endExch >> last v               -- return v from the most recent exch
+      | Fresh exchanger -> connector := Exch endExch >> exchanger connector  -- start the fresh exchanger
+      | other           -> print ("error exchanging with", other)
+      ⟩ 
+    ) 
+    ;;
+    
+let connectTo exchanger = ref (Fresh exchanger);;
+
+let exchloop name n con = 
+    let r = ref 0 in
+        (loop r := exch con (succ !r) >>  print(name, "read", !r) >> !r<n) >> n
+    ;;
+
+let testx n = exchloop "b" n (connectTo (exchloop "a" n)) ;;
+
+let testy n =
+    let c1 = connectTo (exchloop "a" n) in
+    exchloop "b" n c1;;
+ 
