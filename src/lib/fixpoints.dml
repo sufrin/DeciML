@@ -13,7 +13,7 @@ import "lib";
 --
 notation bind μ η;;
 
-let (μ) = λλ f -> f((μ) f);;
+let (μ) = λ f -> f((μ) f);;
 let (η) = map;;
 
 --
@@ -21,6 +21,9 @@ let (η) = map;;
 --
 let from n = μ l → n ::: succ ⊛ l;;
 let fact   = μ f → λ n → if n=0 then 1 else n*f(n-1);;
+
+let iterfact n = (μ fact -> λ r c -> pr(n-c) >> if c=0 then r else fact (r*c) (pred c)) 1 n;;
+let iterfact' = (μ fact -> λ r c -> pr(c) >> if c=0 then r else fact (r*c) (pred c)) 1;;
 
 let succs = (η x → succ x) (from 50);;
 
@@ -32,4 +35,5 @@ let upfrom     n = let l = n ::: succ ⊛ l in l
 
 
         
+
 

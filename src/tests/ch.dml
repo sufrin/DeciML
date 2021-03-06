@@ -5,7 +5,7 @@
  A continuation α expects an α and when invoked returns that α from the expression that was its (static) scope.
  
  The construct label:>(expression) binds label, with scope expression, to the continuation at the point at
- which the construct appears, namely ``just after'' expression.
+ which the construct appears, namely ``just after'' expression; and evaluates expression.
  
  Typing rules and informal semantics
  
@@ -25,16 +25,34 @@
      the expression that was its scope.
 -}
 
+
 {- 
 
  A pair of reader/writer coroutines communicate by reading and writing a connector.
  
  types
   connector a  == ref (state a)
-  state     a  == Running (continuation a) | WriteRunning (continuation()) | Fresh (connector a -> b)
+  state     a  == ReadRunning (continuation a) | WriteRunning (continuation()) | Fresh (connector a -> b)
 
- The protocol is that a new connector is initialized with a "virgin" writer
- --  a function that given a connector (repeatedly) writes to it
+ The protocol is that a new connector is initialized with a "fresh"
+ writer --  a function that given a connector (repeatedly) writes
+ to it. 
+ 
+ Reading from connector in state (Fresh writer) starts running
+ writer, with parameter connector, after placing the connector in
+ state (ReadRunning endRead). The running writer is expected
+ eventually to invoke write v on the connector.
+
+ Writing v to a connector in state (ReadRunning sendResult) returns
+ v from the reader that set the connector's state. It uses the
+ continuation sendResult, to do so after placing the connector in
+ state (WriteRunning endWrite).
+
+ Reading from a connector in state (WriteRunning endWrite) returns
+ () to the writer that set the connector's state. It uses the
+ continuation endWrite to do so, after placing the connector in
+ state (ReadRunning endRead).
+
 -}
 
 --
@@ -46,29 +64,28 @@ notation data  1 ReadRunning WriteRunning Fresh
       ;; 
 
 --
--- Library names
+-- Library names and some sugar
 --
-let print = prim_println;;
-let (<)   = prim_ls;;
-let succ  = prim_succ;;
+let print     = prim_println
+  ; (<)       = prim_ls
+  ; succ      = prim_succ
+  ; v match f = f v
+  ; (:=)      = set
+  ; (!)       = get
+  ;;
 
---
--- Sugar
---
-let v match f = f v;;
-let run f = f();;
-let (:=)  = set;;
-let (!)   = get;;
-
-{- Language constructs: sequential composition and iteration -- both built-in (the latter for space-efficiency)
+{- Language constructs: sequential composition and iteration are both built-in (the latter for space-efficiency)
 
    e1 >> e2 evaluates e1 (for its side-effects) then evaluates e2
    e1 >> e2 ≡ let _ = e1 in e2
+     
+   loop e repeatedly evaluates e (for its side effects) until e yields false, using constant stack space
+   loop e ≡ let f() = if e then f() else () in f() 
    
-   label :> expression binds label to the current continuation with scope expression, and evaluates expression
-  
-   loop e repeatedly evaluates e (for its side effects) until e yields false
-   loop e ≡ let f() = if e then f() else () in f()
+   label :> expression binds label to the current continuation, with scope expression, and evaluates expression
+   Invoking this continuation at v /at any subsequent point/ in a computation, behaves as if the expression has
+   just terminated, yielding value v.
+
 -}
 
 
@@ -94,64 +111,101 @@ let read connector =
 let connector writer = ref (Fresh writer) ;;    
 
 {-
-        Some tests
+        Some test rigs in which the reader controls termination
 -} 
 
 
 let counter n = 
     let r = ref 0 in λ () ->  r := succ !r ;;
 
+let counter' n = 
+    let r = ref 0 in λ () ->  print(r := succ !r) ;;
+
     
 let readloop  n con = loop let r = read con in print("read", r) >> r<n;;
 let readrec   n con = let f() = let r = read con in print("read", r) >> if r<n then f() else () in f();;
 let readreq   n con = let f() = if print(read con)<n then f() else () in f();;
+let readreq'  n con = let f() = if (read con)<n then f() else () in f();;
 
-let writerec  con = let source = counter 0 in let f () = write con (source()) >> f() in f();;
-let writeloop con = let source = counter 0 in loop (write con (source()) >> True);;
+let writerec   con = let source = counter 0 in let f () = write con (source()) >> f() in f();;
+let writeloop  con = let source = counter 0 in loop (write con (source()) >> True);;
+let writeloop' con = let source = counter' 0 in loop (write con (source()) >> True);;
 
---- -----------------------------------------------------------------------------------------
---- Typical tests are of the form reader n (connector writer)
---- Readloop is very resilient/stack conservative: the following terminate without stack overflow
----   readloop 50000000 (connector writeloop)
----   readloop 50000000 (connector writerec)    --- a surprise, since there's no reason for the writerec tail call not to cost space   
-
---- but readrec is not very stack-conserving:
----   readrec 10000000 (connector writerec)   --- stack overflows after 130942 
----   readrec 10000000 (connector writeloop)  --- stack overflows after 130941
-
---- nor is readreq
----   readreq 10000000 (connector writeloop)  --- stack overflows after ~18k
-
-
---- The following writer', writer demonstrate that the return from a read happens in the right sequence
---- The definitions are functionally the same, and for both of them the typical test reports stack overflow at 130939
----
+{-
+        The functions writer', writer demonstrate that the return
+        from a read happens in the right sequence The definitions
+        are functionally the same; though writer uses an explicit
+        fixpoint (and is, incidentally, a test of lazy binder notation)
+-}
 
 let writer' con = 
     let source = counter 0 
     in  let f _ = let r = source() in print ("write", r) >> write con r  >> f() 
         in f();;
 
-{- 
-   This is, incidentally, a test of lazy binder notation declaration and  use.
-   Because μ is a syntactically lazy binder, μ x y z ... -> E is translated into (μ) (λλ x y z ... -> E)
--}
+
+--- define μ as a lazy binder, so μ x y z ... -> E is translated into (μ) (λλ x y z ... -> E)
 notation bind μ;;
-let (μ) = λ f  -> f ((μ) f);;
+let (μ)   = λ f  -> f ((μ) f);;
+let run f = f();;
 
 let writer con = 
     let source = counter 0 
     in  run (μ f _ -> let r = source() in print ("write", r) >> write con r >> f());;
 
---- Experiments with all reasonable configurations of up, below, show stack overflow happening when x is 174690
---- This is a mystery to me in light of the earlier results
-let t = ref 0;;
-let up x = up(t:=succ x) ;;
 
+{-
+ 
+ Typical tests are of the form reader n (connector writer). In what
+ follows, S is the upper bound on the depth of recursion of the
+ call recur 0, experimentally-determined by running the following
+ program file with a given (kernel-enforced) stack limit.
+ 
+     let bound = ref 0 ;;
+     let recur x = recur(set bound (prim_succ (get bound))) ;;
+     set bound 0 >> recur 0;
+     
+     ulimit -s      S
+     2048           32713
+     4096           65481
+     8192           13107
+     16184          258889
+     25000          399899
+     35000          559935
+     45000          719945
+
+ Readloop is stack-conservative: the following terminate without
+ stack overflow, even with S=32713
+
+   readloop 50000000 (connector writeloop);
+   readloop 50000000 (connector writerec);   
+   
+ The second is a slight surprise, since there's no reason for the
+ writerec tail call not to cost space somewhere, though the fact
+ that the argument pattern of its business end, f(), is () means
+ that no environment space is allocated at the recursion.
+ 
+ I lost patience (at just over 20m numbers transmitted (S=32713))
+ waiting for each of the following
+
+   readloop 50000000 (connector writer');   
+   readloop 50000000 (connector writer);  
+
+ But readrec and readreq are stack-expansive. For these two calls the stack overflows at about S
+ 
+   readrec 10000000 (connector writerec);
+   readrec 10000000 (connector writeloop);  
+ 
+ and readreq, readreq' are worse: overflowing at 2967 (S=32713) and 11904 (S=13107), as witnessed by
+   
+   readreq  10000000 (connector writeloop);     
+   readreq' 10000000 (connector writeloop');     
+
+-}
 
 
 {- 
-        Can this be made symmetric, so that (exch connector value) returns the value sent by the last exch? 
+        The coroutines can be made symmetric, so that (exch connector value) returns the value sent by the last exch. 
 -}
 
 notation data 1 Exch;;
@@ -197,3 +251,4 @@ let testy n =
     let c1 = connectTo (exchloop "a" n) in
     exchloop "b" n c1;;
  
+

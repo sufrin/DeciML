@@ -114,7 +114,7 @@ let addBindings: bindings -> env -> env = fun bs e -> Bind bs :: e
 
 let addLib: bindings -> env -> env = fun bs e -> Lib bs :: e
 
-let addBinding: id -> value -> bindings -> bindings = fun i v bs -> (i,v)::bs
+let addBinding: id -> value -> bindings -> bindings = fun i v bs -> if i="_" then bs else (i,v)::bs
 
 let emptyEnv: env = []
 
@@ -280,6 +280,7 @@ let rec deepForce v = match v with
 | _                -> v
 
  
+
 
 
 

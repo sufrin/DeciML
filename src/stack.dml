@@ -1,0 +1,35 @@
+{-
+        Simple test on the upper bound of recursive calls.
+        THis is proportional (on OS/X) to ulimit -s
+-}
+
+let bound = ref 0 ;;
+let recur x = recur(set bound (prim_succ (get bound))) ;;
+
+set bound 0 >> recur 0;
+-- await stack overflow
+get bound;
+
+{-
+ulimit -s 16184; dml stack.dml;
+[Stack Overflow]
+258889
+
+ulimit -s 25000; dml stack.dml;
+[Stack Overflow]
+399899
+
+ulimit -s 35000; dml stack.dml;
+[Stack Overflow]
+559935
+
+ulimit -s 45000; dml stack.dml;
+[Stack Overflow]
+719945
+
+-}
+
+
+
+
+
