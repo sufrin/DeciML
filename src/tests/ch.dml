@@ -154,7 +154,11 @@ let writer con =
     in  run (μ f _ -> let r = source() in print ("write", r) >> write con r >> f());;
 
 
-{-
+{- 
+
+ Notes written before the very simple ()->() function call optimization 
+ was made to the interpreter. This dramatically improved the stack behaviour
+ of most functions defined below.
  
  Typical tests are of the form reader n (connector writer). In what
  follows, S is the upper bound on the depth of recursion of the
@@ -205,7 +209,8 @@ let writer con =
 
 
 {- 
-        The coroutines can be made symmetric, so that (exch connector value) returns the value sent by the last exch. 
+        The coroutines can be made symmetric, so that (exch connector value) returns the 
+        value sent by the last exch. 
 -}
 
 notation data 1 Exch;;
@@ -245,10 +250,15 @@ let exchloop name n con =
         (loop r := exch con (succ !r) >>  print(name, "read", !r) >> !r<n) >> n
     ;;
 
+{- Both testx 100000 and testy overflow at about 26185 
+   but (at ulimit -s 8192) both terminate 
+-}
+
 let testx n = exchloop "b" n (connectTo (exchloop "a" n)) ;;
 
 let testy n =
     let c1 = connectTo (exchloop "a" n) in
     exchloop "b" n c1;;
  
+
 

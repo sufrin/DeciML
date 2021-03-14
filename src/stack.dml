@@ -1,16 +1,38 @@
 {-
         Simple test on the upper bound of recursive calls.
-        THis is proportional (on OS/X) to ulimit -s
+        This is proportional (on OS/X) to ulimit -s
+        (without the optimisation of calls to ()->() functions)
 -}
 
 let bound = ref 0 ;;
 let recur x = recur(set bound (prim_succ (get bound))) ;;
+let up () = set bound (prim_succ (get bound)) >> up() ;;
+
+let pr = prim_println;;
 
 set bound 0 >> recur 0;
 -- await stack overflow
-get bound;
+("recur 0", get bound);
+
+set bound 0 >> up();
+-- await stack overflow
+("up()", get bound);
 
 {-
+Experimental results with up() and recur 0 are identical 
+
+ulimit -s 2048; dml stack.dml;
+[Stack Overflow]
+32713
+
+ulimit -s 4096; dml stack.dml;
+[Stack Overflow]
+65481
+
+ulimit -s 8192; dml stack.dml;
+[Stack Overflow]
+131017
+
 ulimit -s 16184; dml stack.dml;
 [Stack Overflow]
 258889
@@ -27,7 +49,21 @@ ulimit -s 45000; dml stack.dml;
 [Stack Overflow]
 719945
 
+ulimit -s 60000; dml stack.dml;
+[Stack Overflow]
+1007945
+
+ulimit -s 65530; dml stack.dml; 
+[Stack Overflow]
+1048457
+
+ulimit -s 65532; dml stack.dml; # this is the upper bound for ulimit -s
+[Stack Overflow]
+1048457
+
+
 -}
+
 
 
 

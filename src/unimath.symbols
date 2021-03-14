@@ -5,16 +5,16 @@ text abbrev A   \u2200 # ∀
 text abbrev C   \u2201 # ∁
 text abbrev del \u2202 # ∂
 text abbrev E   \u2203 # ∃
-text abbrev /E  \u2204 # ∄
+text abbrev ~E  \u2204 # ∄
 text abbrev empty \u2205 # ∅
 text abbrev del \u2206 # ∆
 text abbrev led \u2207 # ∇
 text abbrev in  \u2208 # ∈
-text abbrev /in \u2209 # ∉
+text abbrev ~in \u2209 # ∉
 text abbrev inn \u220A # ∊
 text abbrev ni  \u220B # ∋
-text abbrev /ni \u220C # ∌
-text abbrev /nni \u220D # ∍
+text abbrev ~ni \u220C # ∌
+text abbrev ~nni \u220D # ∍
 text abbrev []   \u220E # ∎
 text abbrev prod \u220F # ∏
 text abbrev dorp \u2210 # ∐
@@ -36,7 +36,7 @@ text abbrev max \u2294 # ⊔
 text abbrev o+ \u2295 # ⊕
 text abbrev o- \u2296 # ⊖
 text abbrev ox \u2297 # ⊗
-text abbrev o/ \u2298 # ⊘
+text abbrev odiv \u2298 # ⊘
 text abbrev o. \u2299 # ⊙
 text abbrev oo \u229A # ⊚
 text abbrev ** \u229B # ⊛
@@ -46,8 +46,8 @@ text abbrev >  \u27E9 # ⟩
 
 text abbrev ;; \u2a3e # ⨾
 
-text abbrev ^^ \u2191 # ↑ 
-text abbrev !! \u2193 # ↓
+text abbrev ^ \u2191 # ↑ 
+text abbrev ! \u2193 # ↓
 
 # outfixes
 
@@ -62,6 +62,7 @@ text abbrev rf \u230B #⌋
 text abbrev /// \u2afb # ⫻
 
 test abbrev -- \u2212  # —
+
 
 
 

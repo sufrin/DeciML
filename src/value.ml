@@ -17,6 +17,11 @@ type value  =
                                           then fprintf fmt {|@[<v>@[λ(%a)@]@;«@[<hov>%a@]@]»|} pp_cases cs pp_env (shortenEnv e) 
                                           else fprintf fmt {|@[λ(%a)@]|}  pp_cases cs
                                 ] 
+ | UnitFun of env * expr        [@printer fun fmt (e, body) -> 
+                                          if !Utils.showClosureEnv 
+                                          then fprintf fmt   {|@[λ()→%a@]@;«@[<hov>%a@]»|} pp_expr body pp_env (shortenEnv e) 
+                                          else fprintf fmt   {|@[λ()→%a@]|} pp_expr body
+                                ]
  | LazyFun of env * case        [@printer fun fmt (e, c)  -> 
                                           if !Utils.showClosureEnv 
                                           then fprintf fmt {|@[<v>@[λλ %a@]@;«@[<v>%a@]»@]@]|}  pp_case c pp_env (shortenEnv e) 
@@ -194,9 +199,11 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 
 | Label(name, body) -> eval loc (bind name (Cont k) env) k body   (* reify and bind the continuation *)
   
+| Tuple []          -> k unitValue (* Optimisation *)
 | Tuple exs         -> evalTuple loc env (fun vs -> k(Tup(List.rev vs))) [] exs
 | Construct(t, exs) -> evalTuple loc env (fun vs -> k(Cons(t, List.rev vs))) [] exs 
-| Bra ex            -> eval loc env k ex     
+| Bra ex            -> eval loc env k ex    
+| Fn [(Tuple [], rhs)] -> k (UnitFun(env, rhs))                                         (* Optimisation *)
 | Fn defs           -> k(Fun(env, defs))
 | LazyFn case       -> k(LazyFun(env, case))
 | ByNameFn case     -> k(ByNameFun(env, case))
@@ -217,6 +224,7 @@ and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -
 | Cont f             ->  eval loc env f rand
 | Prim f             ->  eval loc env (f >> k) rand
 | Strict f           ->  eval loc env (force f >> k) rand
+| UnitFun(defenv, body) -> eval loc env (fun _ -> eval loc defenv k body) rand          (* Optimisation: the ocaml optimiser kicks in *)
 | Fun(defenv, cases) ->  eval loc env (fun v -> evalCases loc defenv k v cases) rand
 | LazyFun(defenv, (Id i, body)) ->  
    let env' = bind i (match rand with Con c -> Const c | _ -> Delay(env, rand, ref None)) defenv 
@@ -280,6 +288,7 @@ let rec deepForce v = match v with
 | _                -> v
 
  
+
 
 
 
