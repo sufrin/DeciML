@@ -22,6 +22,7 @@ let (+)  = prim_add
   ; (-)  = prim_sub
   ; (*)  = prim_mul
   ; (/)  = prim_div
+  ; (%)  = prim_mod
   ; (<)  = prim_ls
   ; (≤)  = prim_le
   ; (>)  = prim_gr
@@ -32,6 +33,11 @@ let (+)  = prim_add
   ; x≢y  = if x≡y then False else True 
   ; pred = prim_pred
   ; succ = prim_succ
+  -- references
+  ; (:=) = set
+  ; (!)  = get
+  ; dec r = r := pred !r
+  ; inc r = r := succ r
   ; prim_flip f x y = f y x   
   {- Post-section implementation
      For all infixes, ⊕
@@ -63,9 +69,21 @@ let (&&) = strict ⟨ True → id         | False → const False ⟩
  ;;
  
 
+--- In the absence of syntactic macros (for the moment) we use this grim hack as an abbreviation
+let detuple = ⟨ () -> Nil
+              | (x0, x1, x2, x3, x4, x5, x6) -> x0:: x1:: x2:: x3:: x4:: x5:: x6:: Nil
+              | (x0, x1, x2, x3, x4, x5)     -> x0:: x1:: x2:: x3:: x4:: x5:: Nil
+              | (x0, x1, x2, x3, x4)         -> x0:: x1:: x2:: x3:: x4:: Nil
+              | (x0, x1, x2, x3)             -> x0:: x1:: x2:: x3:: Nil
+              | (x0, x1, x2)                 -> x0:: x1:: x2:: Nil
+              | (x0, x1)                     -> x0:: x1:: Nil
+              | (x0)                         -> x0::Nil
+              ⟩
+  ; ⟦ xs ⟧  = detuple xs
+;;
 
 --
--- Streams (lists lazy in their tails)
+-- Streams (lists lazy in their tails) use ::: not ::
 --
 let isNil         = strict ⟨ Nil → True    | _ → False ⟩ 
   ; isCons        = strict ⟨ _ :: _ → True | _ → False ⟩ 
@@ -75,16 +93,16 @@ let isNil         = strict ⟨ Nil → True    | _ → False ⟩
   ; (n↑xs)      = if n>0 && isCons xs then  hd xs :: (pred n ↑ tl xs) else Nil
   ; (n↓xs)      = if isNil xs || n=0 then xs else pred n ↓ tl xs
 
-  ; f ⊛ xs      = let map xs = if isNil xs then Nil else (f @ hd xs) ::: map (tl xs) in map xs
-  ; ⟦ x ⟧       = x::Nil
+  ; (f ⊛)       = let map xs = if isNil xs then Nil else (f @ hd xs) ::: map (tl xs) in map
   ; delay       = λλ x → x
-  ; fix         = λλ f x → f (fix f) x
+  ; fix         = λλ f → f (fix f)
  ;;
 
 
 let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x ⊗ f xs ⟩        in f
   ; foldl start (⊗) = let f state = strict ⟨ Nil →  state | x::xs →  f (x ⊗ state) xs⟩ in f start
   ; rev             = let f xs    = strict ⟨ Nil → xs     | y::ys →  f (y::xs) ys⟩     in f Nil
+  ; xs ++ ys        = foldr (::) ys xs
   
   ; map   = (⊛)
    
@@ -97,21 +115,21 @@ let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x �
   ; takeWhile p =
     let f = strict
     ⟨ Nil   → Nil
-    | x::xs → if p x then x :: f ~xs else Nil
+    | x::xs → if p x then x :: f xs else Nil
     ⟩
     in f
     
   ; dropWhile p = 
     let f = strict
     ⟨ Nil   → Nil
-    | x::xs → if p x then f ~xs else ~xs
+    | x::xs → if p x then f xs else xs
     ⟩
     in f
     
   ; filter p = 
     let f = strict
     ⟨ Nil   → Nil
-    | x::xs → if p x then x :: f ~xs else f ~xs    
+    | x::xs → if p x then x :: f xs else f xs    
     ⟩
     in f
 
@@ -124,5 +142,7 @@ let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x �
  
  let len  = foldl 0 (\ _ n -> succ n)
   ;;
+
+
 
 
