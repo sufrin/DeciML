@@ -120,9 +120,9 @@
              then Bra(if isData then Cid(2, id) else Id id)
              else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
           
-         let mkOutfix loc (id, right, isData) expr (right') =
+         let mkOutfix loc (id, right, isData) exprs (right') =
              if   right=right' 
-             then Ap(Bra(if isData then Cid(1, id) else Id id), expr) 
+             then Ap(Bra(if isData then Cid(1, id) else Id id), mkTuple exprs) 
              else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
 
          let mkQuant loc (id, right, isData) expr right' body =
@@ -255,6 +255,7 @@ let exprlist ==
     |                                                   { [] }
     | ~=revexprlist;                                    < List.rev >
 
+
 let notations :=
     | ~=notation;                                       { [notation] }
     | ~=notation; SEMI; ~=notations;                    { notation :: notations }
@@ -352,9 +353,9 @@ let simplex :=
     | ~=STRING;                                          < mkString >
     | ~=prefixop; ~=simplex;                             { mkAp $loc (prefixop,simplex) }  
     | BRA; ~=exprlist; KET;                              < mkTuple >
-    | openb=LEFT; ~=expr; closeb=RIGHT;                  { mkOutfix $loc openb expr closeb }
+    | openb=LEFT; ~=exprlist; closeb=RIGHT;              { mkOutfix $loc openb (exprlist) closeb }
     (* quotation of infixes, leftfixes, outfixes, etc *)
-    | BRA; openb=LEFT; closeb=RIGHT;  KET;               { quoteOutfix $loc openb closeb }
+    (* | BRA; openb=LEFT; closeb=RIGHT;  KET;               { quoteOutfix $loc openb closeb } *)
     | BRA; openb=QLEFT; closeb=QMID;  KET;               { quoteLeftfix $loc openb closeb }
     | BRA; op=infixop; KET;                              { Expr.Bra(op) }
     | BRA; op=prefixop; KET;                             { Expr.Bra(op) }
@@ -376,6 +377,8 @@ prefixop :
 
 bindop : 
      |  name=BIND                                        { if !idLocs then At($loc, mkId name) else mkId name }
+
+
 
 
 

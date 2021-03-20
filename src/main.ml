@@ -58,6 +58,7 @@ let globalEnv = ref @@ addLib
     ; ("prim_sub",        num2num2num  (fun n m -> n-m))
     ; ("prim_mul",        num2num2num  (fun n m -> n*m))
     ; ("prim_div",        num2num2num  (fun n m -> n/m))
+    ; ("prim_mod",        num2num2num  (fun n m -> n mod m))
     ; ("prim_eq",         num2num2bool (fun n m -> n=m))
     ; ("prim_struct_eq",  Prim (fun l -> Prim (fun r -> mkBool(val_eq l r))))
     ; ("prim_ls",         num2num2bool (fun n m -> n<m))
@@ -208,6 +209,7 @@ end
 
 
     
+
 
 
 

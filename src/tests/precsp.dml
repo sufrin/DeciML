@@ -1,86 +1,100 @@
 --- Pre-CSP with continuations
 
-notation rightdata 3 : ; 
+notation rightdata 3 :: ; 
          data      2 Q ;
          data      0 Nil ;
-         id        //;;
+         id        //;
+         right 0 >>> ;;
 
-let rev  = let f xs = ⟨ Nil → xs | y:ys → f (y:xs) ys⟩ in f Nil; 
-    len  = let f xs = ⟨ Nil → xs | y:ys → f (prim_succ xs) ys⟩ in f 0;
-    fold c (⊕) = let f r = ⟨ Nil → r | x:xs → f (x⊕r) xs⟩ in f c;
-    foldr (⊕) c = let f = ⟨ Nil → c | x:xs → x ⊕ f xs⟩ in f;
-    map f = foldr (λ x ys -> f x : ys) Nil;
-    do  f = foldr (λ x any → f x>>()) ();
-    // (⊕) xs = let h:t = xs in foldr ⊕ h t;;
+let {-
+       rev  = let f xs = ⟨ Nil → xs | y::ys → f (y::xs) ys⟩ in f Nil; 
+       len  = let f xs = ⟨ Nil → xs | y::ys → f (prim_succ xs) ys⟩ in f 0;
+       fold c (⊕) = let f r = ⟨ Nil → r | x::xs → f (x⊕r) xs⟩ in f c;
+       foldr (⊕) c = let f = ⟨ Nil → c | x::xs → x ⊕ f xs⟩ in f;
+       map f = foldr (λ x ys -> f x :: ys) Nil;
+       // (⊕) xs = let h::t = xs in foldr ⊕ h t;
+    -}
+    do  f = foldr (λ x any → f x>>()) ();;
     
 let dec r = set r (prim_pred(get r));;
 let inc r = set r (prim_succ(get r));;
 let (>)   = prim_gr;;
 
-let qc  = ref 0;;
-let dqc = ref 0;;
 
-let refQ() =
-    let q         = ref(mkQ()) in
+let queueReference() =
+    let enqCount  = ref 0;
+        deqCount  = ref 0;
+        q         = ref(mkQ()) 
+    in
     let canDeq()  = candeq(get q);
-        enqueue c = inc qc >> set q (enq c (get q));
+        enqueue c = inc enqCount >> set q (enq c (get q));
         dequeue() = ⟨ ()      → set q (mkQ())
-                    | (nq, r) → inc dqc >> set q nq >> r
+                    | (nq, r) → inc deqCount >> set q nq >> r
                     ⟩ (deq (get q))
-    in (enqueue, dequeue, canDeq, ⟨s → prim_println(s, get q)>>()⟩)
+    in (enqueue, dequeue, canDeq, ⟨s → prim_println(s, get q, get enqCount, get deqCount)>>()⟩)
 where
     mkQ()    = Q Nil Nil;
-    enq c    = ⟨ Q l     r   → Q l (c:r)⟩;
+    enq c    = ⟨ Q l     r   → Q l (c::r)⟩;
     candeq   = ⟨ Q Nil   Nil → False | other -> True ⟩;
     deq      = ⟨ Q Nil   Nil → ()
                | Q Nil   r   → deq (Q (rev r) Nil)
-               | Q (c:l) r   → (Q l r, c)
+               | Q (c::l) r   → (Q l r, c)
                ⟩
 ;;
     
-let (enq, deq, can, show) = refQ();;      --- queue of runnable continuations
+{-
+        The scheduler's state is a (single) queue of runnable threads
+        represented as continuations
+-}
 
-let reschedule()  =                       --- ≡ run the first runnable continuation 
-    if can() then deq()() else prim_println "System Terminated";        
+--  Queue manipulation
+let (enq, deq, candeq, show) = queueReference();;      
+
+let -- ≡ run the first runnable continuation 
+    reschedule()  = if candeq() then deq()() else prim_println "System Terminated" >> ();        
     
-    pause() = pause :> (enq pause >> reschedule()); --- Allow another runnable to run.
+    -- ≡ allow another runnable to run if there is one, otherwise resume
+    pause() = continue :> (enq continue >> reschedule()); 
     
-    process continue proc =  --- Construct a schedulable process from proc. It will continue() on termination of proc().
+    -- Construct a schedulable thread from proc. It will invoke continue() on termination of proc().
+    mkThread continue proc =  
             resultis :>                       
             ( (resume :> (resultis resume)) >>  --- resume() resumes on the next line [*]
-              continue(proc())              --- [*] call proc then continue. The latter is always a join point                  
-            );;                             --- the result of process is the schedulable continuation at [*]
+              continue(proc())                  --- [*] call proc then continue. The latter is always a join point                  
+            );;                                 --- the result of mkThread is the schedulable continuation at [*]
 
 --- binary parallel composition of unit-functions: runs immediately     
 let l || r =
     let count = ref 2 in 
     (join :> 
-           ( enq (process join l) >>             
-             enq (process join r) >>             
+           ( enq (mkThread join l) >>             
+             enq (mkThread join r) >>             
              reschedule()                        
            )
-     --- join() 
+     --- join() resumes here
     ) >>                                 
     if dec count > 0 then reschedule() else ();;
 
 --- generalized parallel composition of unit-functions: runs immediately     
 let par procs = 
-    let count = ref (len procs) in
-    ( join :> ( do enq (map (process join) procs) >> reschedule() )) --- schedule the processes
-    >> --- terminating processes join here
-    if dec count > 0 then reschedule() else ();;
+        let count = ref (len procs) in
+        ( join :> 
+               ( do enq (map (mkThread join) procs) >> --- make and schedule the new threads
+                 reschedule()                          --- start them
+               )
+        )  >>  --- terminating threads arrive here
+        if dec count > 0 then reschedule() else ();;
     
 
---- Tests
-let pr s  = prim_println s ;;
+
+--- Elementary Tests
+let pr s  = prim_println s >> pause();;
 
 let l n () = let c = ref 0 in loop (pr ("L1", c) >> pr ("L2", c) >> pause()>> n>inc c);
-    r n () = let c = ref 0 in loop (pr ("R1", c) >> pr ("R2", c) >> pause()>> n>inc c);
-    m () = pr "M1" >> pr "M2" >> ();
-    n () = pr "N1" >> pr "N2" >> ();;
-    
+    r n () = let c = ref 0 in loop (pr ("R1", c) >> pr ("R2", c) >> pause()>> n>inc c);;    
     
 
+let par procs () = par' procs where par' = par;; -- deliver par as a ()->() function
 
 
 

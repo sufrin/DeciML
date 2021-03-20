@@ -219,7 +219,7 @@ let mathop        = [%sedlex.regexp? (0x27f0 .. 0x27ff | 0x2900 .. 0x297x |
                                       0x2a00 .. 0x2aff | 0x2300 .. 0x23ff)|
                                       0x2b00 .. 0x2bff ]
 
-let aop           = [%sedlex.regexp? Chars "¬⨾∘×⦂:+=#&*/~\\!@<>?|" ]
+let aop           = [%sedlex.regexp? Chars "¬⨾÷∘×⦂:+=#&*/%~\\!@<>?|" ]
 let mop           = [%sedlex.regexp? Chars "-"]
 
 let bars          = [%sedlex.regexp? Rep('|', 0 .. 4)]
@@ -350,6 +350,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 
