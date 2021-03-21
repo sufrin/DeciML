@@ -110,10 +110,8 @@
             | _  -> syntaxError (Format.asprintf "Erroneous pattern %a within lhs of definition at %a\n%!" pp_expr pat pp_location loc)
          in abstractFrom body pattern
 
-         let quoteOutfix loc (id, right, isData) (right') =
-             if   right=right' 
-             then Bra(if isData then Cid(1, id) else Id id)
-             else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
+         let quoteOutfix loc (id, right, isData)  =
+             Bra(if isData then Cid(1, id) else Id id)
          
          let quoteLeftfix loc (id, right, isData) (right') =
              if   right=right' 
@@ -355,7 +353,7 @@ let simplex :=
     | BRA; ~=exprlist; KET;                              < mkTuple >
     | openb=LEFT; ~=exprlist; closeb=RIGHT;              { mkOutfix $loc openb (exprlist) closeb }
     (* quotation of infixes, leftfixes, outfixes, etc *)
-    (* | BRA; openb=LEFT; closeb=RIGHT;  KET;               { quoteOutfix $loc openb closeb } *)
+    | BRA; openb=LEFT;  KET;                             { quoteOutfix $loc openb  }  (* Special case *)
     | BRA; openb=QLEFT; closeb=QMID;  KET;               { quoteLeftfix $loc openb closeb }
     | BRA; op=infixop; KET;                              { Expr.Bra(op) }
     | BRA; op=prefixop; KET;                             { Expr.Bra(op) }

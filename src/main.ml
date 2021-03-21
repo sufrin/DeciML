@@ -9,12 +9,15 @@ let trueVal = (Tag(0,  "True"))
 
 let falseVal = (Tag(0,  "False"))
 
-let mkBool: bool -> value = function true -> Const trueVal | false -> Const falseVal
+let val_true  = Const trueVal 
+and val_false = Const falseVal
+
+let mkBool: bool -> value = function true -> val_true | false -> val_false
 
 (* Primitive Adapters *)
 
 let num2num f = Strict (function 
-    | (Const (Num n))  -> Const(Num (f n)) 
+    | (Const (Num n))  -> (try Const(Num (f n)) with Division_by_zero ->  semanticError @@ "Division by zero")
     | other            -> semanticError @@ "Expecting a number, got: "^(show_value other))
 
 let num2bool f = Strict (function 
@@ -51,7 +54,10 @@ let rec val_eq: value -> value -> bool = fun l r -> match force id l, force id r
 | _, _ -> false
 
 let globalEnv = ref @@ addLib 
-    [ ("prim_succ",       num2num (fun n->n+1))
+    [ ("prim_is_unit",    Prim (function Tup[] -> val_true | _ -> val_false))
+    ; ("prim_untuple",    Prim (function Tup (x::xs) -> Tup[x; Tup xs] 
+                               |         other -> Tup[other; unitValue]))
+    ; ("prim_succ",       num2num (fun n->n+1))
     ; ("prim_pred",       num2num (fun n->n-1))
     ; ("prim_neg",        num2num (fun n-> -n))
     ; ("prim_add",        num2num2num  (fun n m -> n+m))
@@ -209,6 +215,7 @@ end
 
 
     
+
 
 
 

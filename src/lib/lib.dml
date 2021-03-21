@@ -69,17 +69,14 @@ let (&&) = strict ⟨ True → id         | False → const False ⟩
  ;;
  
 
---- In the absence of syntactic macros (for the moment) we use this grim hack as an abbreviation
-let detuple = ⟨ () -> Nil
-              | (x0, x1, x2, x3, x4, x5, x6) -> x0:: x1:: x2:: x3:: x4:: x5:: x6:: Nil
-              | (x0, x1, x2, x3, x4, x5)     -> x0:: x1:: x2:: x3:: x4:: x5:: Nil
-              | (x0, x1, x2, x3, x4)         -> x0:: x1:: x2:: x3:: x4:: Nil
-              | (x0, x1, x2, x3)             -> x0:: x1:: x2:: x3:: Nil
-              | (x0, x1, x2)                 -> x0:: x1:: x2:: Nil
-              | (x0, x1)                     -> x0:: x1:: Nil
-              | (x0)                         -> x0::Nil
-              ⟩
-  ; ⟦ xs ⟧  = detuple xs
+{-
+        Outfix operators yield the tuple of their operands
+        This untypeable hack desugars ⟦...⟧ to a ::-list. 
+        
+-}
+let  (⟦) = detuple 
+where 
+    detuple v = if prim_is_unit v then Nil else let (x,xs) = prim_untuple v in x:::detuple xs
 ;;
 
 --
@@ -142,6 +139,7 @@ let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x �
  
  let len  = foldl 0 (\ _ n -> succ n)
   ;;
+
 
 
 
