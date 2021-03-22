@@ -7,7 +7,7 @@ let (<) = prim_ls;;
 
 
 {- 
-   A call-by-name abstraction is introduced by ν (not λ). Actual
+   A call-by-name abstraction is introduced by λλλ. Actual
    parameters are substituted as thunks and need to be evaluated
    (using force) at their use. 
    
@@ -16,20 +16,38 @@ let (<) = prim_ls;;
    This would (in general) make a "pure" interpreter slower everywhere;
    but can be done by program transformation at the typechecking
    phase.
+   
+   Thw functions while and while' below have the same behaviour. They consume 
+   only bounded stack in the interpreter.  
 -}
 
 let while = 
-    ν guard body → 
+    λλλ guard body → 
             if force guard then 
                loop (force body >> force guard) 
             else 
                ();;
             
+let while' = 
+    λλλ guard body → 
+            let iter() =
+                if force guard then 
+                   force body >> iter() 
+                else 
+                   ()
+            in iter();;
+            
 let r=ref 0;;
 
 let testwhile () = 
     set r 0 >> 
-    while (get r<4) 
-          (inc r >> print (get r))
+    while (get r<400000) 
+          (inc r >> print (get r));;
+
+let testwhile' () = 
+    set r 0 >> 
+    while' (get r<400000) 
+           (inc r >> print (get r));;
 
             
+

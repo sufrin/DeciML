@@ -53,7 +53,9 @@ let rec val_eq: value -> value -> bool = fun l r -> match force id l, force id r
   else false
 | _, _ -> false
 
+
 let globalEnv = ref @@ addLib 
+    (List.map (fun (s, v) -> (ExprLexer.intern s, v))
     [ ("prim_is_unit",    Prim (function Tup[] -> val_true | _ -> val_false))
     ; ("prim_untuple",    Prim (function Tup (x::xs) -> Tup[x; Tup xs] 
                                |         other -> Tup[other; unitValue]))
@@ -84,7 +86,7 @@ let globalEnv = ref @@ addLib
     ; ("deepForce",       Prim deepForce)
     ; ("prim_println",    Prim(fun v -> Format.fprintf Format.std_formatter "%a@.%!" pp_value v; v))
     ; ("prim_print",      Prim(fun v -> Format.fprintf Format.std_formatter "%a%!" pp_value v; v))
-    ] 
+    ]) 
     emptyEnv
 
 let showAst = ref false
@@ -215,6 +217,7 @@ end
 
 
     
+
 
 
 

@@ -10,8 +10,14 @@ open ExprParser
     in  Buffer.add_utf_8_uchar b @@ Uchar.of_int u;
         Buffer.contents b
  
- 
-    let idMap: (string, token)       Hashtbl.t  = Hashtbl.create 150 
+    let idSet: (string, string) Hashtbl.t = Hashtbl.create 150 
+    
+    let intern: string -> string = fun s -> 
+        try Hashtbl.find idSet s with Not_found -> (Hashtbl.add idSet s s; s)
+        
+    let internLexeme buf = intern(Utf8.lexeme buf)
+        
+    let idMap: (string, token) Hashtbl.t  = Hashtbl.create 150 
     
     let notation mkTok codes = 
         let addCode code =
@@ -305,12 +311,12 @@ let rec token buf =
   
   (* User-defined outfix functions *)
   
-  | "{|", bars        -> mkLEFT  (Utf8.lexeme buf) "|}" false
-  | bars,  "|}"       -> RIGHT (Utf8.lexeme buf)
-  | "[|", bars        -> mkLEFT  (Utf8.lexeme buf) "|]" false
-  | bars , "|]"       -> RIGHT (Utf8.lexeme buf)
-  | "<|", bars        -> mkLEFT  (Utf8.lexeme buf) "|>" false
-  | bars , "|>"       -> RIGHT (Utf8.lexeme buf)
+  | "{|", bars        -> mkLEFT  (internLexeme buf) "|}" false
+  | bars,  "|}"       -> RIGHT (internLexeme buf)
+  | "[|", bars        -> mkLEFT  (internLexeme buf) "|]" false
+  | bars , "|]"       -> RIGHT (internLexeme buf)
+  | "<|", bars        -> mkLEFT  (internLexeme buf) "|>" false
+  | bars , "|>"       -> RIGHT (internLexeme buf)
   
   | 0x2985      -> LEFT({|⦅|}, {|⦆|}, false)
   | 0x2986      -> RIGHT {|⦆|}
@@ -328,17 +334,17 @@ let rec token buf =
   
   | '"'           -> STRING(string buf)
   | ','           -> COMMA
-  | '='           -> EQ           (Utf8.lexeme buf)
+  | '='           -> EQ           (internLexeme buf)
   | '('           -> BRA
   | ')'           -> KET
-  | '_',Opt ident -> mkID         (Utf8.lexeme buf)
-  | ident         -> mkID         (Utf8.lexeme buf)
-  | '`',ident,'`' -> mkMath       (Utf8.lexeme buf)
-  | cident        -> mkCONID      (Utf8.lexeme buf)
-  | greek         -> mkID         (Utf8.lexeme buf)
-  | mathop        -> mkMath       (Utf8.lexeme buf)
-  | aop, Star (aop | mop) -> mkOP (Utf8.lexeme buf)
-  | mop, Opt (aop, Star (aop | mop)) -> mkOP       (Utf8.lexeme buf)
+  | '_',Opt ident -> mkID          (internLexeme buf)
+  | ident         -> mkID          (internLexeme buf)
+  | '`',ident,'`' -> mkMath        (internLexeme buf)
+  | cident        -> mkCONID       (internLexeme buf)
+  | greek         -> mkID          (internLexeme buf)
+  | mathop        -> mkMath        (internLexeme buf)
+  | aop, Star (aop | mop) -> mkOP  (internLexeme buf)
+  | mop, Opt (aop, Star (aop | mop)) -> mkOP        (internLexeme buf)
   | decimal_ascii -> NUM(10, 0, Utf8.lexeme buf) 
   | octal_ascii   -> NUM(8,  2, Utf8.lexeme buf) 
   | hex_ascii     -> NUM(16, 2, Utf8.lexeme buf) 
@@ -350,6 +356,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

@@ -65,8 +65,9 @@ and env = layer list [@printer fun fmt ls ->
  [@@deriving show { with_path = false }]
 
 (* TODO: this is where to add a call marker if we ever decide to support
-   tail call optimization. Right now tail calls cause the environment to 
-   grow unnecessarily. 
+   tail call optimization. Right now tail calls, except those that bind no
+   arguments,  cause the environment to grow unnecessarily. Additional complexity
+   in implementing TCO flows from the currying of binary functions.
 *)
 and layer = 
   | Lib      of bindings        [@printer fun fmt _ -> fprintf fmt "<library>"]
@@ -97,9 +98,9 @@ let lookup: location option -> id -> cont -> env -> value = fun loc i k e ->
         |  Bind bs -> bindings bs
         |  Lib bs  -> bindings bs
         and bindings = function 
-        |  []                 -> None
-        |  (n, v)::_ when n=i -> Some v
-        |  _ :: bs'           -> bindings bs'
+        |  []                  -> None
+        |  (n, v)::_ when n==i -> Some v                (* all ids are interned: this is fast *)
+        |  _ :: bs'            -> bindings bs'
     in  layers e
     
 (* Pattern matching generates a bindings extension *)
@@ -158,9 +159,9 @@ match p, v with
          | Bra(p),       v                              -> (matchPat ) p v bs  
          | Id i,          _                             -> addBinding i v bs
          | Tuple ps,     Tup vs'                        -> loop2 (fun bs' p v -> matchPat p v bs') bs (ps, vs')
-         | Con c,        Const c' when c=c'             -> bs
+         | Con c,        Const c' when c==c'             -> bs
          | Cid t,        Const(Tag t') when t=t'        -> bs
-         | Construct (c, ps), Cons (c', vs') when c=c'  -> loop2 (fun bs' p v -> matchPat p v bs') bs (ps, vs')
+         | Construct (c, ps), Cons (c', vs') when c==c'  -> loop2 (fun bs' p v -> matchPat p v bs') bs (ps, vs')
          (* This is for when we don't desugar infixes *)
          | Apply(pl, Cid c, pr), Cons (c', vs') when c=c' -> loop2 (fun bs' p v -> matchPat p v bs') bs ([pl;pr], vs')
          (*********************************************)
@@ -288,6 +289,7 @@ let rec deepForce v = match v with
 | _                -> v
 
  
+
 
 
 

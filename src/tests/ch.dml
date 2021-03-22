@@ -118,12 +118,41 @@ let connector writer = ref (Fresh writer) ;;
 let counter n = 
     let r = ref 0 in λ () ->  r := succ !r ;;
 
-let counter' n = 
-    let r = ref 0 in λ () ->  print(r := succ !r) ;;
 
-    
-let readloop  n con = loop let r = read con in print("read", r) >> r<n;;
-let readrec   n con = let f() = let r = read con in print("read", r) >> if r<n then f() else () in f();;
+let reportFreq = 1000;;
+let report r   = if r%reportFreq=0 then print r else r;;
+
+let counter' n = 
+    let r = ref 0 in λ () ->  
+            if (r := succ !r)%reportFreq=0 then print !r else !r
+            ;;
+
+{- 
+        *** report r isn't pragmatically the same as its rhs; the reporting
+            calls below cause very early[+] stack overflow when they are replaced
+            by report r.   Test: readloop' should  behave as readloop, but it
+            overflows early; and readloop'' overflows at about 1/10th the r.
+-} 
+
+let readloop  n con = 
+    loop let r = read con in 
+         (if r%reportFreq=0 then print("read", r) else ())  >> 
+         r<n;;
+
+let readloop'  n con = 
+    loop let r = read con in 
+         report r  >>
+         r < n;;
+
+let readloop''  n con = 
+    loop report (read con) < n;;
+         
+let readrec   n con = 
+     let f() = let r = read con in 
+                    (if r%reportFreq=0 then print("read", r) else ()) >> 
+                    if r<n then f() else () 
+     in f();;
+     
 let readreq   n con = let f() = if print(read con)<n then f() else () in f();;
 let readreq'  n con = let f() = if (read con)<n then f() else () in f();;
 
@@ -140,25 +169,35 @@ let writeloop' con = let source = counter' 0 in loop (write con (source()) >> Tr
 
 let writer' con = 
     let source = counter 0 
-    in  let f _ = let r = source() in print ("write", r) >> write con r  >> f() 
+    in  let f _ = let r = source() in 
+            (if r%reportFreq=0 then print ("write", r) else ()) >> 
+            write con r  >> 
+            f() 
         in f();;
 
 
 --- define μ as a lazy binder, so μ x y z ... -> E is translated into (μ) (λλ x y z ... -> E)
 notation bind μ;;
-let (μ)   = λ f  -> f ((μ) f);;
+let (μ)   = λ f  -> f ((μ) f);; -- f is *already* lazy
 let run f = f();;
 
 let writer con = 
     let source = counter 0 
-    in  run (μ f _ -> let r = source() in print ("write", r) >> write con r >> f());;
+    in  run (μ f -> 
+               λ () -> 
+                 let r = source() in
+                     (if r%reportFreq=0 then print ("write", r) else ()) >> 
+                     write con r >> 
+                     f()
+            );;
 
 
 {- 
 
- Notes written before the very simple ()->() function call optimization 
- was made to the interpreter. This dramatically improved the stack behaviour
- of most functions defined below.
+ Notes written before a simple ()->() function call optimization
+ was made to the interpreter. This dramatically improved the stack
+ behaviour of most functions defined below. Post-optimization notes
+ appear in [[]]
  
  Typical tests are of the form reader n (connector writer). In what
  follows, S is the upper bound on the depth of recursion of the
@@ -177,6 +216,10 @@ let writer con =
      25000          399899
      35000          559935
      45000          719945
+     
+     let recurse() = set bound (prim_succ (get bound)) >> recurse();;
+     [[recurse() loops indefinitely, as expected]]
+
 
  Readloop is stack-conservative: the following terminate without
  stack overflow, even with S=32713
@@ -188,22 +231,27 @@ let writer con =
  writerec tail call not to cost space somewhere, though the fact
  that the argument pattern of its business end, f(), is () means
  that no environment space is allocated at the recursion.
+ [[this was my cue to implement the ()->() call optimization]]
  
  I lost patience (at just over 20m numbers transmitted (S=32713))
  waiting for each of the following
 
    readloop 50000000 (connector writer');   
-   readloop 50000000 (connector writer);  
+   readloop 50000000 (connector writer); 
+   [[They now terminate]] 
 
- But readrec and readreq are stack-expansive. For these two calls the stack overflows at about S
+ But readrec and readreq are stack-expansive. For these two calls
+ the stack overflows at about S
  
    readrec 10000000 (connector writerec);
    readrec 10000000 (connector writeloop);  
+   [[no longer true; the calls terminate, even with a 50M bound]]
  
  and readreq, readreq' are worse: overflowing at 2967 (S=32713) and 11904 (S=13107), as witnessed by
    
    readreq  10000000 (connector writeloop);     
-   readreq' 10000000 (connector writeloop');     
+   readreq' 10000000 (connector writeloop');  
+   [[These still overflow early]]   
 
 -}
 
@@ -260,5 +308,6 @@ let testy n =
     let c1 = connectTo (exchloop "a" n) in
     exchloop "b" n c1;;
  
+
 
 
