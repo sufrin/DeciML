@@ -11,7 +11,7 @@
 import "notation";
 
 let id     x   = x
-  ; const  x   = λλ y → x       -- lazy const (see && ||)
+  ; const  x   = λλ y → x       -- lazy const (see ∧ ∨)
   ; flip f x y = f y x
   ; f @ x      = f x
   ; (f ∘ g) x  = f (g x)
@@ -53,8 +53,8 @@ let (+)  = prim_add
 
 let strict f x  = f(force x)             -- strict = id
   ; (~)         = force                  -- (~)    = id
-  ; (:::)       = λ x → λλ xs → x::xs    -- (:::)  = (::)
-  ; curry f x y = f (~x,~y)              -- curry f x y =  f x y
+  ; (:::)       = λ x → λλ xs → x::xs    -- (:::)  = (::) -- lazy in its second argument
+  ; curry f x y = f (~x,~y)              -- curry f x y =  f (x, y)
  ;;
 
 {-
@@ -63,20 +63,20 @@ let strict f x  = f(force x)             -- strict = id
 
 let pr = prim_println;;
 
-let (&&) = strict ⟨ True → id         | False → const False ⟩
-  ; (||) = strict ⟨ True → const True | False → id           ⟩
-  ; (¬)  = strict ⟨ True → False      | False → True         ⟩
+let (∧) = strict ⟨ True → id         | False → const False ⟩
+  ; (∨) = strict ⟨ True → const True | False → id          ⟩
+  ; (¬) = strict ⟨ True → False      | False → True        ⟩
  ;;
  
 
 {-
-        Outfix operators yield the tuple of their operands
+        Outfixlist operators yield the tuple of their operands
         This untypeable hack desugars ⟦...⟧ to a ::-list. 
         
 -}
-let  (⟦) = detuple 
+let  (⟦.⟧) = detuple 
 where 
-    detuple v = if prim_is_unit v then Nil else let (x,xs) = prim_untuple v in x:::detuple xs
+    detuple v = if prim_is_unit v then Nil else let (x,xs) = prim_untuple v in x::detuple xs
 ;;
 
 --
@@ -87,8 +87,8 @@ let isNil         = strict ⟨ Nil → True    | _ → False ⟩
   ; hd            = strict ⟨ x :: _  → x  | other → failWith("hd", other)⟩ 
   ; tl            = strict ⟨ _ :: xs → xs | other → failWith("tl", other)⟩ 
 
-  ; (n↑xs)      = if n>0 && isCons xs then  hd xs :: (pred n ↑ tl xs) else Nil
-  ; (n↓xs)      = if isNil xs || n=0 then xs else pred n ↓ tl xs
+  ; (n↑xs)      = if n>0 ∧ isCons xs then  hd xs :: (pred n ↑ tl xs) else Nil
+  ; (n↓xs)      = if isNil xs ∨ n=0 then xs else pred n ↓ tl xs
 
   ; (f ⊛)       = let map xs = if isNil xs then Nil else (f @ hd xs) ::: map (tl xs) in map
   ; delay       = λλ x → x
@@ -130,8 +130,8 @@ let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x �
     ⟩
     in f
 
-  ; (∀ p ∙ xs)   = isNil xs || (p (hd xs) && (∀ p ∙ tl xs))
-  ; (∃ p ∙ xs)   = isCons xs &&  (p (hd xs) || (∃ p ∙ tl xs))
+  ; (∀ p ∙ xs)   = isNil xs ∨ (p (hd xs) ∧ (∀ p ∙ tl xs))
+  ; (∃ p ∙ xs)   = isCons xs ∧  (p (hd xs) ∨ (∃ p ∙ tl xs))
   
   ; m `upto`   n = if m ≥ n then Nil else m :: succ m `upto`   n
   ; m `downto` n = if m ≤ n then Nil else m :: pred m `downto` n
@@ -139,6 +139,7 @@ let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x �
  
  let len  = foldl 0 (\ _ n -> succ n)
   ;;
+
 
 
 

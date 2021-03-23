@@ -52,7 +52,7 @@ open ExprParser
     
     let mkLEFT id right isData = 
         if String.length id >= 2 then 
-           (try Hashtbl.find idMap id with Not_found -> ret id @@ LEFT(id, (String.sub bars 0 (String.length id-2))^right, isData))
+           (try Hashtbl.find idMap id with Not_found -> ret id @@ LEFT(id, intern (String.sub bars 0 (String.length id-2)^right), isData))
         else
            assert false
        
@@ -159,6 +159,7 @@ open ExprParser
             | "outfix",     [l;r] -> Hashtbl.add idMap l (LEFT(l,r, true)); Hashtbl.add idMap r (RIGHT(r)) 
             | "leftfix",    [l;r] -> Hashtbl.add idMap l (QLEFT(l,r, true)); Hashtbl.add idMap r (QMID(r)) 
             | "outfixid",   [l;r] -> Hashtbl.add idMap l (LEFT(l,r, false)); Hashtbl.add idMap r (RIGHT(r)) 
+            | "outfixlist", [l;r] -> Hashtbl.add idMap l (TLEFT(l,r, false)); Hashtbl.add idMap r (RIGHT(r)) 
             | "leftfixid",  [l;r] -> Hashtbl.add idMap l (QLEFT(l,r, false)); Hashtbl.add idMap r (QMID(r)) 
             | "outfix",     _
             | "leftfix",    _ 
@@ -176,7 +177,7 @@ open ExprParser
                 | "bind"      -> (fun x -> BIND x)
                 | "prefix"    -> (fun x -> PREFIX x)
                 | "data"      -> (fun x -> CONID(num, x))  (* num is the arity of the (curried if nonzero) constructor *)
-                | _           -> failwith ("notation misdeclared as: "^notationclass^", but should be one of: left, right, leftdata, rightdata, data, id, outfix, leftfix, outfixid, leftfixid) ")
+                | _           -> failwith ("notation misdeclared as: "^notationclass^", but should be one of: left, right, leftdata, rightdata, data, id, outfix, leftfix, outfixid, outfixlist, leftfixid) ")
                in 
                let addSymbol str = Hashtbl.add idMap str (mkTok str);
                                    if !showNotation then Format.fprintf Format.std_formatter "notation %s %d %s\n%!" notationclass num str
@@ -309,31 +310,31 @@ let rec token buf =
   | "["         -> SBRA
   | "]"         -> SKET
   
-  (* User-defined outfix functions *)
-  
+  (* User-defined outfix functions, with built-in lexis *)  
   | "{|", bars        -> mkLEFT  (internLexeme buf) "|}" false
   | bars,  "|}"       -> RIGHT (internLexeme buf)
   | "[|", bars        -> mkLEFT  (internLexeme buf) "|]" false
   | bars , "|]"       -> RIGHT (internLexeme buf)
   | "<|", bars        -> mkLEFT  (internLexeme buf) "|>" false
   | bars , "|>"       -> RIGHT (internLexeme buf)
-  
   | 0x2985      -> LEFT({|⦅|}, {|⦆|}, false)
   | 0x2986      -> RIGHT {|⦆|}
-  | 0x301a      -> LEFT({|〚|}, {|〛|}, false)
-  | 0x301b      -> RIGHT {|〛|}
+  (* blackboard brackets are wider than usual glyphs in some fonts, appearing to have a space by them*)
+  | 0x301a      -> LEFT({|〚|}, {|〛|}, false) 
+  | 0x301b      -> RIGHT {|〛|}                   
   
   (* ************************ *)
   
   | '|'         -> ALT
   
-  | 0x03bb,0x03bb,0x3bb -> BYNAME                           
-  | 0x03bb,0x03bb       -> LAZY                           
+  | 0x03bb,0x03bb,0x3bb -> BYNAME (* λλλ *)                          
+  | 0x03bb,0x03bb       -> LAZY   (* λλ *)                        
   | 0x03bb              -> LAM    (* λ *)
   | 0x2192              -> TO     (* → *)
   
   | '"'           -> STRING(string buf)
   | ','           -> COMMA
+  | '.'           -> DOT
   | '='           -> EQ           (internLexeme buf)
   | '('           -> BRA
   | ')'           -> KET
@@ -356,6 +357,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

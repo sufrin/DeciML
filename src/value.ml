@@ -56,12 +56,12 @@ and
 
 (* Environments *)
 
-and env = layer list [@printer fun fmt ls ->
+and env = frame list [@printer fun fmt ls ->
                         let nonempty = function
                         | Rec bs -> !bs!=[]
                         | _      -> true
                         in
-                        fprintf fmt "%a" (pp_punct_list "⊕" pp_layer) (List.filter nonempty ls)]
+                        fprintf fmt "%a" (pp_punct_list "⊕" pp_frame) (List.filter nonempty ls)]
  [@@deriving show { with_path = false }]
 
 (* TODO: this is where to add a call marker if we ever decide to support
@@ -69,39 +69,42 @@ and env = layer list [@printer fun fmt ls ->
    arguments,  cause the environment to grow unnecessarily. Additional complexity
    in implementing TCO flows from the currying of binary functions.
 *)
-and layer = 
+and frame = 
   | Lib      of bindings        [@printer fun fmt _ -> fprintf fmt "<library>"]
   | Bind     of bindings        [@printer pp_bindings]
   | Rec      of bindings ref    [@printer  fun fmt bs -> 
                                            let nrbs = !bs in
-                                               bs := [];
+                                               bs := [];        (* break the cycle *)
                                                if nrbs!=[] then fprintf fmt {|%a|} pp_bindings nrbs;
-                                               bs := nrbs
-                                ]
+                                               bs := nrbs]
   [@@deriving show { with_path = false }]
 
-and bindings = binding list [@printer fun fmt bs -> 
-                                      fprintf fmt "@[<hov>%a@]" (pp_punct_list "," pp_binding) bs
-                            
-                            ]
+and bindings = binding list [@printer fun fmt bs -> fprintf fmt "@[<hov>%a@]" (pp_punct_list "," pp_binding) bs]
     [@@deriving show { with_path = false }]
   
 and binding = (id * value) [@printer fun fmt (i, v) -> fprintf fmt "@[%a=%a@]" pp_id i pp_value v]
     [@@deriving show { with_path = false }]
             
 let lookup: location option -> id -> cont -> env -> value = fun loc i k e ->
-    let rec layers = function 
-        | []    -> semanticError @@ (Format.sprintf "Unbound variable: %s %s" i (match loc with None -> "" | Some l -> Utils.show_location l))
-        | l::ls -> match layer l with Some v -> k v | None -> layers ls
-        and layer = function
+    let rec frames = function 
+        | []    -> semanticError @@ 
+                   (Format.sprintf "Unbound variable: %s %s" i (match loc with 
+                                                               | None   -> "" 
+                                                               | Some l -> Utils.show_location l))
+        | l::ls -> match frame l with 
+                   | Some v -> k v 
+                   | None   -> frames ls
+                   
+        and frame = function
         |  Rec  bs -> bindings !bs
         |  Bind bs -> bindings bs
         |  Lib bs  -> bindings bs
+        
         and bindings = function 
         |  []                  -> None
         |  (n, v)::_ when n==i -> Some v                (* all ids are interned: this is fast *)
         |  _ :: bs'            -> bindings bs'
-    in  layers e
+    in  frames e
     
 (* Pattern matching generates a bindings extension *)
 
@@ -112,7 +115,7 @@ let loop2: ('state->'a->'b->'state) ->  'state -> ('a list * 'b list) -> 'state 
     let rec loop state = function ([], []) -> state | (x::xs, y::ys) -> loop (f state x y) (xs, ys) | _ -> noMatch()
     in  loop
     
-let (<+>) layer env  = layer :: env
+let (<+>) frame env  = frame :: env
    
 let bind: id -> value -> env -> env = fun i v e -> Bind [(i, v)]::e
 
@@ -130,17 +133,17 @@ let emptyBindings: bindings = []
 
 (* 
     An environment built by extending e with a new empty environment
-    layer, for later knot-tying by recFix
+    frame, for later knot-tying by recFix
 *)
 let newRec() = Rec(ref emptyBindings)
 
 let topLayer = function (l::_) -> l | _ -> assert false
 
 (*  
-    recFix layer bs "ties the knot" 
+    recFix frame bs "ties the knot" 
 *)
-let recFix: layer -> bindings -> layer = fun layer bs -> match layer with
-| Rec r  -> (r:=bs; layer) 
+let recFix: frame -> bindings -> frame = fun frame bs -> match frame with
+| Rec r  -> (r:=bs; frame) 
 | _      -> failwith "recFix at invalid env"
 
 (* Continuation Composition *)
@@ -185,6 +188,7 @@ let checkArity: int -> tag -> unit =
 (* Evaluation *)
 
 type loc = Utils.location option
+
 let pp_loc fmt = function 
 | None          -> ()
 | Some location -> pp_location fmt location
@@ -204,35 +208,52 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 | Tuple exs         -> evalTuple loc env (fun vs -> k(Tup(List.rev vs))) [] exs
 | Construct(t, exs) -> evalTuple loc env (fun vs -> k(Cons(t, List.rev vs))) [] exs 
 | Bra ex            -> eval loc env k ex    
-| Fn [(Tuple [], rhs)] -> k (UnitFun(env, rhs))                                         (* Optimisation *)
-| Fn defs           -> k(Fun(env, defs))
-| LazyFn case       -> k(LazyFun(env, case))
+| Fn[(Tuple[],rhs)] -> k (UnitFun(env, rhs)) (* Optimisation of a ()-> function *)
+| Fn cases          -> k(Fun(env, cases))
+| LazyFn   case     -> k(LazyFun(env, case))
 | ByNameFn case     -> k(ByNameFun(env, case))
 | If (g, e1, e2)    -> eval loc env (fun v -> eval loc env k (if isTrue v then e1 else e2)) g
 | Ap (rator, rand)  -> eval loc env (applyTo loc env k rand) rator
 | Apply (l, op, r)  -> eval loc env k (Ap(Ap(op, l), r)) (* Runtime desugaring: for convenience in diagnostics *)
 | AndThen (e1, e2)  -> eval loc env (fun _ -> eval loc env k e2) e1
+
+(* Loop is a natural delimiter for continuations *)
 | Loop e            -> let rec loop = fun b -> if isTrue b then eval loc env loop e else k unitValue
                        in  loop (trueValue)
+
 | Let (defs, body)  -> let ext  = recBindings env defs in 
-                       let env' = ext <+> env in 
-                           eval loc env' k body 
+                       let env' = ext <+> env in eval loc env' k body 
+                       
 | At(location, ex)  -> eval (Some(location)) env k ex         
               
 and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -> function
-| Cons(t, v)         ->  checkArity (List.length v) t; eval loc env (fun w -> k(Cons(t, v@[w]))) rand 
-| Const(Tag t)       ->  checkArity 0 t;               eval loc env (fun v -> k(Cons(t, [v]))) rand 
-| Cont f             ->  eval loc env f rand
-| Prim f             ->  eval loc env (f >> k) rand
-| Strict f           ->  eval loc env (force f >> k) rand
-| UnitFun(defenv, body) -> eval loc env (fun _ -> eval loc defenv k body) rand          (* Optimisation: the ocaml optimiser kicks in *)
-| Fun(defenv, cases) ->  eval loc env (fun v -> evalCases loc defenv k v cases) rand
+| Cons(t, v)            ->  checkArity (List.length v) t; 
+                            eval loc env (fun w -> k(Cons(t, v@[w]))) rand 
+| Const(Tag t)          ->  checkArity 0 t;               
+                            eval loc env (fun v -> k(Cons(t, [v]))) rand 
+
+(*  *)
+| Cont f                ->  eval loc env           f  rand    
+| Prim f                ->  eval loc env (      f>>k) rand
+| Strict f              ->  eval loc env (force f>>k) rand
+
+(* Stack Optimisation: I think ocaml simplifies the continuation construction because it ignores its argument *)
+| UnitFun(defenv, body) -> eval loc env (fun _ -> eval loc defenv k body) rand  
+
+| Fun(defenv, cases)    -> eval loc env (fun v -> evalCases loc defenv k v cases) rand
+
 | LazyFun(defenv, (Id i, body)) ->  
-   let env' = bind i (match rand with Con c -> Const c | _ -> Delay(env, rand, ref None)) defenv 
+   let env' = bind i (match rand with 
+                     | Con c -> Const c 
+                     | _     -> Delay(env, rand, ref None)) defenv                      
    in  eval loc env' k body
+   
 | ByNameFun(defenv, (Id i, body)) ->  
-   let env' = bind i (match rand with Con c -> Const c | _ -> Thunk(env, rand)) defenv 
+   let env' = bind i (match rand with 
+                     | Con c -> Const c 
+                     | _     -> Thunk(env, rand)) defenv                                          
    in  eval loc env' k body
+   
 | (Delay _) as op    ->  force (applyTo loc env k rand) op 
 | (Thunk _) as op    ->  force (applyTo loc env k rand) op 
 | other              ->  semanticError @@ (asprintf "applying non-function value: %a %s" pp_value other (match loc with None -> "" | Some l -> Utils.show_location l))
@@ -249,18 +270,17 @@ and evalTuple: loc -> env -> (values -> value) ->  values -> exprs -> value = fu
 | []       -> k vs
 | ex::exs  -> eval loc e (fun v -> evalTuple loc e k (v::vs) exs) ex 
 
-and recBindings: env -> defs -> layer = fun env defs ->
-    (* closures made during defs elaboration all embody new',  an empty Rec layer *)
+and recBindings: env -> defs -> frame = fun env defs ->
+    (* closures made during defs elaboration all embody new',  an empty Rec frame *)
     let new'     = newRec()   in 
     let env'     = new'<+>env in
-    (* augment bindings layer as specified by defs *)
+    (* augment bindings frame as specified by defs *)
     let rec elaborate : bindings -> defs -> bindings = fun bindings -> function 
     | [] -> bindings
     | (pat, expr) :: defs -> 
-       let v = eval None env' (fun v -> v) expr 
-       in  elaborate (matchPat pat v  bindings) defs   
-       (* elaborate the definitions and tie the knot *)
-    in recFix new' @@ elaborate [] defs
+       let v = eval None env' (fun v -> v) expr in elaborate (matchPat pat v bindings) defs
+    in (* elaborate the definitions and tie the knot *)
+       recFix new' @@ elaborate [] defs
 
 (* Find the first case whose lhs pattern matches the value, then evaluate its rhs *)
 and evalCases: loc -> env -> cont -> value -> cases -> value = fun loc e k v cases -> 
@@ -289,6 +309,7 @@ let rec deepForce v = match v with
 | _                -> v
 
  
+
 
 
 

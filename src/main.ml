@@ -113,7 +113,7 @@ let rec processPhrase = fun currentPath -> function
                         Format.fprintf Format.std_formatter  "@[let @[%a@]\nwhere @[%a@]@];;@." pp_defs defs pp_defs wheredefs;
                    let ext   = recBindings !globalEnv wheredefs in
                    let ext'  = recBindings (ext <+> !globalEnv) defs in  
-                       if !showEnv then Format.fprintf Format.std_formatter "%a@."  pp_layer ext';
+                       if !showEnv then Format.fprintf Format.std_formatter "%a@."  pp_frame ext';
                        globalEnv := ext' <+> !globalEnv 
     | EndFile   -> raise EndFile
     | Import paths -> 
@@ -217,6 +217,7 @@ end
 
 
     
+
 
 
 

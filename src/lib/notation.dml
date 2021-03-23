@@ -1,7 +1,7 @@
 notation
      right 0 @          ;
      left  3 ≡ ≠ ≢      ; -- = is a BUILTIN FIXED (3) RIGHTFIX 
-     left  2 && ||      ; prefix ¬; prefix ~;
+     left  2 ∧ ∨        ; prefix ¬; prefix ~;
      left  7 + -        ;
      left  8 * / %      ;
      right 9 **         ;
@@ -11,9 +11,10 @@ notation
      right     5 :::    ;
      leftfixid  ∃ ∙     ;
      leftfixid  ∀ ∙     ;
-     outfixid   ⟦ ⟧     ;
+     outfixlist  ⟦ ⟧    ;
      right 1 :=         ;
      prefix !           ;;
+
 
 
 

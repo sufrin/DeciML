@@ -120,7 +120,7 @@ let counter n =
 
 
 let reportFreq = 1000;;
-let report r   = if r%reportFreq=0 then print r else r;;
+let report r   = (if r%reportFreq=0 then print r else ()) >> r;;
 
 let counter' n = 
     let r = ref 0 in λ () ->  
@@ -132,6 +132,9 @@ let counter' n =
             calls below cause very early[+] stack overflow when they are replaced
             by report r.   Test: readloop' should  behave as readloop, but it
             overflows early; and readloop'' overflows at about 1/10th the r.
+            
+            On the other hand writer, writer' and writer'' all use report without
+            any problem.
 -} 
 
 let readloop  n con = 
@@ -161,16 +164,16 @@ let writeloop  con = let source = counter 0 in loop (write con (source()) >> Tru
 let writeloop' con = let source = counter' 0 in loop (write con (source()) >> True);;
 
 {-
-        The functions writer', writer demonstrate that the return
+        The functions writer'', writer', writer demonstrate that the return
         from a read happens in the right sequence The definitions
-        are functionally the same; though writer uses an explicit
-        fixpoint (and is, incidentally, a test of lazy binder notation)
+        are functionally the same; though writer and writer'' use an explicit
+        fixpoint (and are, incidentally, a test of lazy binder notation)
 -}
 
 let writer' con = 
     let source = counter 0 
-    in  let f _ = let r = source() in 
-            (if r%reportFreq=0 then print ("write", r) else ()) >> 
+    in  let f () = let r = source() in 
+            report r     >> 
             write con r  >> 
             f() 
         in f();;
@@ -191,10 +194,20 @@ let writer con =
                      f()
             );;
 
+let writer'' con = 
+    let source = counter 0 
+    in  run (μ f -> 
+               λ () -> 
+                 let r = source() in
+                     report r    >> 
+                     write con r >> 
+                     f()
+            );;
+
 
 {- 
 
- Notes written before a simple ()->() function call optimization
+ Notes written before a simple ()-> function call optimization
  was made to the interpreter. This dramatically improved the stack
  behaviour of most functions defined below. Post-optimization notes
  appear in [[]]
@@ -205,7 +218,7 @@ let writer con =
  program file with a given (kernel-enforced) stack limit.
  
      let bound = ref 0 ;;
-     let recur x = recur(set bound (prim_succ (get bound))) ;;
+     let recur   _ = recur(set bound (prim_succ (get bound))) ;;
      set bound 0 >> recur 0;
      
      ulimit -s      S
@@ -217,8 +230,9 @@ let writer con =
      35000          559935
      45000          719945
      
+     let recur' () = recur'(set bound (prim_succ (get bound))) ;;
      let recurse() = set bound (prim_succ (get bound)) >> recurse();;
-     [[recurse() loops indefinitely, as expected]]
+     [[recur'() and recurse() loop indefinitely -- because of the ()-> optimisation]]
 
 
  Readloop is stack-conservative: the following terminate without
@@ -251,7 +265,7 @@ let writer con =
    
    readreq  10000000 (connector writeloop);     
    readreq' 10000000 (connector writeloop');  
-   [[These still overflow early]]   
+   [[These still overflow; now even earlier]]   
 
 -}
 
@@ -263,24 +277,27 @@ let writer con =
 
 notation data 1 Exch;;
 
-let depth = ref 0;;
+-- instrumentation
+let depth   = ref 0;;
 let incr () = depth := succ(!depth);;
 let decr () = depth := prim_pred(!depth);;
 
 let exch connector v =
     incr () >> 
     let v = 
-    endExch :> 
-    ( !connector match
-      ⟨ Exch  last      -> connector := Exch endExch >> last v               -- return v from the most recent exch
-      | Fresh exchanger -> connector := Exch endExch >> exchanger connector  -- start the fresh exchanger
-      | other           -> print ("error exchanging with", other)
-      ⟩ 
+    (endExch :> 
+      ( !connector match
+        ⟨ Exch  last      -> connector := Exch endExch >> last v               -- return v from the most recent exch
+        | Fresh exchanger -> connector := Exch endExch >> exchanger connector  -- start the fresh exchanger
+        | other           -> print ("error exchanging with", other)
+        ⟩ 
+      )
     ) 
     in 
-    decr () >> v
+     (decr () >> v)
     ;;
-    
+
+{-  
 let exch connector v =
     endExch :> 
     ( !connector match
@@ -290,16 +307,18 @@ let exch connector v =
       ⟩ 
     ) 
     ;;
+-}
     
 let connectTo exchanger = ref (Fresh exchanger);;
 
 let exchloop name n con = 
     let r = ref 0 in
-        (loop r := exch con (succ !r) >>  print(name, "read", !r) >> !r<n) >> n
+        (loop (r := exch con (succ !r) >>  print(name, "read", !r) >> !r<n)) >> n 
     ;;
 
-{- Both testx 100000 and testy overflow at about 26185 
-   but (at ulimit -s 8192) both terminate 
+{- Both testx 100000 and testy overflow at about 26185 (at ulimit -s 8192)
+   but both terminate at ulimit -s 16000, but the depth of calls to exch is
+   never more than 1 on overflow termination, and is zero on proper termination.
 -}
 
 let testx n = exchloop "b" n (connectTo (exchloop "a" n)) ;;
@@ -308,6 +327,8 @@ let testy n =
     let c1 = connectTo (exchloop "a" n) in
     exchloop "b" n c1;;
  
+
+
 
 
 

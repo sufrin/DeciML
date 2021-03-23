@@ -110,17 +110,19 @@
             | _  -> syntaxError (Format.asprintf "Erroneous pattern %a within lhs of definition at %a\n%!" pp_expr pat pp_location loc)
          in abstractFrom body pattern
 
-         let quoteOutfix loc (id, right, isData)  =
-             Bra(if isData then Cid(1, id) else Id id)
+         let quoteOutfix loc (id, right, isData) right' =
+             if right=right' 
+             then Bra(if isData then Cid(1, id) else Id id)
+             else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
          
          let quoteLeftfix loc (id, right, isData) (right') =
              if   right=right' 
              then Bra(if isData then Cid(2, id) else Id id)
              else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
           
-         let mkOutfix loc (id, right, isData) exprs (right') =
+         let mkOutfix loc (id, right, isData) expr (right') =
              if   right=right' 
-             then Ap(Bra(if isData then Cid(1, id) else Id id), mkTuple exprs) 
+             then Ap(Bra(if isData then Cid(1, id) else Id id), expr) 
              else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
 
          let mkQuant loc (id, right, isData) expr right' body =
@@ -151,7 +153,7 @@
         BINR8 BINL8 CONR8 CONL8
         BINR9 BINL9 CONR9 CONL9
                 
-%token <string*string*bool> LEFT QLEFT (* the boolean controls whether it's a data symbol or an id *)
+%token <string*string*bool> LEFT QLEFT TLEFT (* the boolean controls whether it's a data symbol or an id *)
 
 %token <string> RIGHT QMID BIND 
  
@@ -273,6 +275,7 @@ let symbols :=
     
 let xfix := op=LEFT;                                    { let (id, _, _) = op in id }
     |       op=QLEFT;                                   { let (id, _, _) = op in id }
+    |       op=TLEFT;                                   { let (id, _, _) = op in id }
     |       op=QMID;                                    <>
     |       op=RIGHT;                                   <>
       
@@ -351,9 +354,11 @@ let simplex :=
     | ~=STRING;                                          < mkString >
     | ~=prefixop; ~=simplex;                             { mkAp $loc (prefixop,simplex) }  
     | BRA; ~=exprlist; KET;                              < mkTuple >
-    | openb=LEFT; ~=exprlist; closeb=RIGHT;              { mkOutfix $loc openb (exprlist) closeb }
+    | openb=TLEFT; ~=exprlist; closeb=RIGHT;             { mkOutfix $loc openb (mkTuple exprlist) closeb }
+    | openb=LEFT; ~=expr; closeb=RIGHT;                  { mkOutfix $loc openb (expr) closeb }
     (* quotation of infixes, leftfixes, outfixes, etc *)
-    | BRA; openb=LEFT;  KET;                             { quoteOutfix $loc openb  }  (* Special case *)
+    | BRA; openb=TLEFT; DOT; closeb=RIGHT; KET;          { quoteOutfix $loc openb closeb }  (* Special case *)
+    | BRA; openb=LEFT;  DOT; closeb=RIGHT; KET;          { quoteOutfix $loc openb closeb }  (* Special case *)
     | BRA; openb=QLEFT; closeb=QMID;  KET;               { quoteLeftfix $loc openb closeb }
     | BRA; op=infixop; KET;                              { Expr.Bra(op) }
     | BRA; op=prefixop; KET;                             { Expr.Bra(op) }
@@ -375,6 +380,7 @@ prefixop :
 
 bindop : 
      |  name=BIND                                        { if !idLocs then At($loc, mkId name) else mkId name }
+
 
 
 
