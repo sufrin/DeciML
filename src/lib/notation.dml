@@ -16,6 +16,24 @@ notation
      prefix !           ;;
 
 
+{-   For all infixes, ⊕
+     
+         (⊕ e) is syntactic sugar for `prim_flip` (⊕) e    
+     
+     So, as required,
+     
+         (⊕ e₁) e₂ = `prim_flip` (⊕) e₁ e₂ = (⊕) e₂ e₁ = e₂ ⊕ e₁     
+-}
+
+let (`prim_flip`) f x y = f y x ;; 
+
+{-
+     The declaration above "quotes" the (normally-infixed operator) `prim_flip`,
+     an identifier and syntactic role used only to lower the
+     probability of someone falling over by redefining it... It
+     would be better to have an unrebindable class of identifiers.
+
+-}
 
 
 

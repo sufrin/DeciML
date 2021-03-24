@@ -89,7 +89,7 @@ type t   = expr [@printer pp_expr]
 open Unique
 let negateOp  = Id (intern  "-")
 let negateFun = Id (intern  "prim_neg")
-let prim_flip = Id (intern "prim_flip")
+let prim_flip = Id (intern  "`prim_flip`")
 
 
 

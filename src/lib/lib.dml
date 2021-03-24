@@ -8,11 +8,13 @@
    abstraction (λλ v → E). 
       
 -}
+
+
+
 import "notation";
 
 let id     x   = x
-  ; const  x   = λλ y → x       -- lazy const (see ∧ ∨)
-  ; flip f x y = f y x
+  ; const  x   = λλ y → x     -- lazy const (see ∧ ∨)
   ; f @ x      = f x
   ; (f ∘ g) x  = f (g x)
   ; (f ⨾ g) x  = g (f x)
@@ -38,13 +40,6 @@ let (+)  = prim_add
   ; (!)  = get
   ; dec r = r := pred !r
   ; inc r = r := succ r
-  ; prim_flip f x y = f y x   
-  {- Post-section implementation
-     For all infixes, ⊕
-         (⊕ e) is syntactic sugar for prim_flip (⊕) e    
-     So, as required,
-         (⊕ e₁) e₂ = prim_flip (⊕) e₁ e₂ = (⊕) e₂ e₁ = e₂ ⊕ e₁
-  -}
  ;;
 
 {- 
