@@ -5,9 +5,11 @@ open Utils
 
 (* Booleans *)
 
-let trueVal = (Tag(0,  "True"))
+let trueVal  = (Tag(0,  ExprLexer.intern "True"))
 
-let falseVal = (Tag(0,  "False"))
+let falseVal = (Tag(0,  ExprLexer.intern "False"))
+
+
 
 let val_true  = Const trueVal 
 and val_false = Const falseVal
@@ -217,6 +219,7 @@ end
 
 
     
+
 
 
 

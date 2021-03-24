@@ -44,6 +44,10 @@ let pp_cons =
              pbra (bracketRight (name, assoc, bp) t2) v2        
         | Confix, _  ->         
           Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
+        | Outfix(l,r), _  ->         
+          Format.fprintf fmt "((%s.%s)(%a))" l r (pp_punct_list " " pp_value) vs 
+        | Leftfix(l,r), _  ->         
+          Format.fprintf fmt "((%s.%s.) %a)" l r (pp_punct_list " " pp_value) vs 
         | _, _  ->         
         let name = if isOp name then "("^name^")" else name in
             Format.fprintf fmt "(%s %a)" name (pp_punct_list " " pp_value) vs 
@@ -112,8 +116,6 @@ and idLocs = ref false
 and showEnv = ref false
 
 and showClosureEnv = ref false
-
-
 
 
 

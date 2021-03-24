@@ -8,6 +8,7 @@
         open Expr
         open Utils
         
+        
 
         let mkNum(base, first, buf) = Con(Num(Utils.num_value base first buf))
         
@@ -23,6 +24,16 @@
         
         let mkId          s = Id s
         let mkConId tag = Cid tag
+        
+        let mkExpr = function 
+         | CONL0 s | CONL1 s | CONL2 s | CONL3 s | CONL4 s | CONL5 s | CONL6 s | CONL7 s | CONL8 s | CONL9 s 
+         | CONR0 s | CONR1 s | CONR2 s | CONR3 s | CONR4 s | CONR5 s | CONR6 s | CONR7 s | CONR8 s | CONR9 s -> Cid(2, s)
+         | BINL0 s | BINL1 s | BINL2 s | BINL3 s | BINL4 s | BINL5 s | BINL6 s | BINL7 s | BINL8 s | BINL9 s 
+         | BINR0 s | BINR1 s | BINR2 s | BINR3 s | BINR4 s | BINR5 s | BINR6 s | BINR7 s | BINR8 s | BINR9 s -> Id s
+         | CONID tag -> Cid tag
+         | ID    s   -> Id s
+         | _         -> failwith "Expression uses notation from unsound notation declaration"
+
                 
         (* Transform unsaturated applications of proper constructors into Constructs. *)
         
@@ -51,9 +62,6 @@
             | At(_, op)      -> opToString op
             | _              -> assert false
             
-        let negateOp  = Id "-"
-        let negateFun = Id "prim_neg"
-        
         (* Distinguish proper tuples from bracketed expressions *)
         (* We keep the bracket in the ast to simplifiy prettyprinting during diagnostivs *)    
         let mkTuple = function
@@ -109,23 +117,34 @@
             )
             | _  -> syntaxError (Format.asprintf "Erroneous pattern %a within lhs of definition at %a\n%!" pp_expr pat pp_location loc)
          in abstractFrom body pattern
-
-         let quoteOutfix loc (id, right, isData) right' =
-             if right=right' 
-             then Bra(if isData then Cid(1, id) else Id id)
-             else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
-         
-         let quoteLeftfix loc (id, right, isData) (right') =
+                  
+         let quoteLeftfix loc (id, right, _, _, isData) (right') =
              if   right=right' 
              then Bra(if isData then Cid(2, id) else Id id)
              else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
           
-         let mkOutfix loc (id, right, isData) expr (right') =
+         let quoteOutfix loc (id, right, empty, cons, isData) right' =
+             if right=right' 
+             then Bra(if isData then Cid(1, id) else Id id)
+             else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
+
+         let mkOutfixList loc (id, right, empty, cons, isData) exprs (right') =  
+         try
+             let  cons  = mkExpr cons  in
+             let  empty = mkExpr empty in
+             let  foldexprs exprs = List.fold_right (fun e r -> Ap (Ap (cons, e), r)) exprs empty     in     
+             if   right=right' 
+             then Ap(Bra(if isData then Cid(1, id) else Id id), foldexprs exprs) 
+             else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
+         with 
+             Failure msg -> syntaxError (Format.asprintf "outfix %s ... %s at %a (%s)\n%!" id right pp_location loc msg)
+         
+         let mkOutfix loc (id, right, empty, cons, isData) expr (right') =
              if   right=right' 
              then Ap(Bra(if isData then Cid(1, id) else Id id), expr) 
              else syntaxError (Format.asprintf "opening %s should be closed by %s (not %s) at %a\n%!" id right right' pp_location loc)
 
-         let mkQuant loc (id, right, isData) expr right' body =
+         let mkQuant loc (id, right, _, _, isData) expr right' body =
              if   right=right' 
              then Ap(Ap(Bra(if isData then Cid(2, id) else Id id), expr), body)
              else syntaxError (Format.asprintf "quantifier %s should be followed %s (not %s) at %a\n%!" id right right' pp_location loc)
@@ -153,9 +172,9 @@
         BINR8 BINL8 CONR8 CONL8
         BINR9 BINL9 CONR9 CONL9
                 
-%token <string*string*bool> LEFT QLEFT TLEFT (* the boolean controls whether it's a data symbol or an id *)
+%token <string*string*token*token*bool> LEFT LEFTFIX LISTLEFT (* the boolean controls whether it's a data symbol or an id *)
 
-%token <string> RIGHT QMID BIND 
+%token <string> RIGHT LEFTMID BIND 
  
                 
 %token <string> STRING (* a string encoded in utf8 *)
@@ -273,10 +292,10 @@ let symbols :=
     | op=prefixop; ~=symbols;                           { opToString op :: symbols }
     | op=xfix;     ~=symbols;                           { op :: symbols }
     
-let xfix := op=LEFT;                                    { let (id, _, _) = op in id }
-    |       op=QLEFT;                                   { let (id, _, _) = op in id }
-    |       op=TLEFT;                                   { let (id, _, _) = op in id }
-    |       op=QMID;                                    <>
+let xfix := op=LEFT;                                    { let (id, _, _, _, _) = op in id }
+    |       op=LEFTFIX;                                 { let (id, _, _, _, _) = op in id }
+    |       op=LISTLEFT;                                { let (id, _, _, _, _) = op in id }
+    |       op=LEFTMID;                                 <>
     |       op=RIGHT;                                   <>
       
 let revdefs := 
@@ -304,7 +323,7 @@ let topexpr :=
     | LAM;  bvs=bid+; TO; body=topexpr;                  < mkLambda >
     | LAM; BRA; KET;  TO; body=topexpr;                  { mkLambda([], body) }
     | ~=bindop;  bvs=bid+; TO; body=topexpr;             { mkBind $loc (bindop, bvs, body) }
-    | q=QLEFT;  ~=expr; m=QMID; body=topexpr;            { mkQuant $loc q expr m body }
+    | q=LEFTFIX;  ~=expr; m=LEFTMID; body=topexpr;            { mkQuant $loc q expr m body }
     | el=expr; ANDTHEN; er=topexpr;                      { AndThen(el, er) }
     | label=ID; LABEL; ~=topexpr;                        < Label > 
     | LOOP; ~=topexpr;                                   < Loop > 
@@ -339,7 +358,7 @@ let prim :=
     | BRA; op=infixop; ~=expr; KET;                      {if op=negateOp then 
                                                              Bra(mkAp $loc (negateFun, expr)) 
                                                           else 
-                                                             Bra(mkAp $loc (mkAp $loc (Expr.flip, Bra(op)), expr))
+                                                             Bra(mkAp $loc (mkAp $loc (prim_flip, Bra(op)), expr))
                                                          }   
     | BRA; ~=expr; op=infixop; KET;                      { Bra(mkAp $loc (Bra(op), expr)) }
     
@@ -349,20 +368,20 @@ let prim :=
     
 
 let simplex := 
-    | ~=id;                                              { id }
-    | ~=NUM;                                             < mkNum >
-    | ~=STRING;                                          < mkString >
-    | ~=prefixop; ~=simplex;                             { mkAp $loc (prefixop,simplex) }  
-    | BRA; ~=exprlist; KET;                              < mkTuple >
-    | openb=TLEFT; ~=exprlist; closeb=RIGHT;             { mkOutfix $loc openb (mkTuple exprlist) closeb }
-    | openb=LEFT; ~=expr; closeb=RIGHT;                  { mkOutfix $loc openb (expr) closeb }
+    | ~=id;                                               { id }
+    | ~=NUM;                                              < mkNum >
+    | ~=STRING;                                           < mkString >
+    | ~=prefixop; ~=simplex;                              { mkAp $loc (prefixop,simplex) }  
+    | BRA; ~=exprlist; KET;                               < mkTuple >
+    | openb=LISTLEFT; ~=exprlist; closeb=RIGHT;           { mkOutfixList $loc openb exprlist closeb }
+    | openb=LEFT;     ~=expr;     closeb=RIGHT;           { mkOutfix $loc openb (expr) closeb }
     (* quotation of infixes, leftfixes, outfixes, etc *)
-    | BRA; openb=TLEFT; DOT; closeb=RIGHT; KET;          { quoteOutfix $loc openb closeb }  (* Special case *)
-    | BRA; openb=LEFT;  DOT; closeb=RIGHT; KET;          { quoteOutfix $loc openb closeb }  (* Special case *)
-    | BRA; openb=QLEFT; closeb=QMID;  KET;               { quoteLeftfix $loc openb closeb }
-    | BRA; op=infixop; KET;                              { Expr.Bra(op) }
-    | BRA; op=prefixop; KET;                             { Expr.Bra(op) }
-    | BRA; op=bindop; KET;                               { Expr.Bra(op) }
+    | BRA; openb=LISTLEFT; DOT; closeb=RIGHT;        KET; { quoteOutfix  $loc openb closeb }  (* Special case of quotation *)
+    | BRA; openb=LEFT;     DOT; closeb=RIGHT;        KET; { quoteOutfix  $loc openb closeb }  (* Special case of quotation*)
+    | BRA; openb=LEFTFIX;  DOT; closeb=LEFTMID; DOT; KET; { quoteLeftfix $loc openb closeb }  (* Special case of quotation*)
+    | BRA; op=infixop;  KET;                              { Expr.Bra(op) }
+    | BRA; op=prefixop; KET;                              { Expr.Bra(op) }
+    | BRA; op=bindop;   KET;                              { Expr.Bra(op) }
     
 let revexprlist :=
     | expr=topexpr;                                      { [expr]}

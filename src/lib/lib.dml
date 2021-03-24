@@ -70,14 +70,10 @@ let (∧) = strict ⟨ True → id         | False → const False ⟩
  
 
 {-
-        Outfixlist operators yield the tuple of their operands
-        This untypeable hack desugars ⟦...⟧ to a ::-list. 
+        Outfix operator ⟦⟧ was declared with constructors Nil and ::
         
 -}
-let  (⟦.⟧) = detuple 
-where 
-    detuple v = if prim_is_unit v then Nil else let (x,xs) = prim_untuple v in x::detuple xs
-;;
+let  (⟦.⟧) v = v;; 
 
 --
 -- Streams (lists lazy in their tails) use ::: not ::

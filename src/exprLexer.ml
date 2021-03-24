@@ -10,11 +10,8 @@ open ExprParser
     in  Buffer.add_utf_8_uchar b @@ Uchar.of_int u;
         Buffer.contents b
  
-    let idSet: (string, string) Hashtbl.t = Hashtbl.create 150 
+    let intern = Unique.intern
     
-    let intern: string -> string = fun s -> 
-        try Hashtbl.find idSet s with Not_found -> (Hashtbl.add idSet s s; s)
-        
     let internLexeme buf = intern(Utf8.lexeme buf)
         
     let idMap: (string, token) Hashtbl.t  = Hashtbl.create 150 
@@ -44,15 +41,21 @@ open ExprParser
     
     let ret id sym = (Hashtbl.add idMap id sym; sym)
     
+    let noToken = ID ""
+    
     let mkID      id = try Hashtbl.find idMap id with Not_found -> ret id @@ ID id
     let mkCONID   id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONID(0, id) (* Default arity is 0 *)
+    let mkCONSID  id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONID(2, id) (* Default arity is 0 *)
     let mkMath    id = try Hashtbl.find idMap id with Not_found -> ret id @@ BINL9 id
     let mkMathCon id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONL9 id
     let bars = "||||||||||||||||||||||||||||"
+    let forceCONID   id = ret id @@ CONID(0, id) (* Default arity is 0 *)
+    let forceCONSID  id = ret id @@ CONR9 id
+
     
     let mkLEFT id right isData = 
         if String.length id >= 2 then 
-           (try Hashtbl.find idMap id with Not_found -> ret id @@ LEFT(id, intern (String.sub bars 0 (String.length id-2)^right), isData))
+           (try Hashtbl.find idMap id with Not_found -> ret id @@ LEFT(id, intern (String.sub bars 0 (String.length id-2)^right), noToken, noToken, isData))
         else
            assert false
        
@@ -86,7 +89,9 @@ open ExprParser
                 | CONR9 _ | BINR9 _ -> Infix(R, 9)
                 | EQ _    -> Infix(R, 3)
                 | ID _    -> Nonfix
-                | CONID _ | LEFT _ | QLEFT _ -> Confix
+                | CONID _  -> Confix
+                | LEFTFIX (l, r, _, _, _) -> Leftfix(l, r)
+                | LEFT (l, r, _, _, _) | LISTLEFT (l, r, _, _, _) -> Outfix(l, r)
                 | _ -> failwith ("Syntax role inquiry for reserved symbol: "^id)
         in
                 role 
@@ -156,15 +161,16 @@ open ExprParser
     let declareNotations declns =
         let declareFixity (notationclass, num, symbols) =
             match notationclass, symbols with
-            | "outfix",     [l;r] -> Hashtbl.add idMap l (LEFT(l,r, true)); Hashtbl.add idMap r (RIGHT(r)) 
-            | "leftfix",    [l;r] -> Hashtbl.add idMap l (QLEFT(l,r, true)); Hashtbl.add idMap r (QMID(r)) 
-            | "outfixid",   [l;r] -> Hashtbl.add idMap l (LEFT(l,r, false)); Hashtbl.add idMap r (RIGHT(r)) 
-            | "outfixlist", [l;r] -> Hashtbl.add idMap l (TLEFT(l,r, false)); Hashtbl.add idMap r (RIGHT(r)) 
-            | "leftfixid",  [l;r] -> Hashtbl.add idMap l (QLEFT(l,r, false)); Hashtbl.add idMap r (QMID(r)) 
-            | "outfix",     _
-            | "leftfix",    _ 
-            | "outfixid",   _ 
-            | "leftfixid",  _ -> failwith (notationclass^" declaration requires exactly two symbols")
+            | "outfix",       [l;r]     -> Hashtbl.add idMap l (LEFT(l,r, noToken, noToken, false));                  Hashtbl.add idMap r (RIGHT(r)) 
+            | "outfixdata",   [l;r]     -> Hashtbl.add idMap l (LEFT(l,r, noToken, noToken, true));                   Hashtbl.add idMap r (RIGHT(r)) 
+            | "outfix",       [l;r;n;f] -> Hashtbl.add idMap l (LISTLEFT(l,r, forceCONID n, forceCONSID f,   false)); Hashtbl.add idMap r (RIGHT(r)) 
+            | "outfixdata",   [l;r;n;f] -> Hashtbl.add idMap l (LISTLEFT(l,r, forceCONID n, forceCONSID f,   true));  Hashtbl.add idMap r (RIGHT(r)) 
+            | "leftfix",      [l;r]     -> Hashtbl.add idMap l (LEFTFIX(l,r, noToken, noToken, false));               Hashtbl.add idMap r (LEFTMID(r)) 
+            | "leftfixdata",  [l;r]     -> Hashtbl.add idMap l (LEFTFIX(l,r, noToken, noToken, true));                Hashtbl.add idMap r (LEFTMID(r)) 
+            | "outfix",       _
+            | "outfixdata",   _ -> failwith (notationclass^" declaration requires two or four symbols")
+            | "leftfix",      _
+            | "leftfixdata",  _ -> failwith (notationclass^" declaration requires exactly two symbols")
             | _ -> 
             let num = match num with Some p->p | None -> 0 in
             if (0<=num && num<=9) then
@@ -177,7 +183,7 @@ open ExprParser
                 | "bind"      -> (fun x -> BIND x)
                 | "prefix"    -> (fun x -> PREFIX x)
                 | "data"      -> (fun x -> CONID(num, x))  (* num is the arity of the (curried if nonzero) constructor *)
-                | _           -> failwith ("notation misdeclared as: "^notationclass^", but should be one of: left, right, leftdata, rightdata, data, id, outfix, leftfix, outfixid, outfixlist, leftfixid) ")
+                | _           -> failwith ("notation misdeclared as: "^notationclass^", but should be one of: left, right, leftdata, rightdata, data, id, outfix, leftfix, outfixdata, , leftfixdata) ")
                in 
                let addSymbol str = Hashtbl.add idMap str (mkTok str);
                                    if !showNotation then Format.fprintf Format.std_formatter "notation %s %d %s\n%!" notationclass num str
@@ -312,16 +318,16 @@ let rec token buf =
   
   (* User-defined outfix functions, with built-in lexis *)  
   | "{|", bars        -> mkLEFT  (internLexeme buf) "|}" false
-  | bars,  "|}"       -> RIGHT (internLexeme buf)
+  | bars,  "|}"       -> RIGHT   (internLexeme buf)
   | "[|", bars        -> mkLEFT  (internLexeme buf) "|]" false
-  | bars , "|]"       -> RIGHT (internLexeme buf)
+  | bars , "|]"       -> RIGHT   (internLexeme buf)
   | "<|", bars        -> mkLEFT  (internLexeme buf) "|>" false
-  | bars , "|>"       -> RIGHT (internLexeme buf)
-  | 0x2985      -> LEFT({|⦅|}, {|⦆|}, false)
-  | 0x2986      -> RIGHT {|⦆|}
+  | bars , "|>"       -> RIGHT   (internLexeme buf)
+  | 0x2985            -> LEFT(intern {|⦅|}, intern {|⦆|}, noToken, noToken, false)
+  | 0x2986            -> RIGHT(intern {|⦆|})
   (* blackboard brackets are wider than usual glyphs in some fonts, appearing to have a space by them*)
-  | 0x301a      -> LEFT({|〚|}, {|〛|}, false) 
-  | 0x301b      -> RIGHT {|〛|}                   
+  | 0x301a      -> LEFT(intern {|〚|},intern  {|〛|}, noToken, noToken, false) 
+  | 0x301b      -> RIGHT(intern {|〛|})                   
   
   (* ************************ *)
   

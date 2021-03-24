@@ -82,6 +82,14 @@ type phrase =
 
 type t   = expr [@printer pp_expr]
            [@@deriving show { with_path = false }]
+           
 
-(* For desugaring *)
-let flip = Id "prim_flip"
+(* Expressions used in desugaring *)
+
+open Unique
+let negateOp  = Id (intern  "-")
+let negateFun = Id (intern  "prim_neg")
+let prim_flip = Id (intern "prim_flip")
+
+
+

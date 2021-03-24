@@ -9,11 +9,12 @@ notation
      data  0 Nil        ;
      rightdata 5 ::     ;
      right     5 :::    ;
-     leftfixid  ∃ ∙     ;
-     leftfixid  ∀ ∙     ;
-     outfixlist  ⟦ ⟧    ;
+     leftfix  ∃ ∙       ;
+     leftfix  ∀ ∙       ;
+     outfix ⟦ ⟧  Nil ::  ;
      right 1 :=         ;
      prefix !           ;;
+
 
 
 
