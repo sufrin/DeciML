@@ -42,18 +42,6 @@ let con2con2bool f = Strict (function
     | (Const n)  -> con2bool (fun m -> f n m)
     | other      -> semanticError @@ "Expecting a constant, got: "^(show_value other))
 
-(* Strict structural equality predicate *)    
-let rec val_eq: value -> value -> bool = fun l r -> match force id l, force id r with 
-| Const k1,  Const  k2  -> k1=k2 
-| Tup   vs1, Tup    vs2 -> 
-  if List.length vs1 = List.length vs2 then
-     List.fold_left2  (fun ok l r -> if ok && val_eq l r then ok else false) true vs1 vs2
-  else false
-| Cons (t1, vs1), Cons (t2, vs2) -> 
-  if t1=t2 && List.length vs1 = List.length vs2 then
-     List.fold_left2  (fun ok l r -> if ok && val_eq l r then ok else false) true vs1 vs2
-  else false
-| _, _ -> false
 
 
 let globalEnv = ref @@ addLib 
@@ -219,6 +207,7 @@ end
 
 
     
+
 
 
 

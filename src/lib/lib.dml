@@ -31,6 +31,7 @@ let (+)  = prim_add
   ; (≥)  = prim_ge
   ; (≡)  = prim_struct_eq
   ; (=)  = prim_eq
+  ; (≡)  = prim_struct_eq
   ; x≠y  = if x=y then False else True 
   ; x≢y  = if x≡y then False else True 
   ; pred = prim_pred
@@ -130,6 +131,7 @@ let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x �
  
  let len  = foldl 0 (\ _ n -> succ n)
   ;;
+
 
 
 

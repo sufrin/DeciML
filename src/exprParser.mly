@@ -186,7 +186,7 @@
 
 
 
-
+%left DOT
 
 (* Infix symbols *)
 
@@ -349,6 +349,7 @@ let term :=
 let app :=
     | ~=prim;                                            { prim }
     | ~=app; ~=prim;                                     { mkAp $loc (app,prim) }
+    | ~=app; DOT; field=ID;                              { Select(app, field) }
     
     
 let prim :=
@@ -382,6 +383,7 @@ let simplex :=
     | BRA; op=infixop;  KET;                              { Expr.Bra(op) }
     | BRA; op=prefixop; KET;                              { Expr.Bra(op) }
     | BRA; op=bindop;   KET;                              { Expr.Bra(op) }
+    | CBRA; ~=defs;     CKET;                             { Expr.Record defs }
     
 let revexprlist :=
     | expr=topexpr;                                      { [expr]}
@@ -399,6 +401,7 @@ prefixop :
 
 bindop : 
      |  name=BIND                                        { if !idLocs then At($loc, mkId name) else mkId name }
+
 
 
 

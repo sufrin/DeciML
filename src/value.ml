@@ -8,6 +8,7 @@ type value  =
  | Ref     of value ref         [@printer fun fmt v       -> fprintf fmt "ref %a" pp_value !v]
  | Const   of con               [@printer fun fmt c       -> fprintf fmt "%a" pp_con c]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "@[(%a)@]" (pp_punct_list "," pp_value) vs]
+ | Obj     of env               [@printer fun fmt env   -> fprintf fmt "@[{ @[%a@] }@]"  pp_env env]
  | Cons    of tag * values      [@printer let getTag = function 
                                           | Cons(tag,_) -> Some tag
                                           | _           -> None
@@ -79,32 +80,51 @@ and frame =
                                                bs := nrbs]
   [@@deriving show { with_path = false }]
 
-and bindings = binding list [@printer fun fmt bs -> fprintf fmt "@[<hov>%a@]" (pp_punct_list "," pp_binding) bs]
+and bindings = binding list [@printer fun fmt bs -> fprintf fmt "@[<hov>%a@]" (pp_punct_list ";" pp_binding) bs]
     [@@deriving show { with_path = false }]
   
 and binding = (id * value) [@printer fun fmt (i, v) -> fprintf fmt "@[%a=%a@]" pp_id i pp_value v]
     [@@deriving show { with_path = false }]
             
 let lookup: location option -> id -> cont -> env -> value = fun loc i k e ->
-    let rec frames = function 
+    let rec lookupInFrames = function 
         | []    -> semanticError @@ 
                    (Format.sprintf "Unbound variable: %s %s" i (match loc with 
                                                                | None   -> "" 
                                                                | Some l -> Utils.show_location l))
-        | l::ls -> match frame l with 
+        | l::ls -> match lookupInFrame l with 
                    | Some v -> k v 
-                   | None   -> frames ls
+                   | None   -> lookupInFrames ls
                    
-        and frame = function
-        |  Rec  bs -> bindings !bs
-        |  Bind bs -> bindings bs
-        |  Lib bs  -> bindings bs
+        and lookupInFrame = function
+        |  Rec  bs -> lookupInBindings !bs
+        |  Bind bs -> lookupInBindings bs
+        |  Lib bs  -> lookupInBindings bs
         
-        and bindings = function 
+        and lookupInBindings = function 
         |  []                  -> None
         |  (n, v)::_ when n==i -> Some v                (* all ids are interned: this is fast *)
-        |  _ :: bs'            -> bindings bs'
-    in  frames e
+        |  _ :: bs'            -> lookupInBindings bs'
+    in  lookupInFrames e
+
+(* Used only in record comparisons *)
+let directLookup: id -> env -> value = fun name env ->
+    let rec lookupInFrames = function 
+        | []    -> failwith name
+        | l::ls -> match lookupInFrame l with 
+                   | Some v -> v 
+                   | None   -> lookupInFrames ls
+                   
+        and lookupInFrame = function
+        |  Rec  bs -> lookupInBindings !bs
+        |  Bind bs -> lookupInBindings bs
+        |  Lib bs  -> lookupInBindings bs
+        
+        and lookupInBindings = function 
+        |  []                     -> None
+        |  (n, v)::_ when n==name -> Some v                (* all ids are interned: this is fast *)
+        |  _ :: bs'               -> lookupInBindings bs'
+    in  lookupInFrames env
     
 (* Pattern matching generates a bindings extension *)
 
@@ -145,6 +165,7 @@ let topLayer = function (l::_) -> l | _ -> assert false
 let recFix: frame -> bindings -> frame = fun frame bs -> match frame with
 | Rec r  -> (r:=bs; frame) 
 | _      -> failwith "recFix at invalid env"
+
 
 (* Continuation Composition *)
 
@@ -221,9 +242,15 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 | Loop e            -> let rec loop = fun b -> if isTrue b then eval loc env loop e else k unitValue
                        in  loop (trueValue)
 
-| Let (defs, body)  -> let ext  = recBindings env defs in 
+| Let (defs, body)  -> let ext  = recBindings env defs in  
                        let env' = ext <+> env in eval loc env' k body 
-                       
+
+| Record defs       -> let ext  = recBindings env defs in k (Obj (ext<+>emptyEnv))
+| Select (e, i)     -> eval loc env (force (function 
+                                           | (Obj env') as obj ->  k (try directLookup  i env' with _ -> semanticError @@  (Format.asprintf "No such field in selection .%s from %a at %a" i pp_value obj pp_loc loc))
+                                           | other -> semanticError @@  (Format.asprintf "Type error in selection .%s from %a" i pp_value other)
+                                    )) e
+                                            
 | At(location, ex)  -> eval (Some(location)) env k ex         
               
 and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -> function
@@ -301,6 +328,32 @@ and force k = function
 |  Thunk (env, expr) -> eval None env k expr
 |  v -> k v
 
+(* Strict structural equality predicate *)    
+and val_eq: value -> value -> bool = fun l r -> match force id l, force id r with 
+| Const k1,  Const  k2  -> k1=k2 
+| Tup   vs1, Tup    vs2 -> 
+  if List.length vs1 = List.length vs2 then
+     List.fold_left2  (fun ok l r -> if ok && val_eq l r then ok else false) true vs1 vs2
+  else false
+| Cons (t1, vs1), Cons (t2, vs2) -> 
+  if t1=t2 && List.length vs1 = List.length vs2 then
+     List.fold_left2  (fun ok l r -> if ok && val_eq l r then ok else false) true vs1 vs2
+  else false
+| Obj env1, Obj env2 -> envEq env1 env2 
+| _, _ -> false
+
+
+(* Environment relations: for records *)
+and envEq env1 env2 = 
+    let forallPairs env p  =
+        let rec forFrames   = function [] -> true | l::ls -> forFrame l && forFrames ls 
+            and forFrame    = function Rec bs -> forBindings !bs | Bind bs | Lib bs -> forBindings bs
+            and forBindings = function [] -> true | b::bs -> p b && forBindings bs
+        in  forFrames env
+    in let subEnv l r = try forallPairs l (fun (name, v) -> val_eq v (directLookup name r)) with _ -> false
+    in env1==env2 || subEnv env1 env2 && subEnv env2 env1
+
+
 
 let rec deepForce v = match v with
 | Delay (_,_,rv)   -> (match !rv with None -> deepForce(force (fun v->v) v) | Some v -> v)
@@ -309,6 +362,7 @@ let rec deepForce v = match v with
 | _                -> v
 
  
+
 
 
 

@@ -34,6 +34,9 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
           | Apply of expr*expr*expr 
                                   [@printer fun fmt (l,op,r) -> fprintf fmt "%a %a %a" pp_expr l pp_expr op pp_expr r]
           (***********************)
+          | Record   of defs      [@printer fun fmt  defs -> fprintf fmt "@[{ @[%a@]@ }@]" pp_defs defs]
+          | Select   of expr * id [@printer fun fmt (e,l) -> fprintf fmt "%a . %a" pp_expr e pp_id l ]
+          (***********************)
           | Fn    of cases        (* a multi-case function abstraction *)
                                   [@printer fun fmt cs -> fprintf fmt "@[⟨ %a ⟩@]" pp_cases cs]
           | LazyFn of case        (* a lazy function abstraction *)
@@ -90,6 +93,7 @@ open Unique
 let negateOp  = Id (intern  "-")
 let negateFun = Id (intern  "prim_neg")
 let prim_flip = Id (intern  "`prim_flip`")
+
 
 
 
