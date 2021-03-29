@@ -31,6 +31,7 @@ open ExprParser
        ;       "else"     , ELSE
        ;       "import"   , IMPORT
        ;       "where"    , WHERE
+       ;       "with"     , WITH
        ;       "notation" , NOTATION
        ;       "loop"     , LOOP
        ]
@@ -315,6 +316,8 @@ let rec token buf =
   | "}"         -> CKET
   | "["         -> SBRA
   | "]"         -> SKET
+  | "///"       -> INSIDE
+  | 0x2AFB      -> INSIDE
   
   (* User-defined outfix functions, with built-in lexis *)  
   | "{|", bars        -> mkLEFT  (internLexeme buf) "|}" false
@@ -363,6 +366,7 @@ let rec token buf =
 
 let lexer buf =
   Sedlexing.with_tokenizer token buf
+
 
 
 

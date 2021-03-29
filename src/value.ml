@@ -8,7 +8,7 @@ type value  =
  | Ref     of value ref         [@printer fun fmt v       -> fprintf fmt "ref %a" pp_value !v]
  | Const   of con               [@printer fun fmt c       -> fprintf fmt "%a" pp_con c]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "@[(%a)@]" (pp_punct_list "," pp_value) vs]
- | Obj     of env               [@printer fun fmt env   -> fprintf fmt "@[{ @[%a@] }@]"  pp_env env]
+ | Obj     of frame             [@printer fun fmt frame   -> fprintf fmt "@[{ @[%a@] }@]"  pp_frame frame ]
  | Cons    of tag * values      [@printer let getTag = function 
                                           | Cons(tag,_) -> Some tag
                                           | _           -> None
@@ -108,23 +108,17 @@ let lookup: location option -> id -> cont -> env -> value = fun loc i k e ->
     in  lookupInFrames e
 
 (* Used only in record comparisons *)
-let directLookup: id -> env -> value = fun name env ->
-    let rec lookupInFrames = function 
-        | []    -> failwith name
-        | l::ls -> match lookupInFrame l with 
-                   | Some v -> v 
-                   | None   -> lookupInFrames ls
-                   
-        and lookupInFrame = function
+let directLookup: id -> frame -> value = fun name env ->
+    let rec lookupInFrame = function
         |  Rec  bs -> lookupInBindings !bs
         |  Bind bs -> lookupInBindings bs
         |  Lib bs  -> lookupInBindings bs
         
         and lookupInBindings = function 
-        |  []                     -> None
-        |  (n, v)::_ when n==name -> Some v                (* all ids are interned: this is fast *)
+        |  []                     -> failwith name
+        |  (n, v)::_ when n==name -> v                (* all ids are interned: this is fast *)
         |  _ :: bs'               -> lookupInBindings bs'
-    in  lookupInFrames env
+    in  lookupInFrame env
     
 (* Pattern matching generates a bindings extension *)
 
@@ -135,7 +129,19 @@ let loop2: ('state->'a->'b->'state) ->  'state -> ('a list * 'b list) -> 'state 
     let rec loop state = function ([], []) -> state | (x::xs, y::ys) -> loop (f state x y) (xs, ys) | _ -> noMatch()
     in  loop
     
-let (<+>) frame env  = frame :: env
+let (<+>)  frame env   = frame :: env
+
+let rec binds name = function 
+    | []                              -> false
+    | (name', _) :: _ when name=name' -> true
+    | _          :: bs                -> binds name bs
+
+let override = fun bs bs' ->
+                List.fold_right (fun ((name, _) as binding) bs -> if binds name bs then bs else binding::bs) bs' bs
+
+let (<++>) = function Rec bs -> 
+                 function Rec bs' -> 
+                    Rec(ref(override !bs !bs')) (* from rec with rec' *)
    
 let bind: id -> value -> env -> env = fun i v e -> Bind [(i, v)]::e
 
@@ -245,13 +251,23 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 | Let (defs, body)  -> let ext  = recBindings env defs in  
                        let env' = ext <+> env in eval loc env' k body 
 
-| Record defs       -> let ext  = recBindings env defs in k (Obj (ext<+>emptyEnv))
-| Select (e, i)     -> eval loc env (force (function 
-                                           | (Obj env') as obj ->  k (try directLookup  i env' with _ -> semanticError @@  (Format.asprintf "No such field in selection .%s from %a at %a" i pp_value obj pp_loc loc))
-                                           | other -> semanticError @@  (Format.asprintf "Type error in selection .%s from %a" i pp_value other)
-                                    )) e
-                                            
-| At(location, ex)  -> eval (Some(location)) env k ex         
+| Inside(e, body)   -> let frame' = evalObject loc env e in eval loc (frame' <+> env) k body
+
+                                  
+| With(e1, e2)      -> let frame1 = evalObject loc env  e1 in
+                       let frame2 = evalObject loc env  e2 in k(Obj(frame2 <++> frame1)) 
+
+| Select (e, i)     -> let frame = evalObject loc env e in k (try directLookup  i frame with _ -> semanticError @@  (Format.asprintf "No such field in selection .%s from %a at %a" i pp_frame frame pp_loc loc))
+
+| Record defs       -> let ext  = recBindings env defs in k (Obj ext)
+                                                                     
+| At(location, ex)  -> eval (Some(location)) env k ex 
+
+and evalObject: loc -> env -> expr -> frame = fun loc env e -> 
+    let v = eval loc env (force id) e
+    in  match v with 
+        | Obj frame -> frame
+        | other -> semanticError @@  (Format.asprintf "Type error (record expected) %a at %a" pp_value other pp_loc loc)
               
 and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -> function
 | Cons(t, v)            ->  checkArity (List.length v) t; 
@@ -339,19 +355,18 @@ and val_eq: value -> value -> bool = fun l r -> match force id l, force id r wit
   if t1=t2 && List.length vs1 = List.length vs2 then
      List.fold_left2  (fun ok l r -> if ok && val_eq l r then ok else false) true vs1 vs2
   else false
-| Obj env1, Obj env2 -> envEq env1 env2 
+| Obj env1, Obj env2 -> frameEq env1 env2 
 | _, _ -> false
 
 
 (* Environment relations: for records *)
-and envEq env1 env2 = 
-    let forallPairs env p  =
-        let rec forFrames   = function [] -> true | l::ls -> forFrame l && forFrames ls 
-            and forFrame    = function Rec bs -> forBindings !bs | Bind bs | Lib bs -> forBindings bs
+and frameEq frame1 frame2 = 
+    let forallPairs frame p  =
+        let rec forFrame    = function Rec bs -> forBindings !bs | Bind bs | Lib bs -> forBindings bs
             and forBindings = function [] -> true | b::bs -> p b && forBindings bs
-        in  forFrames env
+        in  forFrame frame
     in let subEnv l r = try forallPairs l (fun (name, v) -> val_eq v (directLookup name r)) with _ -> false
-    in env1==env2 || subEnv env1 env2 && subEnv env2 env1
+    in frame1==frame2 || subEnv frame1 frame2 && subEnv frame2 frame1
 
 
 
@@ -362,6 +377,7 @@ let rec deepForce v = match v with
 | _                -> v
 
  
+
 
 
 

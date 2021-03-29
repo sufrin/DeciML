@@ -183,10 +183,11 @@
 %token FUN ALT NUF LAM LAZY BYNAME BRA KET CBRA CKET SBRA SKET COMMA TO LET IN
        END SEMI EOF IF THEN ELSE DOT
        NOTATION IMPORT LABEL DEF WHERE ANDTHEN LOOP
+       WITH INSIDE
 
 
 
-%left DOT
+%left WITH
 
 (* Infix symbols *)
 
@@ -331,6 +332,8 @@ let topexpr :=
     
 let expr := 
     | ~=term;                                            { term }
+    | record=term; INSIDE; scope=topexpr;                { Inside(record, scope) }  
+    | rec1=expr; WITH; rec2=expr;                        { With(rec1, rec2) }  
     | el=expr; op=infixop; er=expr;                      { if !Utils.desugarInfix then 
                                                               mkAp $loc (mkAp $loc (op, el), er) 
                                                            else 
@@ -401,6 +404,7 @@ prefixop :
 
 bindop : 
      |  name=BIND                                        { if !idLocs then At($loc, mkId name) else mkId name }
+
 
 
 

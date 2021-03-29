@@ -33,6 +33,8 @@ type expr = Id    of id           [@printer fun fmt i  -> fprintf fmt "%s" (show
           (* Apply is for  convenience in generating diagnostic messages: it is desugared at runtime *)
           | Apply of expr*expr*expr 
                                   [@printer fun fmt (l,op,r) -> fprintf fmt "%a %a %a" pp_expr l pp_expr op pp_expr r]
+          | Inside of expr * expr
+          | With   of expr * expr
           (***********************)
           | Record   of defs      [@printer fun fmt  defs -> fprintf fmt "@[{ @[%a@]@ }@]" pp_defs defs]
           | Select   of expr * id [@printer fun fmt (e,l) -> fprintf fmt "%a . %a" pp_expr e pp_id l ]
@@ -93,6 +95,7 @@ open Unique
 let negateOp  = Id (intern  "-")
 let negateFun = Id (intern  "prim_neg")
 let prim_flip = Id (intern  "`prim_flip`")
+
 
 
 
