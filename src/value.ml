@@ -141,7 +141,7 @@ let override = fun bs bs' ->
 
 let (<++>) = function Rec bs -> 
                  function Rec bs' -> 
-                    Rec(ref(override !bs !bs')) (* from rec with rec' *)
+                    Rec(ref(override !bs !bs')) (* rec with rec' *)
    
 let bind: id -> value -> env -> env = fun i v e -> Bind [(i, v)]::e
 
@@ -162,8 +162,6 @@ let emptyBindings: bindings = []
     frame, for later knot-tying by recFix
 *)
 let newRec() = Rec(ref emptyBindings)
-
-let topLayer = function (l::_) -> l | _ -> assert false
 
 (*  
     recFix frame bs "ties the knot" 
@@ -189,7 +187,8 @@ match p, v with
          | Bra(p),       v                              -> (matchPat ) p v bs  
          | Id i,          _                             -> addBinding i v bs
          | Tuple ps,     Tup vs'                        -> loop2 (fun bs' p v -> matchPat p v bs') bs (ps, vs')
-         | Con c,        Const c' when c==c'             -> bs
+         (* | Record defs,  Obj(Rec bindings)              -> matchRecord defs !bindings bs *)
+         | Con c,        Const c' when c==c'            -> bs
          | Cid t,        Const(Tag t') when t=t'        -> bs
          | Construct (c, ps), Cons (c', vs') when c==c'  -> loop2 (fun bs' p v -> matchPat p v bs') bs (ps, vs')
          (* This is for when we don't desugar infixes *)
@@ -199,6 +198,8 @@ match p, v with
          | Construct (c, _), Cons (c', _)               -> (* if !debugMatch then eprintf "-- Constructors %a -- %a\n%!" pp_full_tag c pp_full_tag c'; *) noMatch()                                           
          | _,        _                                  -> (* if !debugMatch then eprintf "@." else (); *) noMatch()
 (* in if !debugMatch then eprintf "match %a with %a = %a\n%!" pp_pat p pp_value v pp_bindings b'; b' *)
+
+    
 
 (* Utilities that throw errors that will eventually be detected by a type checker *)
 
@@ -251,19 +252,19 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 | Let (defs, body)  -> let ext  = recBindings env defs in  
                        let env' = ext <+> env in eval loc env' k body 
 
-| Inside(e, body)   -> let frame' = evalObject loc env e in eval loc (frame' <+> env) k body
+| Inside(e, body)   -> let frame' = evalToRecord loc env e in eval loc (frame' <+> env) k body
 
                                   
-| With(e1, e2)      -> let frame1 = evalObject loc env  e1 in
-                       let frame2 = evalObject loc env  e2 in k(Obj(frame2 <++> frame1)) 
+| With(e1, e2)      -> let frame1 = evalToRecord loc env  e1 in
+                       let frame2 = evalToRecord loc env  e2 in k(Obj(frame2 <++> frame1)) 
 
-| Select (e, i)     -> let frame = evalObject loc env e in k (try directLookup  i frame with _ -> semanticError @@  (Format.asprintf "No such field in selection .%s from %a at %a" i pp_frame frame pp_loc loc))
+| Select (e, i)     -> let frame = evalToRecord loc env e in k (try directLookup  i frame with _ -> semanticError @@  (Format.asprintf "No such field in selection .%s from %a at %a" i pp_frame frame pp_loc loc))
 
 | Record defs       -> let ext  = recBindings env defs in k (Obj ext)
                                                                      
 | At(location, ex)  -> eval (Some(location)) env k ex 
 
-and evalObject: loc -> env -> expr -> frame = fun loc env e -> 
+and evalToRecord: loc -> env -> expr -> frame = fun loc env e -> 
     let v = eval loc env (force id) e
     in  match v with 
         | Obj frame -> frame

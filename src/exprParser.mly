@@ -102,6 +102,7 @@
             | Con   _
             | Cid   _
             | Construct   _
+            (* | Record _ *)
             | Tuple _           -> (pat, expr)
             | Apply(el, op, er) -> abstractFrom expr (mkAp loc (mkAp loc (op, el), er))
             | Ap(rator, rand) ->
@@ -112,6 +113,7 @@
               | Cid   _
               | Construct   _
               | Apply _ 
+              (* | Record _ *)
               | Tuple _ -> abstractFrom (Fn [(rand, expr)]) rator
               | _       -> syntaxError (Format.asprintf "Erroneous operand %a within lhs of definition at %a\n%!" pp_expr rand pp_location loc) 
             )
@@ -187,7 +189,7 @@
 
 
 
-%left WITH
+%left WITH INSIDE
 
 (* Infix symbols *)
 
@@ -332,9 +334,9 @@ let topexpr :=
     
 let expr := 
     | ~=term;                                            { term }
-    | record=term; INSIDE; scope=topexpr;                { Inside(record, scope) }  
-    | rec1=expr; WITH; rec2=expr;                        { With(rec1, rec2) }  
-    | el=expr; op=infixop; er=expr;                      { if !Utils.desugarInfix then 
+    | record=expr; INSIDE;     scope=expr;               { Inside(record, scope) }  
+    | rec1=expr;   WITH;       rec2=expr;                { With(rec1, rec2) }  
+    | el=expr;     op=infixop; er=expr;                  { if !Utils.desugarInfix then 
                                                               mkAp $loc (mkAp $loc (op, el), er) 
                                                            else 
                                                              Apply(el, op, er)
