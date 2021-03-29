@@ -51,7 +51,7 @@ open ExprParser
     let mkMathCon id = try Hashtbl.find idMap id with Not_found -> ret id @@ CONL9 id
     let bars = "||||||||||||||||||||||||||||"
     let forceCONID   id = ret id @@ CONID(0, id) (* Default arity is 0 *)
-    let forceCONSID  id = ret id @@ CONR9 id
+    let forceCONSID  id = ret id @@ CONID(2, id)
 
     
     let mkLEFT id right isData = 
@@ -164,7 +164,7 @@ open ExprParser
             match notationclass, symbols with
             | "outfix",       [l;r]     -> Hashtbl.add idMap l (LEFT(l,r, noToken, noToken, false));                  Hashtbl.add idMap r (RIGHT(r)) 
             | "outfixdata",   [l;r]     -> Hashtbl.add idMap l (LEFT(l,r, noToken, noToken, true));                   Hashtbl.add idMap r (RIGHT(r)) 
-            | "outfix",       [l;r;n;f] -> Hashtbl.add idMap l (LISTLEFT(l,r, forceCONID n, forceCONSID f,   false)); Hashtbl.add idMap r (RIGHT(r)) 
+            | "outfix",       [l;r;n;f] -> Hashtbl.add idMap l (LISTLEFT(l,r, mkCONID n, mkCONSID f,   false)); Hashtbl.add idMap r (RIGHT(r)) 
             | "outfixdata",   [l;r;n;f] -> Hashtbl.add idMap l (LISTLEFT(l,r, forceCONID n, forceCONSID f,   true));  Hashtbl.add idMap r (RIGHT(r)) 
             | "leftfix",      [l;r]     -> Hashtbl.add idMap l (LEFTFIX(l,r, noToken, noToken, false));               Hashtbl.add idMap r (LEFTMID(r)) 
             | "leftfixdata",  [l;r]     -> Hashtbl.add idMap l (LEFTFIX(l,r, noToken, noToken, true));                Hashtbl.add idMap r (LEFTMID(r)) 
