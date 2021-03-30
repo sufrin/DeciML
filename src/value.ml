@@ -8,7 +8,7 @@ type value  =
  | Ref     of value ref         [@printer fun fmt v       -> fprintf fmt "ref %a" pp_value !v]
  | Const   of con               [@printer fun fmt c       -> fprintf fmt "%a" pp_con c]
  | Tup     of values            [@printer fun fmt vs      -> fprintf fmt "@[(%a)@]" (pp_punct_list "," pp_value) vs]
- | Obj     of frame             [@printer fun fmt frame   -> fprintf fmt "@[{ @[%a@] }@]"  pp_frame frame ]
+ | Obj     of bindings          [@printer fun fmt bindings   -> fprintf fmt "@[{ @[%a@] }@]"  pp_bindings bindings ]
  | Cons    of tag * values      [@printer let getTag = function 
                                           | Cons(tag,_) -> Some tag
                                           | _           -> None
@@ -108,17 +108,12 @@ let lookup: location option -> id -> cont -> env -> value = fun loc i k e ->
     in  lookupInFrames e
 
 (* Used only in record comparisons *)
-let directLookup: id -> frame -> value = fun name env ->
-    let rec lookupInFrame = function
-        |  Rec  bs -> lookupInBindings !bs
-        |  Bind bs -> lookupInBindings bs
-        |  Lib bs  -> lookupInBindings bs
-        
-        and lookupInBindings = function 
+let directLookup: id -> bindings -> value = fun name bindings ->
+    let rec lookupInBindings = function 
         |  []                     -> failwith name
         |  (n, v)::_ when n==name -> v                (* all ids are interned: this is fast *)
         |  _ :: bs'               -> lookupInBindings bs'
-    in  lookupInFrame env
+    in  lookupInBindings bindings
     
 (* Pattern matching generates a bindings extension *)
 
@@ -139,9 +134,7 @@ let rec binds name = function
 let override = fun bs bs' ->
                 List.fold_right (fun ((name, _) as binding) bs -> if binds name bs then bs else binding::bs) bs' bs
 
-let (<++>) = function Rec bs -> 
-                 function Rec bs' -> 
-                    Rec(ref(override !bs !bs')) (* rec with rec' *)
+let (<++>) = fun bs bs' -> override bs bs' (* rec with rec' *)
    
 let bind: id -> value -> env -> env = fun i v e -> Bind [(i, v)]::e
 
@@ -252,22 +245,22 @@ let rec eval: loc -> env -> cont -> expr -> value = fun loc -> fun env k -> func
 | Let (defs, body)  -> let ext  = recBindings env defs in  
                        let env' = ext <+> env in eval loc env' k body 
 
-| Inside(e, body)   -> let frame' = evalToRecord loc env e in eval loc (frame' <+> env) k body
+| Inside(e, body)   -> let fields = evalToRecord loc env e in eval loc (Bind fields <+> env) k body
 
                                   
-| With(e1, e2)      -> let frame1 = evalToRecord loc env  e1 in
-                       let frame2 = evalToRecord loc env  e2 in k(Obj(frame2 <++> frame1)) 
+| With(e1, e2)      -> let fields1 = evalToRecord loc env  e1 in
+                       let fields2 = evalToRecord loc env  e2 in k(Obj(fields2 <++> fields1)) 
 
-| Select (e, i)     -> let frame = evalToRecord loc env e in k (try directLookup  i frame with _ -> semanticError @@  (Format.asprintf "No such field in selection .%s from %a at %a" i pp_frame frame pp_loc loc))
+| Select (e, i)     -> let fields = evalToRecord loc env e in k (try directLookup  i fields with _ -> semanticError @@  (Format.asprintf "No such field in selection .%s from %a at %a" i pp_bindings fields pp_loc loc))
 
-| Record defs       -> let ext  = recBindings env defs in k (Obj ext)
+| Record defs       -> let ext  = recFields env defs in k (Obj ext)
                                                                      
 | At(location, ex)  -> eval (Some(location)) env k ex 
 
-and evalToRecord: loc -> env -> expr -> frame = fun loc env e -> 
+and evalToRecord: loc -> env -> expr -> bindings = fun loc env e -> 
     let v = eval loc env (force id) e
     in  match v with 
-        | Obj frame -> frame
+        | Obj fields -> fields
         | other -> semanticError @@  (Format.asprintf "Type error (record expected) %a at %a" pp_value other pp_loc loc)
               
 and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -> function
@@ -284,7 +277,7 @@ and applyTo: loc -> env -> cont -> expr -> value -> value = fun loc env k rand -
 (* Stack Optimisation: I think ocaml simplifies the continuation construction because it ignores its argument *)
 | UnitFun(defenv, body) -> eval loc env (fun _ -> eval loc defenv k body) rand  
 
-| Fun(defenv, cases)    -> eval loc env (fun v -> evalCases loc defenv k v cases) rand
+| Fun(defenv, cases)    ->  eval  loc env (fun v -> evalCases loc defenv k v cases) rand 
 
 | LazyFun(defenv, (Id i, body)) ->  
    let env' = bind i (match rand with 
@@ -325,6 +318,8 @@ and recBindings: env -> defs -> frame = fun env defs ->
        let v = eval None env' (fun v -> v) expr in elaborate (matchPat pat v bindings) defs
     in (* elaborate the definitions and tie the knot *)
        recFix new' @@ elaborate [] defs
+       
+and recFields: env -> defs -> bindings = fun env defs -> match recBindings env defs with Rec bs -> !bs | _ -> assert false
 
 (* Find the first case whose lhs pattern matches the value, then evaluate its rhs *)
 and evalCases: loc -> env -> cont -> value -> cases -> value = fun loc e k v cases -> 
@@ -356,18 +351,17 @@ and val_eq: value -> value -> bool = fun l r -> match force id l, force id r wit
   if t1=t2 && List.length vs1 = List.length vs2 then
      List.fold_left2  (fun ok l r -> if ok && val_eq l r then ok else false) true vs1 vs2
   else false
-| Obj env1, Obj env2 -> frameEq env1 env2 
+| Obj env1, Obj env2 -> fieldsEq env1 env2 
 | _, _ -> false
 
 
 (* Environment relations: for records *)
-and frameEq frame1 frame2 = 
-    let forallPairs frame p  =
-        let rec forFrame    = function Rec bs -> forBindings !bs | Bind bs | Lib bs -> forBindings bs
-            and forBindings = function [] -> true | b::bs -> p b && forBindings bs
-        in  forFrame frame
-    in let subEnv l r = try forallPairs l (fun (name, v) -> val_eq v (directLookup name r)) with _ -> false
-    in frame1==frame2 || subEnv frame1 frame2 && subEnv frame2 frame1
+and fieldsEq fields1 fields2 = 
+    let forallPairs fields p  =
+        let rec forBindings = function [] -> true | b::bs -> p b && forBindings bs
+        in  forBindings fields
+    in let subFields l r = try forallPairs l (fun (name, v) -> val_eq v (directLookup name r)) with _ -> false
+    in fields1==fields2 || subFields fields1 fields2 && subFields fields2 fields1
 
 
 
@@ -378,6 +372,7 @@ let rec deepForce v = match v with
 | _                -> v
 
  
+
 
 
 
