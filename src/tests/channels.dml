@@ -1,43 +1,29 @@
 --- Pre-CSP with continuations
+import "lib/lib.dml";
 
-notation rightdata 3 ::  
-       ; data      0 Nil 
-       ; data      2 QUEUE 
-       ; right     1 match 
-       ; prefix    !  
-       ;;
-
-let (!)        = get
-  ; (:=)       = set
-  ;  v match f = f v
-  ;  do f      = foldr (λ x any → f x >> ()) ()
-  ;;
-    
-let dec r = r := prim_pred !r;;
-let inc r = r := prim_succ !r;;
-let (>)   = prim_gr;;
-
+notation data 2 QUEUE ;; 
 
 let makeQueue() =
     let enqCount  = ref 0;
         deqCount  = ref 0;
         q         = ref(mkQUEUE()) 
     in
-    { canDeq()  = candeq !q
+    { candeq()  = nonempty !q
     ; enqueue c = inc enqCount >> q := enq c !q
     ; dequeue() = deq !q match 
                     ⟨ ()      → q := (mkQUEUE())
                     | (nq, r) → inc deqCount >> q := nq >> r
                     ⟩ 
-    ; show s = prim_println(s, get q, get enqCount, get deqCount)>>()
+    ; show s  = prim_println(s, get q, get enqCount, get deqCount)>>()
+    ; reset() = enqCount := 0 >> deqCount := 0 >> q := mkQUEUE()
     }
 where
     mkQUEUE()= QUEUE Nil Nil;
-    enq c    = ⟨ QUEUE l      r   → QUEUE l (c::r)⟩;
-    candeq   = ⟨ QUEUE Nil    Nil → False | _ -> True ⟩;
+    enq c    = ⟨ QUEUE l      r   → QUEUE l (c:r)⟩;
+    nonempty = ⟨ QUEUE Nil    Nil → False | _ -> True ⟩;
     deq      = ⟨ QUEUE Nil    Nil → ()
                | QUEUE Nil    r   → deq (QUEUE (rev r) Nil)
-               | QUEUE (c::l) r   → (QUEUE l r, c)
+               | QUEUE (c:l)  r   → (QUEUE l r, c)
                ⟩
 ;;
     
@@ -47,82 +33,78 @@ where
 -}
 
 --  Scheduler 
-let 
-    (enq, deq, candeq, show) = (scheduler.enqueue, scheduler.dequeue, scheduler.canDeq, scheduler.show)
+let makeRunnable    = schedule.enqueue
+  ; runSomething () = schedule.dequeue() ()
+  ; anyRunnable     = schedule.candeq
+  ; showState       = schedule.show 
+  ; reset           = schedule.reset
 where 
-    scheduler=makeQueue()
+    schedule=makeQueue()
 ;;      
 
-let -- ≡ run the first runnable continuation 
-    reschedule()  = if candeq() then deq()() else prim_println "System Terminated" >> ();        
+let 
+    -- run the first runnable continuation 
+    reschedule() = if anyRunnable() then runSomething() else prim_println "System Terminated" >> ();        
     
-    -- ≡ allow another runnable to run if there is one, otherwise resume
-    pause() = continue :> (enq continue >> reschedule()); 
+    -- allow another runnable to run if there is one, otherwise resume
+    pause() = continue :> (makeRunnable continue >> reschedule()); 
     
-    -- Construct a schedulable thread from proc. It will invoke continue() on termination of proc().
-    mkThread continue proc =  
-            resultis :>                       
-            ( (resume :> (resultis resume)) >>  --- resume() resumes on the next line [*]
-              continue(proc())                  --- [*] call proc then continue. The latter is always a join point                  
-            );                                  --- the result of mkThread is the schedulable continuation at [*]
+    -- Construct a schedulable thread from the thunk expr
+    continue `afterevaluating` expr =       -- expr must already be a thunk
+        resultis :>                       
+        ( (resume :> (resultis resume)) >>  -- resume() resumes on the next line [*]
+          continue(force expr)              -- [*] evaluate expr then continue. The latter is always a join point                  
+        );;                                 -- the result of mkThread is the schedulable continuation at [*]
     
-    mkThunk continue expr =   
-            resultis :>                       
-            ( (resume :> (resultis resume)) >>  --- resume() resumes on the next line [*]
-              continue(force expr)              --- [*] evaluate expr then continue. The latter is always a join point                  
-            );;                                 --- the result of mkThread is the schedulable continuation at [*]
-
 --- binary parallel composition of unit-expressions: runs immediately     
 let (||) = λλλ l r ->
     let count = ref 2 in 
     (join :> 
-           ( enq (mkThunk join l) >>             
-             enq (mkThunk join r) >>             
+           ( makeRunnable (join `afterevaluating` r) >>             
+             makeRunnable (join `afterevaluating` l) >>             
              reschedule()                        
            )
      --- join() resumes here
     ) >>                                 
     if dec count > 0 then reschedule() else ();;
 
---- generalized parallel composition of unit-functions: runs immediately     
-let par procs = 
-        let count = ref (len procs) in
-        ( join :> 
-               ( do enq (map (mkThread join) procs) >> --- make and schedule the new threads
-                 reschedule()                          --- start them
-               )
-        )  >>  --- terminating threads arrive here
-        if dec count > 0 then reschedule() else ();;
-
---- generalized parallel composition of thunks: runs immediately     
-let parthunks procs = 
-        let count = ref (len procs) in
-        ( join :> 
-               ( do enq (map (mkThunk join) procs) >> --- make and schedule the new threads
-                 reschedule()                          --- start them
-               )
-        )  >>  --- terminating threads arrive here
-        if dec count > 0 then reschedule() else ();;
   
---- Outfix that denotes parallel composition of thunks    
-notation outfix [| |] Nil consthunk;;
-let ([| . |]) exprs = parthunks exprs;;
-let consthunk = λλλ e -> λ es -> e :: es;;
+--- Outfix that denotes parallel composition of several thunks    
+notation outfix [| |] Nil _consthunk_;;
+
+let _consthunk_ = λλλ e -> λ es -> e : es
+  ; ([| . |])   = interleave 
+where
+     --- parallel composition of thunks: runs immediately     
+    interleave thunks = 
+        let count = ref (len thunks) in
+        ( join :> 
+               ( do makeRunnable (map (join `afterevaluating`) thunks) >> --- make the new threads
+                 reschedule()                                             --- start them
+               )
+        )  >>  -- terminating threads arrive here
+        if dec count > 0 then reschedule() else ();;
+ ;;
 
 
 
---- Elementary Tests
-let pr s  = prim_println s >> pause();;
+--- Elementary Tests of ||, [| . |]
+let pr   = prim_println;;
+ 
+let (>+>) = λλλ l r → force l >> pause() >> force r;;
 
-let l n  = let c = ref 0 in loop (pr ("L1", !c) >> pr ("L2", !c) >> pause()>> n>inc c);
-    m n  = let c = ref 0 in loop (pr ("M1", !c) >> pr ("M2", !c) >> pause()>> n>inc c);
-    r n  = let c = ref 0 in loop (pr ("R1", !c) >> pr ("R2", !c) >> pause()>> n>inc c)
-    ;;    
-    
-let lmr () = [| l 40, m 40, r 50, [| pr "FOO",  pr "BAZ" |]   |];;
+let x s n = let c = ref 0 in loop (pause() >> pr (s, !c) >> n>inc c);;    
+
+-- interleaving order follows order in list
+let pp' () = [| x "l" 4, x "m" 5, x "r" 6 |];;
+
+-- interleaving order is  predictable, albeit tediously
+let pp  () = x "l" 4 || x "m" 5 || x "r" 6;;
+let ppn n  = (x "l" n || x "m" n) || x "r" n;;
+let ppn' n  = x "l" n || (x "m" n || x "r" n);;
 
 
-
+--- Channels
 notation data 1 ReaderWaiting; data 2 WriterWaiting; data  Empty;;
 
 let newChan () = ref Empty;;
@@ -130,20 +112,27 @@ let newChan () = ref Empty;;
 let
     write c v = self :> 
                 (!c match
-                 ⟨ Empty                → c := WriterWaiting v self >> reschedule()
-                 | ReaderWaiting reader → c := Empty >> reader v
+                 ⟨ Empty                → (c := WriterWaiting v self) >> reschedule()
+                 | ReaderWaiting reader → (c := Empty) >> reader v
                  ⟩
                 );
                 
     read c = self :>
              (!c match
-              ⟨ Empty                  → c := ReaderWaiting self >> reschedule()
-              | WriterWaiting v writer → c := Empty >> enq writer >> v
+              ⟨ Empty                  → (c := ReaderWaiting self) >> reschedule()
+              | WriterWaiting v writer → (c := Empty >> makeRunnable writer) >> v
               ⟩
              )
+;;
 
+---
 
+let ch = newChan(); ch2 = newChan();;
 
+let t1() =  pr(read ch) >+> pr "OKR" || write ch "A" >+> pr "OKL" ;;
+
+let t2() = [| write ch2 "X" >+> pr "W" >+> write ch2 "Y" >+> pr "W'"
+           ,  pr(read ch2)  >+> pr "R" >+> pr(read ch2)  >+> pr "R'" |];;
 
 
 

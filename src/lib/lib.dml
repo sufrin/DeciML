@@ -31,7 +31,6 @@ let (+)  = prim_add
   ; (≥)  = prim_ge
   ; (≡)  = prim_struct_eq
   ; (=)  = prim_eq
-  ; (≡)  = prim_struct_eq
   ; x≠y  = if x=y then False else True 
   ; x≢y  = if x≡y then False else True 
   ; pred = prim_pred
@@ -40,8 +39,11 @@ let (+)  = prim_add
   ; (:=) = set
   ; (!)  = get
   ; dec r = r := pred !r
-  ; inc r = r := succ r
+  ; inc r = r := succ !r
+  -- guards (for function pattern-matching) 
+  ; (when) = λλλ value guard -> if force guard then force value else prim_nomatch()
  ;;
+ 
 
 {- 
         Changing the following few definitions to those in the right column makes the library strict
@@ -49,7 +51,7 @@ let (+)  = prim_add
 
 let strict f x  = f(force x)             -- strict = id
   ; (~)         = force                  -- (~)    = id
-  ; (:::)       = λ x → λλ xs → x::xs    -- (:::)  = (::) -- lazy in its second argument
+  ; (:::)       = λ x → λλ xs → x:xs     -- (:::)  = (:) -- lazy in its second argument
   ; curry f x y = f (~x,~y)              -- curry f x y =  f (x, y)
  ;;
 
@@ -66,20 +68,20 @@ let (∧) = strict ⟨ True → id         | False → const False ⟩
  
 
 {-
-        Outfix operator ⟦⟧ was declared with constructors Nil and ::
+        Outfix operator ⟦⟧ was declared with constructors Nil and :
         
 -}
 let  (⟦.⟧) v = v;; 
 
 --
--- Streams (lists lazy in their tails) use ::: not ::
+-- Streams (lists lazy in their tails) use ::: not :
 --
-let isNil         = strict ⟨ Nil → True    | _ → False ⟩ 
-  ; isCons        = strict ⟨ _ :: _ → True | _ → False ⟩ 
-  ; hd            = strict ⟨ x :: _  → x  | other → failWith("hd", other)⟩ 
-  ; tl            = strict ⟨ _ :: xs → xs | other → failWith("tl", other)⟩ 
+let isNil         = strict ⟨ Nil   → True | _ → False ⟩ 
+  ; isCons        = strict ⟨ _ : _ → True | _ → False ⟩ 
+  ; hd            = strict ⟨ x : _  → x  | other → failWith("hd", other)⟩ 
+  ; tl            = strict ⟨ _ : xs → xs | other → failWith("tl", other)⟩ 
 
-  ; (n↑xs)      = if n>0 ∧ isCons xs then  hd xs :: (pred n ↑ tl xs) else Nil
+  ; (n↑xs)      = if n>0 ∧ isCons xs then  hd xs : (pred n ↑ tl xs) else Nil
   ; (n↓xs)      = if isNil xs ∨ n=0 then xs else pred n ↓ tl xs
 
   ; (f ⊛)       = let map xs = if isNil xs then Nil else (f @ hd xs) ::: map (tl xs) in map
@@ -88,53 +90,58 @@ let isNil         = strict ⟨ Nil → True    | _ → False ⟩
  ;;
 
 
-let foldr (⊗) nil'  = let f       = strict ⟨ Nil →  nil'  | x::xs →  x ⊗ f xs ⟩        in f
-  ; foldl start (⊗) = let f state = strict ⟨ Nil →  state | x::xs →  f (x ⊗ state) xs⟩ in f start
-  ; rev             = let f xs    = strict ⟨ Nil → xs     | y::ys →  f (y::xs) ys⟩     in f Nil
-  ; xs ++ ys        = foldr (::) ys xs
+let foldr (⊗) nil'  = μ f → strict ⟨ Nil →  nil'  | x:xs →  x ⊗ f xs ⟩
+  ; xs ++ ys        = foldr (:) ys xs
+  ; foldl start (⊗) = let f state = strict ⟨ Nil →  state | x:xs →  f (state ⊗ x) xs⟩ in f start
+  ; rev             = let f xs    = strict ⟨ Nil → xs     | y:ys →  f (y:xs) ys⟩      in f Nil
   
   ; map   = (⊛)
+  ; do f  = foldl () (λ _ x → f x >> ()) 
+  
+  ; (x ∈)     = μ mem → strict ⟨ Nil → False | x':xs → x≡x' ∨ mem xs ⟩ 
+  ; x ∉ xs    = ¬(x∈xs)
+  ; (xs ∪ ys) = catFilter (∉xs) xs ys
    
   ; (|||) = curry
             ⟨ (Nil, _) → Nil
             | (_, Nil) → Nil
-            | (x::xs, y::ys) → (x,y):::(xs|||ys)
+            | (x:xs, y:ys) → (x,y):(xs|||ys)
             ⟩
             
   ; takeWhile p =
-    let f = strict
+    μ f → strict
     ⟨ Nil   → Nil
-    | x::xs → if p x then x :: f xs else Nil
+    | x:xs → if p x then x : f xs else Nil
     ⟩
-    in f
     
   ; dropWhile p = 
-    let f = strict
+    μ f → strict
     ⟨ Nil   → Nil
-    | x::xs → if p x then f xs else xs
+    | x:xs → if p x then f xs else xs
     ⟩
-    in f
     
   ; filter p = 
-    let f = strict
+    μ f → strict
     ⟨ Nil   → Nil
-    | x::xs → if p x then x :: f xs else f xs    
+    | x:xs → if p x then x : f xs else f xs    
     ⟩
-    in f
-
-  ; (∀ p ∙ xs)   = isNil xs ∨ (p (hd xs) ∧ (∀ p ∙ tl xs))
-  ; (∃ p ∙ xs)   = isCons xs ∧  (p (hd xs) ∨ (∃ p ∙ tl xs))
+    
+  ; catFilter p r = 
+    μ f → strict
+    ⟨ Nil  → r
+    | x:xs → if p x then x : f xs else f xs    
+    ⟩
   
-  ; m `upto`   n = if m ≥ n then Nil else m :: succ m `upto`   n
-  ; m `downto` n = if m ≤ n then Nil else m :: pred m `downto` n
+  ; first p = 
+    μ find → strict⟨ Nil -> None | a:as -> Some a when p a | _ : as -> find as⟩
+
+  ; (∀) = λ p -> μ all  → strict ⟨ Nil → True  | x:xs → p x ∧ all xs⟩
+  ; (∃) = λ p -> μ some → strict ⟨ Nil → False | x:xs → p x ∨ all xs⟩ 
+  
+  ; len xs = foldl 0 (\ n _ -> succ n) xs
+
+  ; m `upto`   n = if m ≥ n then Nil else m : succ m `upto`   n
+  ; m `downto` n = if m ≤ n then Nil else m : pred m `downto` n
  ;;
- 
- let len  = foldl 0 (\ _ n -> succ n)
-  ;;
-
-
-
-
-
 
 

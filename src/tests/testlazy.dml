@@ -1,3 +1,4 @@
+-- Independent of lib.dml
 --+ Infinite structures, strictness, etc
 
 notation right     3 :: ; 
@@ -54,6 +55,7 @@ null (tail l200);
 
 --+ Now l200 has been evaluated one ply further
 l200;
+
 
 
 

@@ -76,6 +76,7 @@ let globalEnv = ref @@ addLib
     ; ("deepForce",       Prim deepForce)
     ; ("prim_println",    Prim(fun v -> Format.fprintf Format.std_formatter "%a@.%!" pp_value v; v))
     ; ("prim_print",      Prim(fun v -> Format.fprintf Format.std_formatter "%a%!" pp_value v; v))
+    ; ("prim_nomatch",    Prim(fun _ -> noMatch()))
     ]) 
     emptyEnv
 
@@ -126,6 +127,7 @@ and processLexbuf currentPath lexbuf =
         | Failure msg       -> Format.eprintf "Syntax error: %s\n%!" msg
         | Stdlib.Sys.Break  -> Format.eprintf "[Interrupted]\n%!" 
         | Stack_overflow    -> Format.eprintf "%!\n[Stack Overflow]\n%!" 
+        | NoMatch           -> Format.eprintf "%!\n[NoMatch out of context]\n%!" 
         )
       | ERR (pos, msg) ->  
         Format.eprintf "*** %a %s%!"   Utils.pp_fpos pos msg
@@ -207,6 +209,7 @@ end
 
 
     
+
 
 
 

@@ -32,7 +32,7 @@ type value  =
  | ByNameFun of env * case      [@printer fun fmt (e, c)  -> 
                                           if !Utils.showClosureEnv 
                                           then fprintf fmt {|@[<v>@[ν %a@]@;«@[<v>%a@]»@]@]|}  pp_case c pp_env (shortenEnv e) 
-                                          else fprintf fmt {|@[ν %a@]|}  pp_case c
+                                          else fprintf fmt {|@[λλλ %a@]|}  pp_case c
                                 ] 
  | Thunk   of env * expr        [@printer fun fmt (_, e) -> fprintf fmt {|⌈%a⌉|} pp_expr e]
  | Prim    of (value -> value)  [@opaque]
@@ -329,7 +329,9 @@ and evalCases: loc -> env -> cont -> value -> cases -> value = fun loc e k v cas
 in evalFirst cases
 
 and evalCase: env -> cont -> value -> def -> value = fun e k v -> function (lhs, rhs) -> 
-    let bindings = matchPat lhs v emptyBindings in eval None (addBindings bindings e) k rhs 
+    let bindings = matchPat lhs v emptyBindings in 
+    let v = eval None (addBindings bindings e) id rhs 
+    in  k v
     
 and force k = function
 |  Delay(env, expr, vr) ->

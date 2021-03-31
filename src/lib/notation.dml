@@ -1,3 +1,7 @@
+{-
+        Declarations of the syntactic roles of symbols
+-}
+
 notation
      right 0 @          ;
      left  3 ≡ ≠ ≢      ; -- = is a BUILTIN FIXED (3) RIGHTFIX 
@@ -6,14 +10,23 @@ notation
      left  8 * / %      ;
      right 9 **         ;
      right 9 ⊛          ;
-     data  0 Nil        ;
-     rightdata 5 ::     ;
-     right     5 :::    ;
-     leftfix  ∃ ∙       ;
-     leftfix  ∀ ∙       ;
-     outfix ⟦ ⟧  Nil ::  ;
+     data  0 Nil None   ;
+     data  1 Some       ;
+     rightdata 2 :      ;
+     right     2 :::    ;
+     bind  ∃            ;
+     bind  ∀            ;
+     outfix ⟦ ⟧  Nil :   ;
      right 1 :=         ;
+     left 0 when        ;
+     right 1 match      ; -- why not 0?
      prefix !           ;;
+
+--- define μ as a lazy binder, so μ x y z ... -> E is translated into (μ) (λλ x y z ... -> E)
+notation bind μ;;
+let (μ) = λ f  -> f ((μ) f);; 
+
+let v match f = f v;;
 
 
 {-   For all infixes, ⊕
@@ -34,6 +47,7 @@ let (`prim_flip`) f x y = f y x ;;
      would be better to have an unrebindable class of identifiers.
 
 -}
+
 
 
 
