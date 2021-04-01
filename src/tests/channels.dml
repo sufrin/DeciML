@@ -54,8 +54,8 @@ let
         resultis :>                       
         ( (resume :> (resultis resume)) >>  -- resume() resumes on the next line [*]
           continue(force expr)              -- [*] evaluate expr then continue. The latter is always a join point                  
-        );;                                 -- the result of mkThread is the schedulable continuation at [*]
-    
+        );; 
+                
 --- binary parallel composition of unit-expressions: runs immediately     
 let (||) = λλλ l r ->
     let count = ref 2 in 
@@ -90,7 +90,8 @@ where
 
 --- Elementary Tests of ||, [| . |]
 let pr   = prim_println;;
- 
+let tr c s v = prim_print (c.name) >> prim_print s>>pr v;;
+
 let (>+>) = λλλ l r → force l >> pause() >> force r;;
 
 let x s n = let c = ref 0 in loop (pause() >> pr (s, !c) >> n>inc c);;    
@@ -104,35 +105,54 @@ let ppn n  = (x "l" n || x "m" n) || x "r" n;;
 let ppn' n  = x "l" n || (x "m" n || x "r" n);;
 
 
---- Channels
-notation data 1 ReaderWaiting; data 2 WriterWaiting; data  Empty;;
+--- Channel implementation
 
-let newChan () = ref Empty;;
+notation data 1 ReaderWaiting WriterWaiting; data  Empty; id PARK UNPARK;;
+
+{-
+   PARK and UNPARK are primitives
+   ------------------------------
+   
+   PARK   continuation augments the set of parked continuations and doesn't return
+   UNPARK continuation never returns, but moves the continuation from the parked set to the runnable set
+   
+   The read/eval/print loop of the interpreter now turns into a select-runnable/continue loop
+   that only performs a read when there are no longer any runnables
+   
+   As a generalisation of this, 
+
+-}
+
+
+let newChan name = { name=name; buf = ref (); state = ref Empty; reads = ref 0; writes = ref 0};;
 
 let
-    write c v = self :> 
-                (!c match
-                 ⟨ Empty                → (c := WriterWaiting v self) >> reschedule()
-                 | ReaderWaiting reader → (c := Empty) >> reader v
+    write c v = tr c "!" v >> inc(c.writes) >> self :> 
+                (!(c.state) match
+                 ⟨ Empty                → c.state := WriterWaiting self >> c.buf := v >> PARK self
+                 | ReaderWaiting reader → c.state := Empty >> c.buf := v >> UNPARK reader
                  ⟩
                 );
                 
-    read c = self :>
-             (!c match
-              ⟨ Empty                  → (c := ReaderWaiting self) >> reschedule()
-              | WriterWaiting v writer → (c := Empty >> makeRunnable writer) >> v
+    read c = tr c "?" (c.state) >> inc(c.reads) >> self :>
+             (!(c.state) match
+              ⟨ Empty                → c.state := ReaderWaiting self >> PARK self
+              | WriterWaiting writer → c.state := Empty >> UNPARK writer
               ⟩
-             )
+             ) >> !(c.buf)
 ;;
 
 ---
 
-let ch = newChan(); ch2 = newChan();;
+let ch = newChan "ch"; ch2 = newChan "ch2";;
 
-let t1() =  pr(read ch) >+> pr "OKR" || write ch "A" >+> pr "OKL" ;;
+let prr ch = let x=read ch in pr x;;
 
-let t2() = [| write ch2 "X" >+> pr "W" >+> write ch2 "Y" >+> pr "W'"
-           ,  pr(read ch2)  >+> pr "R" >+> pr(read ch2)  >+> pr "R'" |];;
+let t1() =  prr ch >+> pr "OKR" || write ch "A" >+>  "OKL" ;;
+let t1'() =  write ch "A" >+>  "OKL" || prr ch >+> pr "OKR"  ;;
+
+let t2() = [| write ch2 "X" >> pr "W" >> write ch2 "Y" >> pr "W'"
+           ,  prr(ch2)  >> pr "R" >> prr(ch2)  >> pr "R'" |];;
 
 
 

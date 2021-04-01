@@ -1,0 +1,17 @@
+    -- Construct a schedulable thread from the unit proc.
+    mkThread continue proc =  
+            resultis :>                       
+            ( (resume :> (resultis resume)) >>  -- resume() resumes on the next line [*]
+              continue(proc())                  -- [*] call proc then continue. The latter is always a join point                  
+            );                                  -- the result of mkThread is the schedulable continuation at [*]
+    
+--- generalized parallel composition of unit-functions: runs immediately     
+let par procs = 
+        let count = ref (len procs) in
+        ( join :> 
+               ( do makeRunnable (map (mkThread join) procs) >> --- make and schedule the new threads
+                 reschedule()                          --- start them
+               )
+        )  >>  --- terminating threads arrive here
+        if dec count > 0 then reschedule() else ();;
+
