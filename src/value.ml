@@ -342,6 +342,10 @@ and force k = function
 |  Thunk (env, expr) -> eval None env k expr
 |  v -> k v
 
+and force_run  = function
+|  Cont f -> f unitValue
+|  v      -> force id v
+
 (* Strict structural equality predicate *)    
 and val_eq: value -> value -> bool = fun l r -> match force id l, force id r with 
 | Const k1,  Const  k2  -> k1=k2 
@@ -375,8 +379,23 @@ let rec deepForce v = match v with
 
  
 
+(* **************************** PARK/UNPARK FRAMEWORK ************************** *)
+
+let unparked: value Queue.t = Queue.create()
+
+let parked: (value, value) Hashtbl.t = Hashtbl.create 50 
+
+let prim_park = Prim(fun v ->  Hashtbl.replace parked v v; unitValue)
+
+let prim_unpark = Prim(fun v -> Hashtbl.remove parked v; Queue.add v unparked; unitValue) 
+
+let prim_runone = Prim(fun _ -> if Queue.is_empty unparked then unitValue else let v = Queue.pop unparked in force_run v)
+    
+let prim_runnable = Prim(fun _ -> Const(Num (Queue.length unparked)))
+let prim_parked = Prim(fun _ -> Const(Num (Hashtbl.length parked)))
 
 
+    
 
 
 

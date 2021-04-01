@@ -77,6 +77,11 @@ let globalEnv = ref @@ addLib
     ; ("prim_println",    Prim(fun v -> Format.fprintf Format.std_formatter "%a@.%!" pp_value v; v))
     ; ("prim_print",      Prim(fun v -> Format.fprintf Format.std_formatter "%a%!" pp_value v; v))
     ; ("prim_nomatch",    Prim(fun _ -> noMatch()))
+    ; ("prim_park",       prim_park)
+    ; ("prim_unpark",     prim_unpark)
+    ; ("prim_runone",     prim_runone)
+    ; ("prim_runnable",   prim_runnable)
+    ; ("prim_parked",     prim_parked)
     ]) 
     emptyEnv
 

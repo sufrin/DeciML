@@ -42,18 +42,27 @@ where
     schedule=makeQueue()
 ;;      
 
+--  Scheduler 
+let makeRunnable    = prim_unpark
+  ; runSomething () = prim_runone()
+  ; anyRunnable ()  = prim_runnable()>0
+  ; park cont       = prim_park cont >> runSomething()
+  ; unpark cont     = prim_unpark cont >> runSomething()
+;;      
+
 let 
     -- run the first runnable continuation 
     reschedule() = if anyRunnable() then runSomething() else prim_println "System Terminated" >> ();        
     
     -- allow another runnable to run if there is one, otherwise resume
-    pause() = continue :> (makeRunnable continue >> reschedule()); 
+    pause() = continue :> (makeRunnable continue >> runSomething()); 
     
     -- Construct a schedulable thread from the thunk expr
     continue `afterevaluating` expr =       -- expr must already be a thunk
         resultis :>                       
         ( (resume :> (resultis resume)) >>  -- resume() resumes on the next line [*]
-          continue(force expr)              -- [*] evaluate expr then continue. The latter is always a join point                  
+          force expr >>                     -- [*] evaluate expr then continue. The latter is always a join point
+          continue()                  
         );; 
                 
 --- binary parallel composition of unit-expressions: runs immediately     
@@ -62,10 +71,10 @@ let (||) = λλλ l r ->
     (join :> 
            ( makeRunnable (join `afterevaluating` r) >>             
              makeRunnable (join `afterevaluating` l) >>             
-             reschedule()                        
+             () -- reschedule()                        
            )
      --- join() resumes here
-    ) >>                                 
+    ) >>   prim_println ("JOIN", count, prim_runnable(), prim_parked()) >>                              
     if dec count > 0 then reschedule() else ();;
 
   
@@ -80,9 +89,9 @@ where
         let count = ref (len thunks) in
         ( join :> 
                ( do makeRunnable (map (join `afterevaluating`) thunks) >> --- make the new threads
-                 reschedule()                                             --- start them
+                 () -- reschedule()                                             --- start them
                )
-        )  >>  -- terminating threads arrive here
+        )  >>  prim_println ("JOIN", count, prim_runnable(), prim_parked()) >> -- terminating threads arrive here
         if dec count > 0 then reschedule() else ();;
  ;;
 
@@ -124,7 +133,10 @@ notation data 1 ReaderWaiting WriterWaiting; data  Empty; id PARK UNPARK;;
 -}
 
 
+
 let newChan name = { name=name; buf = ref (); state = ref Empty; reads = ref 0; writes = ref 0};;
+
+let PARK=park; UNPARK=unpark;;
 
 let
     write c v = tr c "!" v >> inc(c.writes) >> self :> 
