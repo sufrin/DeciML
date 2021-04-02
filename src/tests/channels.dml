@@ -43,7 +43,7 @@ where
 ;;      
 
 --  Scheduler 
-let makeRunnable    = prim_unpark
+let makeRunnable    = λλλ e → prim_unpark e
   ; runSomething () = prim_runone()
   ; anyRunnable ()  = prim_runnable()>0
   ; park cont       = prim_park cont >> runSomething()
@@ -55,7 +55,7 @@ let
     reschedule() = if anyRunnable() then runSomething() else prim_println "System Terminated" >> ();        
     
     -- allow another runnable to run if there is one, otherwise resume
-    pause() = continue :> (makeRunnable continue >> runSomething()); 
+    pause() = runSomething() ; -- >> continue :> (unpark continue); -- CRUCIAL: we need a STOP
     
     -- Construct a schedulable thread from the thunk expr
     continue `afterevaluating` expr =       -- expr must already be a thunk
@@ -64,18 +64,31 @@ let
           force expr >>                     -- [*] evaluate expr then continue. The latter is always a join point
           continue()                  
         );; 
-                
+
+{-                
 --- binary parallel composition of unit-expressions: runs immediately     
 let (||) = λλλ l r ->
     let count = ref 2 in 
     (join :> 
-           ( makeRunnable (join `afterevaluating` r) >>             
-             makeRunnable (join `afterevaluating` l) >>             
+           ( prim_unpark (join `afterevaluating` r) >>             
+             prim_unpark (join `afterevaluating` l) >>             
              () -- reschedule()                        
            )
      --- join() resumes here
     ) >>   prim_println ("JOIN", count, prim_runnable(), prim_parked()) >>                              
     if dec count > 0 then reschedule() else ();;
+-}
+
+let (||) = λλλ l r ->
+    let count = ref 2 in 
+    (join :> 
+           ( makeRunnable(force r >> join()) >>             
+             makeRunnable(force l >> join()) >>             
+             () -- reschedule()                        
+           )
+     --- join() resumes here
+    ) >>   prim_println ("JOIN", count, prim_runnable(), prim_parked()) >>                              
+    if dec count ≥ 0 then reschedule() else ();;
 
   
 --- Outfix that denotes parallel composition of several thunks    
@@ -84,7 +97,8 @@ notation outfix [| |] Nil _consthunk_;;
 let _consthunk_ = λλλ e -> λ es -> e : es
   ; ([| . |])   = interleave 
 where
-     --- parallel composition of thunks: runs immediately     
+{-
+    --- parallel composition of thunks: runs immediately     
     interleave thunks = 
         let count = ref (len thunks) in
         ( join :> 
@@ -93,6 +107,16 @@ where
                )
         )  >>  prim_println ("JOIN", count, prim_runnable(), prim_parked()) >> -- terminating threads arrive here
         if dec count > 0 then reschedule() else ();;
+-}
+   interleave thunks = 
+        let count = ref (len thunks) in
+        ( join :> 
+               ( do makeRunnable (map ⟨ thunk → force thunk >> join() ⟩ thunks) >> --- make the new threads
+                 () -- reschedule()                                             --- start them
+               )
+        )  >>  prim_println ("JOIN", count, prim_runnable(), prim_parked()) >> -- terminating threads arrive here
+        if dec count ≥ 0 then reschedule() else ();;
+
  ;;
 
 
@@ -103,7 +127,7 @@ let tr c s v = prim_print (c.name) >> prim_print s>>pr v;;
 
 let (>+>) = λλλ l r → force l >> pause() >> force r;;
 
-let x s n = let c = ref 0 in loop (pause() >> pr (s, !c) >> n>inc c);;    
+let x s n = let c = ref 0 in (loop (pause() >> pr (s, !c) >> n>inc c)) >> c;;    
 
 -- interleaving order follows order in list
 let pp' () = [| x "l" 4, x "m" 5, x "r" 6 |];;
