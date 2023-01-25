@@ -136,7 +136,7 @@ let foldr (⊗) nil'  = μ f → strict ⟨ Nil →  nil'  | x:xs →  x ⊗ f x
     μ find → strict⟨ Nil -> None | a:as -> Some a when p a | _ : as -> find as⟩
 
   ; (∀) = λ p -> μ all  → strict ⟨ Nil → True  | x:xs → p x ∧ all xs⟩
-  ; (∃) = λ p -> μ some → strict ⟨ Nil → False | x:xs → p x ∨ all xs⟩ 
+  ; (∃) = λ p -> μ some → strict ⟨ Nil → False | x:xs → p x ∨ some xs⟩ 
   
   ; len xs = foldl 0 (\ n _ -> succ n) xs
 

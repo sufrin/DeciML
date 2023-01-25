@@ -1,0 +1,16 @@
+-- many() and many' repeatedly return to the same continuation 
+
+import "lib/lib";
+
+let pr=prim_println;;
+
+let many () = 
+    let c    = ref 0  
+      ; here = ref () 
+     in (result :> (here := result)) >> pr (inc c) >>  !here();; 
+     
+let many' () = 
+    let c    = ref 0  
+      ; here = ref () 
+     in pr (result :> (here := result)) >>  !here(inc c);; 
+     
